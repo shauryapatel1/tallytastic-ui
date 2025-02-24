@@ -1,8 +1,11 @@
 
 import { Button } from "@/components/ui/button";
 import { ArrowRight } from "lucide-react";
+import { useNavigate } from "react-router-dom";
 
 export const Hero = () => {
+  const navigate = useNavigate();
+  
   return (
     <div className="min-h-screen pt-16 overflow-hidden">
       <div className="container mx-auto px-4">
@@ -30,11 +33,20 @@ export const Hero = () => {
               </p>
               
               <div className="flex flex-col sm:flex-row items-center justify-center gap-4 pt-4">
-                <Button size="lg" className="w-full sm:w-auto">
+                <Button 
+                  size="lg" 
+                  className="w-full sm:w-auto"
+                  onClick={() => navigate("/auth")}
+                >
                   Start building for free
                   <ArrowRight className="ml-2 h-4 w-4" />
                 </Button>
-                <Button variant="outline" size="lg" className="w-full sm:w-auto">
+                <Button 
+                  variant="outline" 
+                  size="lg" 
+                  className="w-full sm:w-auto"
+                  onClick={() => document.getElementById('features')?.scrollIntoView({ behavior: 'smooth' })}
+                >
                   See templates
                 </Button>
               </div>

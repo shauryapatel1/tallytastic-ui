@@ -17,6 +17,11 @@ export const Navbar = () => {
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
 
+  const scrollToFeatures = (e: React.MouseEvent) => {
+    e.preventDefault();
+    document.getElementById('features')?.scrollIntoView({ behavior: 'smooth' });
+  };
+
   return (
     <nav
       className={`fixed top-0 w-full z-50 transition-all duration-300 ${
@@ -34,15 +39,19 @@ export const Navbar = () => {
             FormCraft
           </a>
           <div className="hidden md:flex items-center space-x-8">
-            <a href="#features" className="text-sm hover:text-primary/80 transition-colors">
+            <a 
+              href="#features" 
+              onClick={scrollToFeatures}
+              className="text-sm hover:text-primary/80 transition-colors"
+            >
               Features
             </a>
-            <a href="#templates" className="text-sm hover:text-primary/80 transition-colors">
+            <span className="text-sm text-primary/40 cursor-not-allowed">
               Templates
-            </a>
-            <a href="#pricing" className="text-sm hover:text-primary/80 transition-colors">
+            </span>
+            <span className="text-sm text-primary/40 cursor-not-allowed">
               Pricing
-            </a>
+            </span>
           </div>
           <div className="flex items-center space-x-4">
             {session ? (
@@ -69,9 +78,7 @@ export const Navbar = () => {
                 </Button>
                 <Button
                   size="sm"
-                  onClick={() => {
-                    navigate("/auth");
-                  }}
+                  onClick={() => navigate("/auth")}
                 >
                   Get Started
                 </Button>
