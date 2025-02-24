@@ -1,9 +1,13 @@
 
 import { Button } from "@/components/ui/button";
 import { useState, useEffect } from "react";
+import { useAuth } from "@/lib/auth";
+import { useNavigate } from "react-router-dom";
 
 export const Navbar = () => {
   const [isScrolled, setIsScrolled] = useState(false);
+  const { session, signOut } = useAuth();
+  const navigate = useNavigate();
 
   useEffect(() => {
     const handleScroll = () => {
@@ -41,10 +45,38 @@ export const Navbar = () => {
             </a>
           </div>
           <div className="flex items-center space-x-4">
-            <Button variant="ghost" size="sm">
-              Log in
-            </Button>
-            <Button size="sm">Get Started</Button>
+            {session ? (
+              <>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => navigate("/dashboard")}
+                >
+                  Dashboard
+                </Button>
+                <Button size="sm" onClick={() => signOut()}>
+                  Log out
+                </Button>
+              </>
+            ) : (
+              <>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => navigate("/auth")}
+                >
+                  Log in
+                </Button>
+                <Button
+                  size="sm"
+                  onClick={() => {
+                    navigate("/auth");
+                  }}
+                >
+                  Get Started
+                </Button>
+              </>
+            )}
           </div>
         </div>
       </div>
