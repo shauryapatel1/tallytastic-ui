@@ -15,7 +15,7 @@ export const Hero = () => {
           
           {/* Content */}
           <div className="flex flex-col items-center justify-center min-h-[calc(100vh-4rem)] text-center">
-            <div className="space-y-6 max-w-3xl">
+            <div className="space-y-6 max-w-3xl fade-in-up">
               <div className="inline-flex items-center rounded-full px-3 py-1 text-sm bg-secondary/80 backdrop-blur-sm">
                 <span className="text-primary/80">
                   New: AI form suggestions are here
