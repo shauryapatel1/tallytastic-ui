@@ -1,5 +1,9 @@
 
-import { Button } from "@/components/ui/button";
+import { useState } from "react";
+import { useNavigate } from "react-router-dom";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { useToast } from "@/hooks/use-toast";
+import { createForm } from "@/lib/api";
 import {
   Dialog,
   DialogContent,
@@ -7,30 +11,14 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
-import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { createForm } from "@/lib/api";
-import { useState } from "react";
-import { useNavigate } from "react-router-dom";
-import { useToast } from "@/hooks/use-toast";
-import { 
-  FileText, Clipboard, MessageSquare, Check, CreditCard, 
-  CalendarDays, BarChart, Users, ChevronLeft, SparklesIcon
-} from "lucide-react";
+import { FormInfoStep } from "./form-templates/FormInfoStep";
+import { TemplateSelector } from "./form-templates/TemplateSelector";
+import { templates } from "./form-templates/templateData";
 
 interface CreateFormDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
 }
-
-type TemplateType = {
-  id: string;
-  name: string;
-  description: string;
-  icon: React.ReactNode;
-  category: "basic" | "feedback" | "data" | "popular";
-};
 
 export const CreateFormDialog = ({
   open,
@@ -44,58 +32,6 @@ export const CreateFormDialog = ({
   const queryClient = useQueryClient();
   const navigate = useNavigate();
   const { toast } = useToast();
-
-  const templates: TemplateType[] = [
-    {
-      id: "blank",
-      name: "Blank Form",
-      description: "Start from scratch with a blank canvas",
-      icon: <FileText className="h-8 w-8 text-indigo-600" />,
-      category: "basic"
-    },
-    {
-      id: "contact",
-      name: "Contact Form",
-      description: "Basic contact information collection",
-      icon: <MessageSquare className="h-8 w-8 text-indigo-600" />,
-      category: "basic"
-    },
-    {
-      id: "survey",
-      name: "Feedback Survey",
-      description: "Get user feedback and ratings",
-      icon: <Clipboard className="h-8 w-8 text-indigo-600" />,
-      category: "feedback"
-    },
-    {
-      id: "customer",
-      name: "Customer Survey",
-      description: "Collect customer satisfaction data",
-      icon: <Users className="h-8 w-8 text-indigo-600" />,
-      category: "feedback"
-    },
-    {
-      id: "payment",
-      name: "Payment Form",
-      description: "Collect payment details securely",
-      icon: <CreditCard className="h-8 w-8 text-indigo-600" />,
-      category: "data"
-    },
-    {
-      id: "event",
-      name: "Event Registration",
-      description: "Register attendees for your event",
-      icon: <CalendarDays className="h-8 w-8 text-indigo-600" />,
-      category: "popular"
-    },
-    {
-      id: "quiz",
-      name: "Quiz or Assessment",
-      description: "Test knowledge with scored questions",
-      icon: <BarChart className="h-8 w-8 text-indigo-600" />,
-      category: "popular"
-    },
-  ];
 
   const filteredTemplates = templates.filter(t => t.category === templateCategory);
 
@@ -188,97 +124,25 @@ export const CreateFormDialog = ({
         
         <div className="p-6">
           {step === "info" ? (
-            <form onSubmit={handleNext} className="space-y-6">
-              <div className="space-y-2">
-                <label htmlFor="title" className="text-sm font-medium">
-                  Form Title <span className="text-red-500">*</span>
-                </label>
-                <Input
-                  id="title"
-                  placeholder="Enter a title for your form"
-                  value={title}
-                  onChange={(e) => setTitle(e.target.value)}
-                  className="text-base"
-                  required
-                />
-              </div>
-              <div className="space-y-2">
-                <label htmlFor="description" className="text-sm font-medium">
-                  Description <span className="text-primary/40">(optional)</span>
-                </label>
-                <Textarea
-                  id="description"
-                  placeholder="Enter a description for your form"
-                  value={description}
-                  onChange={(e) => setDescription(e.target.value)}
-                  className="resize-none"
-                />
-              </div>
-              <div className="flex justify-end">
-                <Button type="submit" disabled={isPending}>
-                  Next <ChevronLeft className="ml-2 h-4 w-4 rotate-180" />
-                </Button>
-              </div>
-            </form>
+            <FormInfoStep
+              title={title}
+              setTitle={setTitle}
+              description={description}
+              setDescription={setDescription}
+              handleNext={handleNext}
+              isPending={isPending}
+            />
           ) : (
-            <div className="space-y-6">
-              <div className="flex items-center justify-between">
-                <Button variant="ghost" onClick={handleBack} className="gap-2">
-                  <ChevronLeft className="h-4 w-4" />
-                  Back
-                </Button>
-                <div className="flex gap-2">
-                  {["popular", "basic", "feedback", "data"].map((category) => (
-                    <Button
-                      key={category}
-                      size="sm"
-                      variant={templateCategory === category ? "default" : "ghost"}
-                      onClick={() => setTemplateCategory(category as "basic" | "feedback" | "data" | "popular")}
-                    >
-                      {category.charAt(0).toUpperCase() + category.slice(1)}
-                    </Button>
-                  ))}
-                </div>
-              </div>
-              
-              <div className="grid grid-cols-2 gap-4">
-                {filteredTemplates.map((template) => (
-                  <div
-                    key={template.id}
-                    className={`p-4 rounded-lg border-2 cursor-pointer transition-all hover:shadow-md ${
-                      selectedTemplate === template.id
-                        ? "border-indigo-600 bg-indigo-50"
-                        : "border-transparent bg-gray-50 hover:border-gray-200"
-                    }`}
-                    onClick={() => setSelectedTemplate(template.id)}
-                  >
-                    <div className="flex items-start gap-3">
-                      {template.icon}
-                      <div>
-                        <h3 className="font-medium">{template.name}</h3>
-                        <p className="text-sm text-gray-500 mt-1">
-                          {template.description}
-                        </p>
-                      </div>
-                    </div>
-                  </div>
-                ))}
-              </div>
-              
-              <div className="flex justify-end">
-                <Button
-                  onClick={handleSubmit}
-                  disabled={!selectedTemplate || isPending}
-                >
-                  {isPending ? (
-                    <SparklesIcon className="mr-2 h-4 w-4 animate-spin" />
-                  ) : (
-                    <SparklesIcon className="mr-2 h-4 w-4" />
-                  )}
-                  Create Form
-                </Button>
-              </div>
-            </div>
+            <TemplateSelector
+              selectedTemplate={selectedTemplate}
+              setSelectedTemplate={setSelectedTemplate}
+              templateCategory={templateCategory}
+              setTemplateCategory={setTemplateCategory}
+              filteredTemplates={filteredTemplates}
+              handleBack={handleBack}
+              handleSubmit={handleSubmit}
+              isPending={isPending}
+            />
           )}
         </div>
       </DialogContent>
