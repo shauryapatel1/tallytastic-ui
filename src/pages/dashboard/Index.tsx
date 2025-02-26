@@ -26,13 +26,18 @@ export default function Dashboard() {
   const { data: forms, isLoading, error } = useQuery({
     queryKey: ["forms"],
     queryFn: getForms,
-    onError: (err) => {
-      console.error("Error fetching forms:", err);
-      toast({
-        title: "Error loading forms",
-        description: "There was a problem loading your forms. Please try again.",
-        variant: "destructive",
-      });
+    meta: {
+      errorMessage: "Failed to load forms"
+    },
+    onSettled: (data, error) => {
+      if (error) {
+        console.error("Error fetching forms:", error);
+        toast({
+          title: "Error loading forms",
+          description: "There was a problem loading your forms. Please try again.",
+          variant: "destructive",
+        });
+      }
     }
   });
 
