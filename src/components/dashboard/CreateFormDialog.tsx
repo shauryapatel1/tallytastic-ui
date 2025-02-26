@@ -13,7 +13,7 @@ import { createForm } from "@/lib/api";
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useToast } from "@/hooks/use-toast";
-import { LayoutGrid, List, FileText, Form, Clipboard } from "lucide-react";
+import { LayoutGrid, List, FileText, Clipboard, MessageSquare } from "lucide-react";
 
 interface CreateFormDialogProps {
   open: boolean;
@@ -50,7 +50,7 @@ export const CreateFormDialog = ({
       id: "contact",
       name: "Contact Form",
       description: "Basic contact information collection",
-      icon: <Form className="h-8 w-8 text-primary/60" />,
+      icon: <MessageSquare className="h-8 w-8 text-primary/60" />,
     },
     {
       id: "survey",
