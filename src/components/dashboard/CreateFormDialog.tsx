@@ -14,7 +14,10 @@ import { createForm } from "@/lib/api";
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useToast } from "@/hooks/use-toast";
-import { LayoutGrid, List, FileText, Clipboard, MessageSquare } from "lucide-react";
+import { 
+  FileText, Clipboard, MessageSquare, Check, CreditCard, 
+  CalendarDays, BarChart, Users, ChevronLeft, SparklesIcon
+} from "lucide-react";
 
 interface CreateFormDialogProps {
   open: boolean;
@@ -26,6 +29,7 @@ type TemplateType = {
   name: string;
   description: string;
   icon: React.ReactNode;
+  category: "basic" | "feedback" | "data" | "popular";
 };
 
 export const CreateFormDialog = ({
@@ -36,6 +40,7 @@ export const CreateFormDialog = ({
   const [description, setDescription] = useState("");
   const [step, setStep] = useState<"info" | "template">("info");
   const [selectedTemplate, setSelectedTemplate] = useState<string | null>(null);
+  const [templateCategory, setTemplateCategory] = useState<"basic" | "feedback" | "data" | "popular">("popular");
   const queryClient = useQueryClient();
   const navigate = useNavigate();
   const { toast } = useToast();
@@ -45,21 +50,54 @@ export const CreateFormDialog = ({
       id: "blank",
       name: "Blank Form",
       description: "Start from scratch with a blank canvas",
-      icon: <FileText className="h-8 w-8 text-primary/60" />,
+      icon: <FileText className="h-8 w-8 text-indigo-600" />,
+      category: "basic"
     },
     {
       id: "contact",
       name: "Contact Form",
       description: "Basic contact information collection",
-      icon: <MessageSquare className="h-8 w-8 text-primary/60" />,
+      icon: <MessageSquare className="h-8 w-8 text-indigo-600" />,
+      category: "basic"
     },
     {
       id: "survey",
       name: "Feedback Survey",
       description: "Get user feedback and ratings",
-      icon: <Clipboard className="h-8 w-8 text-primary/60" />,
+      icon: <Clipboard className="h-8 w-8 text-indigo-600" />,
+      category: "feedback"
+    },
+    {
+      id: "customer",
+      name: "Customer Survey",
+      description: "Collect customer satisfaction data",
+      icon: <Users className="h-8 w-8 text-indigo-600" />,
+      category: "feedback"
+    },
+    {
+      id: "payment",
+      name: "Payment Form",
+      description: "Collect payment details securely",
+      icon: <CreditCard className="h-8 w-8 text-indigo-600" />,
+      category: "data"
+    },
+    {
+      id: "event",
+      name: "Event Registration",
+      description: "Register attendees for your event",
+      icon: <CalendarDays className="h-8 w-8 text-indigo-600" />,
+      category: "popular"
+    },
+    {
+      id: "quiz",
+      name: "Quiz or Assessment",
+      description: "Test knowledge with scored questions",
+      icon: <BarChart className="h-8 w-8 text-indigo-600" />,
+      category: "popular"
     },
   ];
+
+  const filteredTemplates = templates.filter(t => t.category === templateCategory);
 
   const { mutate: create, isPending } = useMutation({
     mutationFn: createForm,
@@ -68,8 +106,8 @@ export const CreateFormDialog = ({
       onOpenChange(false);
       navigate(`/dashboard/forms/${form.id}`);
       toast({
-        title: "Form created",
-        description: "Your form has been created successfully.",
+        title: "Form created successfully! 🎉",
+        description: "You're ready to start building your form.",
       });
       // Reset state
       setTitle("");
@@ -134,94 +172,42 @@ export const CreateFormDialog = ({
 
   return (
     <Dialog open={open} onOpenChange={handleClose}>
-      <DialogContent className="sm:max-w-[550px]">
-        <DialogHeader>
-          <DialogTitle className="text-2xl">
-            {step === "info" ? "Create a new form" : "Choose a template"}
-          </DialogTitle>
-          <DialogDescription>
-            {step === "info" 
-              ? "Give your form a name and optional description." 
-              : "Select a template or start with a blank form."}
-          </DialogDescription>
-        </DialogHeader>
+      <DialogContent className="sm:max-w-[650px] p-0 overflow-hidden">
+        <div className="bg-gradient-to-r from-indigo-500 to-purple-600 text-white p-6">
+          <DialogHeader>
+            <DialogTitle className="text-2xl text-white">
+              {step === "info" ? "Create a new form" : "Choose a template"}
+            </DialogTitle>
+            <DialogDescription className="text-white/80">
+              {step === "info" 
+                ? "Start by giving your form a name and description" 
+                : "Select a template to jumpstart your form creation"}
+            </DialogDescription>
+          </DialogHeader>
+        </div>
         
-        {step === "info" ? (
-          <form onSubmit={handleNext} className="space-y-6">
-            <div className="space-y-2">
-              <label htmlFor="title" className="text-sm font-medium">
-                Form Title
-              </label>
-              <Input
-                id="title"
-                placeholder="Enter a title for your form"
-                value={title}
-                onChange={(e) => setTitle(e.target.value)}
-                className="text-base"
-                required
-              />
-            </div>
-            <div className="space-y-2">
-              <label htmlFor="description" className="text-sm font-medium">
-                Description <span className="text-primary/40">(optional)</span>
-              </label>
-              <Textarea
-                id="description"
-                placeholder="Enter a description for your form"
-                value={description}
-                onChange={(e) => setDescription(e.target.value)}
-                className="min-h-[100px] text-base"
-              />
-            </div>
-            <div className="flex justify-end">
-              <Button type="submit" size="lg">Continue</Button>
-            </div>
-          </form>
-        ) : (
-          <div className="space-y-6">
-            <p className="text-primary/60">
-              Choose a template to get started or create a blank form.
-            </p>
-
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              {templates.map((template) => (
-                <div
-                  key={template.id}
-                  className={`border rounded-lg p-4 cursor-pointer transition-all hover:border-primary hover:shadow-sm ${
-                    selectedTemplate === template.id
-                      ? "border-primary bg-primary/5"
-                      : ""
-                  }`}
-                  onClick={() => setSelectedTemplate(template.id)}
-                >
-                  <div className="flex items-center space-x-4">
-                    <div className="rounded-md bg-secondary p-2">
-                      {template.icon}
-                    </div>
-                    <div>
-                      <h3 className="font-medium">{template.name}</h3>
-                      <p className="text-sm text-primary/60">{template.description}</p>
-                    </div>
-                  </div>
-                </div>
-              ))}
-            </div>
-
-            <div className="flex justify-between">
-              <Button type="button" variant="ghost" onClick={handleBack}>
-                Back
-              </Button>
-              <Button
-                type="button"
-                onClick={handleSubmit}
-                disabled={isPending}
-              >
-                {isPending ? "Creating..." : "Create Form"}
-              </Button>
-            </div>
-          </div>
-        )}
-      </DialogContent>
-    </Dialog>
-  );
-};
+        <div className="p-6">
+          {step === "info" ? (
+            <form onSubmit={handleNext} className="space-y-6">
+              <div className="space-y-2">
+                <label htmlFor="title" className="text-sm font-medium">
+                  Form Title <span className="text-red-500">*</span>
+                </label>
+                <Input
+                  id="title"
+                  placeholder="Enter a title for your form"
+                  value={title}
+                  onChange={(e) => setTitle(e.target.value)}
+                  className="text-base"
+                  required
+                />
+              </div>
+              <div className="space-y-2">
+                <label htmlFor="description" className="text-sm font-medium">
+                  Description <span className="text-primary/40">(optional)</span>
+                </label>
+                <Textarea
+                  id="description"
+                  placeholder="Enter a description for your form"
+                  value={description}
+                  onChange={(e) => setDescription(e.target.
