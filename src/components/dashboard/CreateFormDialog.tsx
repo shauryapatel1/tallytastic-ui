@@ -3,6 +3,7 @@ import { Button } from "@/components/ui/button";
 import {
   Dialog,
   DialogContent,
+  DialogDescription,
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
@@ -76,10 +77,26 @@ export const CreateFormDialog = ({
       setStep("info");
       setSelectedTemplate(null);
     },
+    onError: (error) => {
+      console.error("Error creating form:", error);
+      toast({
+        title: "Error creating form",
+        description: "There was an error creating your form. Please try again.",
+        variant: "destructive",
+      });
+    }
   });
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
+    if (!selectedTemplate) {
+      toast({
+        title: "Please select a template",
+        description: "Please select a template to continue.",
+        variant: "destructive",
+      });
+      return;
+    }
     create({ 
       title, 
       description,
@@ -89,6 +106,14 @@ export const CreateFormDialog = ({
 
   const handleNext = (e: React.FormEvent) => {
     e.preventDefault();
+    if (!title.trim()) {
+      toast({
+        title: "Title required",
+        description: "Please enter a title for your form.",
+        variant: "destructive",
+      });
+      return;
+    }
     setStep("template");
   };
 
@@ -98,10 +123,13 @@ export const CreateFormDialog = ({
 
   const handleClose = () => {
     onOpenChange(false);
-    setTitle("");
-    setDescription("");
-    setStep("info");
-    setSelectedTemplate(null);
+    // Reset form state
+    setTimeout(() => {
+      setTitle("");
+      setDescription("");
+      setStep("info");
+      setSelectedTemplate(null);
+    }, 200);
   };
 
   return (
@@ -111,6 +139,11 @@ export const CreateFormDialog = ({
           <DialogTitle className="text-2xl">
             {step === "info" ? "Create a new form" : "Choose a template"}
           </DialogTitle>
+          <DialogDescription>
+            {step === "info" 
+              ? "Give your form a name and optional description." 
+              : "Select a template or start with a blank form."}
+          </DialogDescription>
         </DialogHeader>
         
         {step === "info" ? (
@@ -181,7 +214,7 @@ export const CreateFormDialog = ({
               <Button
                 type="button"
                 onClick={handleSubmit}
-                disabled={!selectedTemplate || isPending}
+                disabled={isPending}
               >
                 {isPending ? "Creating..." : "Create Form"}
               </Button>

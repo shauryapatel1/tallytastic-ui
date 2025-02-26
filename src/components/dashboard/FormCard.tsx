@@ -10,7 +10,7 @@ import {
 import { Form } from "@/lib/types";
 import { formatDistanceToNow } from "date-fns";
 import { Link } from "react-router-dom";
-import { Copy, Eye, Pencil, MoreHorizontal, Clock } from "lucide-react";
+import { Copy, Eye, Pencil, MoreHorizontal, Clock, Check } from "lucide-react";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -19,12 +19,14 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { cn } from "@/lib/utils";
+import { useToast } from "@/hooks/use-toast";
 
 interface FormCardProps {
   form: Form;
 }
 
 export const FormCard = ({ form }: FormCardProps) => {
+  const { toast } = useToast();
   const formattedDate = formatDistanceToNow(new Date(form.updated_at), { 
     addSuffix: true 
   });
@@ -39,12 +41,40 @@ export const FormCard = ({ form }: FormCardProps) => {
     return Math.floor(Math.random() * 50);
   };
 
+  const handleCopyLink = () => {
+    // In a real app, this would be the actual sharable link
+    const shareableLink = `${window.location.origin}/f/${form.id}`;
+    navigator.clipboard.writeText(shareableLink)
+      .then(() => {
+        toast({
+          title: "Link copied!",
+          description: "Form link copied to clipboard",
+        });
+      })
+      .catch(() => {
+        toast({
+          title: "Failed to copy link",
+          description: "Please try again",
+          variant: "destructive",
+        });
+      });
+  };
+
+  const handleDeleteForm = () => {
+    // This would call an API to delete the form in a real app
+    toast({
+      title: "Not implemented",
+      description: "Form deletion is not implemented in this demo",
+    });
+  };
+
   return (
     <Card className="overflow-hidden transition-all hover:shadow-md group">
       <CardHeader className="pb-2">
         <div className="flex items-start justify-between">
           <div className="flex items-center space-x-2">
-            <div className={cn("h-2 w-2 rounded-full", getStatusColor())} />
+            <div className={cn("h-2 w-2 rounded-full", getStatusColor())} 
+                 title={form.published ? "Published" : "Draft"} />
             <CardTitle className="line-clamp-1 text-xl">{form.title}</CardTitle>
           </div>
           <DropdownMenu>
@@ -71,12 +101,12 @@ export const FormCard = ({ form }: FormCardProps) => {
                   Preview
                 </Link>
               </DropdownMenuItem>
-              <DropdownMenuItem>
+              <DropdownMenuItem onClick={handleCopyLink}>
                 <Copy className="mr-2 h-4 w-4" />
                 Copy Link
               </DropdownMenuItem>
               <DropdownMenuSeparator />
-              <DropdownMenuItem className="text-destructive">
+              <DropdownMenuItem className="text-destructive" onClick={handleDeleteForm}>
                 Delete
               </DropdownMenuItem>
             </DropdownMenuContent>
@@ -111,7 +141,7 @@ export const FormCard = ({ form }: FormCardProps) => {
             Preview
           </Link>
         </Button>
-        <Button variant="ghost" size="sm" className="h-8">
+        <Button variant="ghost" size="sm" className="h-8" onClick={handleCopyLink}>
           <Copy className="mr-2 h-3 w-3" />
           Share
         </Button>

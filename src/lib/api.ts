@@ -3,13 +3,18 @@ import { supabase } from "./supabase";
 import { Form } from "./types";
 
 export async function getForms() {
-  const { data, error } = await supabase
-    .from("forms")
-    .select("*")
-    .order("created_at", { ascending: false });
+  try {
+    const { data, error } = await supabase
+      .from("forms")
+      .select("*")
+      .order("created_at", { ascending: false });
 
-  if (error) throw error;
-  return data as Form[];
+    if (error) throw error;
+    return data as Form[];
+  } catch (error) {
+    console.error("Error fetching forms:", error);
+    throw error;
+  }
 }
 
 export async function createForm({
@@ -21,23 +26,72 @@ export async function createForm({
   description: string;
   templateId?: string;
 }) {
-  // This would eventually get template data from a templates API
-  const templateFields = templateId ? getTemplateFields(templateId) : [];
+  try {
+    console.log("Creating form with template:", templateId);
+    
+    // This would eventually get template data from a templates API
+    const templateFields = templateId ? getTemplateFields(templateId) : [];
 
-  const { data, error } = await supabase
-    .from("forms")
-    .insert([
-      {
-        title,
-        description,
-        fields: templateFields,
-      },
-    ])
-    .select()
-    .single();
+    const { data, error } = await supabase
+      .from("forms")
+      .insert([
+        {
+          title,
+          description,
+          fields: templateFields,
+        },
+      ])
+      .select()
+      .single();
 
-  if (error) throw error;
-  return data as Form;
+    if (error) {
+      console.error("Supabase error creating form:", error);
+      throw error;
+    }
+    
+    if (!data) {
+      throw new Error("No data returned from form creation");
+    }
+    
+    console.log("Form created successfully:", data);
+    return data as Form;
+  } catch (error) {
+    console.error("Error creating form:", error);
+    throw error;
+  }
+}
+
+export async function getForm(id: string) {
+  try {
+    const { data, error } = await supabase
+      .from("forms")
+      .select("*")
+      .eq("id", id)
+      .single();
+
+    if (error) throw error;
+    return data as Form;
+  } catch (error) {
+    console.error(`Error fetching form ${id}:`, error);
+    throw error;
+  }
+}
+
+export async function updateForm(id: string, updates: Partial<Form>) {
+  try {
+    const { data, error } = await supabase
+      .from("forms")
+      .update(updates)
+      .eq("id", id)
+      .select()
+      .single();
+
+    if (error) throw error;
+    return data as Form;
+  } catch (error) {
+    console.error(`Error updating form ${id}:`, error);
+    throw error;
+  }
 }
 
 // Helper function to get template fields
