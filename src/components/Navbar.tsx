@@ -17,9 +17,9 @@ export const Navbar = () => {
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
 
-  const scrollToFeatures = (e: React.MouseEvent) => {
+  const scrollToSection = (e: React.MouseEvent, sectionId: string) => {
     e.preventDefault();
-    document.getElementById('features')?.scrollIntoView({ behavior: 'smooth' });
+    document.getElementById(sectionId)?.scrollIntoView({ behavior: 'smooth' });
   };
 
   return (
@@ -41,17 +41,32 @@ export const Navbar = () => {
           <div className="hidden md:flex items-center space-x-8">
             <a 
               href="#features" 
-              onClick={scrollToFeatures}
+              onClick={(e) => scrollToSection(e, 'features')}
               className="text-sm hover:text-primary/80 transition-colors"
             >
               Features
             </a>
-            <span className="text-sm text-primary/40 cursor-not-allowed">
-              Templates
-            </span>
-            <span className="text-sm text-primary/40 cursor-not-allowed">
+            <a 
+              href="#pricing" 
+              onClick={(e) => scrollToSection(e, 'pricing')}
+              className="text-sm hover:text-primary/80 transition-colors"
+            >
               Pricing
-            </span>
+            </a>
+            <a 
+              href="#testimonials" 
+              onClick={(e) => scrollToSection(e, 'testimonials')}
+              className="text-sm hover:text-primary/80 transition-colors"
+            >
+              Testimonials
+            </a>
+            <a 
+              href="#faq" 
+              onClick={(e) => scrollToSection(e, 'faq')}
+              className="text-sm hover:text-primary/80 transition-colors"
+            >
+              FAQ
+            </a>
           </div>
           <div className="flex items-center space-x-4">
             {session ? (
