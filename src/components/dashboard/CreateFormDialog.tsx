@@ -210,4 +210,78 @@ export const CreateFormDialog = ({
                   id="description"
                   placeholder="Enter a description for your form"
                   value={description}
-                  onChange={(e) => setDescription(e.target.
+                  onChange={(e) => setDescription(e.target.value)}
+                  className="resize-none"
+                />
+              </div>
+              <div className="flex justify-end">
+                <Button type="submit" disabled={isPending}>
+                  Next <ChevronLeft className="ml-2 h-4 w-4 rotate-180" />
+                </Button>
+              </div>
+            </form>
+          ) : (
+            <div className="space-y-6">
+              <div className="flex items-center justify-between">
+                <Button variant="ghost" onClick={handleBack} className="gap-2">
+                  <ChevronLeft className="h-4 w-4" />
+                  Back
+                </Button>
+                <div className="flex gap-2">
+                  {["popular", "basic", "feedback", "data"].map((category) => (
+                    <Button
+                      key={category}
+                      size="sm"
+                      variant={templateCategory === category ? "default" : "ghost"}
+                      onClick={() => setTemplateCategory(category as "basic" | "feedback" | "data" | "popular")}
+                    >
+                      {category.charAt(0).toUpperCase() + category.slice(1)}
+                    </Button>
+                  ))}
+                </div>
+              </div>
+              
+              <div className="grid grid-cols-2 gap-4">
+                {filteredTemplates.map((template) => (
+                  <div
+                    key={template.id}
+                    className={`p-4 rounded-lg border-2 cursor-pointer transition-all hover:shadow-md ${
+                      selectedTemplate === template.id
+                        ? "border-indigo-600 bg-indigo-50"
+                        : "border-transparent bg-gray-50 hover:border-gray-200"
+                    }`}
+                    onClick={() => setSelectedTemplate(template.id)}
+                  >
+                    <div className="flex items-start gap-3">
+                      {template.icon}
+                      <div>
+                        <h3 className="font-medium">{template.name}</h3>
+                        <p className="text-sm text-gray-500 mt-1">
+                          {template.description}
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+              
+              <div className="flex justify-end">
+                <Button
+                  onClick={handleSubmit}
+                  disabled={!selectedTemplate || isPending}
+                >
+                  {isPending ? (
+                    <SparklesIcon className="mr-2 h-4 w-4 animate-spin" />
+                  ) : (
+                    <SparklesIcon className="mr-2 h-4 w-4" />
+                  )}
+                  Create Form
+                </Button>
+              </div>
+            </div>
+          )}
+        </div>
+      </DialogContent>
+    </Dialog>
+  );
+};
