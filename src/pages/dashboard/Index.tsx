@@ -25,21 +25,18 @@ export default function Dashboard() {
   
   const { data: forms, isLoading, error } = useQuery({
     queryKey: ["forms"],
-    queryFn: getForms,
-    meta: {
-      errorMessage: "Failed to load forms"
-    },
-    onSettled: (data, error) => {
-      if (error) {
-        console.error("Error fetching forms:", error);
-        toast({
-          title: "Error loading forms",
-          description: "There was a problem loading your forms. Please try again.",
-          variant: "destructive",
-        });
-      }
-    }
+    queryFn: getForms
   });
+
+  // Show error toast if there's an error
+  if (error && !forms) {
+    console.error("Error fetching forms:", error);
+    toast({
+      title: "Error loading forms",
+      description: "There was a problem loading your forms. Please try again.",
+      variant: "destructive",
+    });
+  }
 
   const filteredForms = forms?.filter(form => 
     form.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
