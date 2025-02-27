@@ -18,3 +18,34 @@ export interface FormField {
   options?: string[];
   placeholder?: string;
 }
+
+export interface Integration {
+  id: string;
+  name: string;
+  enabled: boolean;
+  configured: boolean;
+  settings: Record<string, any>;
+}
+
+export interface FormTheme {
+  primaryColor: string;
+  backgroundColor: string;
+  fontFamily: string;
+  borderRadius: number;
+  logo?: string;
+}
+
+export interface FormSettings {
+  notifications: {
+    onSubmission: boolean;
+    emailAddresses: string[];
+  };
+  behavior: {
+    redirectUrl?: string;
+    successMessage?: string;
+    allowMultipleSubmissions: boolean;
+    captchaEnabled: boolean;
+  };
+  theme: FormTheme;
+  integrations: string[]; // IDs of enabled integrations for this form
+}
