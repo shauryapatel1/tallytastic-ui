@@ -7,19 +7,29 @@ import { Pricing } from "@/components/Pricing";
 import { FAQ } from "@/components/FAQ";
 import { CTA } from "@/components/CTA";
 import { Footer } from "@/components/Footer";
+import { UseCaseDemo } from "@/components/UseCaseDemo";
+import { Integrations } from "@/components/Integrations";
+import { motion } from "framer-motion";
 
 const Index = () => {
   return (
-    <div className="min-h-screen bg-background">
+    <motion.div 
+      className="min-h-screen bg-background"
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      transition={{ duration: 0.5 }}
+    >
       <Navbar />
       <Hero />
       <Features />
+      <UseCaseDemo />
+      <Integrations />
       <Testimonials />
       <Pricing />
       <FAQ />
       <CTA />
       <Footer />
-    </div>
+    </motion.div>
   );
 };
 
