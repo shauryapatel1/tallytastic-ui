@@ -2,55 +2,55 @@
 import { motion } from "framer-motion";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { ArrowRight } from "lucide-react";
+import { ArrowRight, Zap, CreditCard, Mail, BarChart, MessageSquare, FileSpreadsheet, Building2, LineChart } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 
 const integrations = [
   {
     name: "Zapier",
-    logo: "https://cdn.zapier.com/zapier/images/logos/zapier-logo.svg",
+    icon: <Zap className="h-8 w-8 text-orange-500" />,
     description: "Connect to 5,000+ apps",
     category: "automation"
   },
   {
     name: "Stripe",
-    logo: "https://upload.wikimedia.org/wikipedia/commons/b/ba/Stripe_Logo%2C_revised_2016.svg",
+    icon: <CreditCard className="h-8 w-8 text-purple-600" />,
     description: "Accept payments",
     category: "payment"
   },
   {
     name: "Mailchimp",
-    logo: "https://upload.wikimedia.org/wikipedia/commons/thumb/7/72/Mailchimp_logo.svg/2560px-Mailchimp_logo.svg.png",
+    icon: <Mail className="h-8 w-8 text-yellow-500" />,
     description: "Email marketing",
     category: "marketing"
   },
   {
     name: "Google Analytics",
-    logo: "https://upload.wikimedia.org/wikipedia/commons/thumb/8/89/Google_Analytics_logo.svg/1200px-Google_Analytics_logo.svg.png",
+    icon: <BarChart className="h-8 w-8 text-blue-500" />,
     description: "Track form performance",
     category: "analytics"
   },
   {
     name: "Slack",
-    logo: "https://upload.wikimedia.org/wikipedia/commons/thumb/d/d5/Slack_icon_2019.svg/2048px-Slack_icon_2019.svg.png",
+    icon: <MessageSquare className="h-8 w-8 text-green-500" />,
     description: "Get notifications",
     category: "notification"
   },
   {
     name: "Google Sheets",
-    logo: "https://upload.wikimedia.org/wikipedia/commons/thumb/3/30/Google_Sheets_logo_%282014-2020%29.svg/1498px-Google_Sheets_logo_%282014-2020%29.svg.png",
+    icon: <FileSpreadsheet className="h-8 w-8 text-green-600" />,
     description: "Store responses",
     category: "data"
   },
   {
     name: "Salesforce",
-    logo: "https://upload.wikimedia.org/wikipedia/commons/thumb/f/f9/Salesforce.com_logo.svg/2560px-Salesforce.com_logo.svg.png",
+    icon: <Building2 className="h-8 w-8 text-blue-600" />,
     description: "CRM integration",
     category: "crm"
   },
   {
     name: "HubSpot",
-    logo: "https://upload.wikimedia.org/wikipedia/commons/thumb/9/93/Hubspot_Logo.svg/2560px-Hubspot_Logo.svg.png",
+    icon: <LineChart className="h-8 w-8 text-orange-600" />,
     description: "Marketing automation",
     category: "marketing"
   },
@@ -88,15 +88,12 @@ export const Integrations = () => {
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
               transition={{ delay: index * 0.05 }}
-              className="bg-white rounded-lg shadow-sm hover:shadow-md transition-all p-6 text-center flex flex-col items-center justify-center"
+              className="bg-white rounded-lg shadow-sm hover:shadow-md transition-all p-6 text-center flex flex-col items-center justify-center cursor-pointer"
+              onClick={() => navigate("/auth")}
             >
               <div className="w-16 h-16 mb-4 relative">
                 <div className="w-full h-full bg-gray-100 rounded-full flex items-center justify-center p-3">
-                  <img 
-                    src={integration.logo} 
-                    alt={integration.name} 
-                    className="max-w-full max-h-full object-contain"
-                  />
+                  {integration.icon}
                 </div>
                 <div className="absolute -bottom-1 -right-1 bg-indigo-100 text-indigo-700 text-xs px-2 py-0.5 rounded-full">
                   {integration.category}
