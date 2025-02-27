@@ -3,7 +3,7 @@ import {
   FileText, Clipboard, MessageSquare, CreditCard, 
   CalendarDays, BarChart, Users, ShoppingCart, 
   BookOpen, GraduationCap, Award, PieChart,
-  Job, BriefcaseBusiness, FileQuestion, ClipboardCheck, 
+  BriefcaseBusiness, FileQuestion, ClipboardCheck, 
   HandHeart, Star, Building2, Pizza
 } from "lucide-react";
 import { TemplateType } from "./types";
