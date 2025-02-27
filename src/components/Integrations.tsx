@@ -2,7 +2,7 @@
 import { motion } from "framer-motion";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { ArrowRight, Zap, CreditCard, Mail, BarChart, MessageSquare, FileSpreadsheet, Building2, LineChart } from "lucide-react";
+import { ArrowRight } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { useToast } from "@/hooks/use-toast";
 
@@ -13,6 +13,8 @@ interface IntegrationType {
   icon: React.ReactNode;
   description: string;
   category: string;
+  logoUrl: string;
+  color: string;
 }
 
 // Align our integration list with the dashboard integrations
@@ -20,58 +22,74 @@ const integrations: IntegrationType[] = [
   {
     id: "zapier",
     name: "Zapier",
-    icon: <Zap className="h-8 w-8 text-orange-500" />,
+    icon: null,
     description: "Connect to 5,000+ apps",
-    category: "automation"
+    category: "automation",
+    logoUrl: "https://cdn.zapier.com/zapier/images/logos/zapier-logo.svg",
+    color: "#FF4A00"
   },
   {
     id: "stripe",
     name: "Stripe",
-    icon: <CreditCard className="h-8 w-8 text-purple-600" />,
+    icon: null,
     description: "Accept payments",
-    category: "payment"
+    category: "payment",
+    logoUrl: "https://upload.wikimedia.org/wikipedia/commons/b/ba/Stripe_Logo%2C_revised_2016.svg",
+    color: "#6772E5"
   },
   {
     id: "mailchimp",
     name: "Mailchimp",
-    icon: <Mail className="h-8 w-8 text-yellow-500" />,
+    icon: null,
     description: "Email marketing",
-    category: "marketing"
+    category: "marketing",
+    logoUrl: "https://cdn-images.mailchimp.com/monkey_rewards/grow-business-banner-new-logo.png",
+    color: "#FFE01B"
   },
   {
     id: "google_analytics",
     name: "Google Analytics",
-    icon: <BarChart className="h-8 w-8 text-blue-500" />,
+    icon: null,
     description: "Track form performance",
-    category: "analytics"
+    category: "analytics",
+    logoUrl: "https://www.gstatic.com/analytics-suite/header/suite/v2/ic_analytics.svg",
+    color: "#E37400"
   },
   {
     id: "slack",
     name: "Slack",
-    icon: <MessageSquare className="h-8 w-8 text-green-500" />,
+    icon: null,
     description: "Get notifications",
-    category: "notification"
+    category: "notification",
+    logoUrl: "https://a.slack-edge.com/80588/marketing/img/meta/slack_hash_128.png",
+    color: "#4A154B"
   },
   {
     id: "google_sheets",
     name: "Google Sheets",
-    icon: <FileSpreadsheet className="h-8 w-8 text-green-600" />,
+    icon: null,
     description: "Store responses",
-    category: "data"
+    category: "data",
+    logoUrl: "https://upload.wikimedia.org/wikipedia/commons/3/30/Google_Sheets_logo_%282014-2020%29.svg",
+    color: "#0F9D58"
   },
   {
     id: "salesforce",
     name: "Salesforce",
-    icon: <Building2 className="h-8 w-8 text-blue-600" />,
+    icon: null,
     description: "CRM integration",
-    category: "crm"
+    category: "crm",
+    logoUrl: "https://c1.sfdcstatic.com/content/dam/sfdc-docs/www/logos/logo-salesforce.svg",
+    color: "#00A1E0"
   },
   {
     id: "hubspot",
     name: "HubSpot",
-    icon: <LineChart className="h-8 w-8 text-orange-600" />,
+    icon: null,
     description: "Marketing automation",
-    category: "marketing"
+    category: "marketing",
+    logoUrl: "https://www.hubspot.com/hubfs/assets/hubspot.com/style-guide/brand-guidelines/guidelines_the-logo.svg",
+    color: "#FF7A59"
   },
 ];
 
@@ -126,8 +144,31 @@ export const Integrations = () => {
               onClick={() => handleIntegrationClick(integration)}
             >
               <div className="w-16 h-16 mb-4 relative">
-                <div className="w-full h-full bg-gray-100 rounded-full flex items-center justify-center p-3">
-                  {integration.icon}
+                <div 
+                  className="w-full h-full rounded-full flex items-center justify-center p-2 bg-white shadow-sm"
+                  style={{ 
+                    backgroundColor: integration.color === "#FFFFFF" ? "#F8F9FA" : `${integration.color}15` 
+                  }}
+                >
+                  <div className="relative w-12 h-12 flex items-center justify-center">
+                    <img
+                      src={integration.logoUrl}
+                      alt={`${integration.name} logo`}
+                      className="max-w-full max-h-full object-contain"
+                      onError={(e) => {
+                        // Fallback to the first letter of the name if image fails to load
+                        e.currentTarget.style.display = 'none';
+                        const parent = e.currentTarget.parentElement;
+                        if (parent) {
+                          const letter = document.createElement('div');
+                          letter.className = 'text-xl font-bold';
+                          letter.style.color = integration.color;
+                          letter.textContent = integration.name[0];
+                          parent.appendChild(letter);
+                        }
+                      }}
+                    />
+                  </div>
                 </div>
                 <div className="absolute -bottom-1 -right-1 bg-indigo-100 text-indigo-700 text-xs px-2 py-0.5 rounded-full">
                   {integration.category}
