@@ -145,6 +145,104 @@ function getTemplateFields(templateId: string) {
           placeholder: "Please let us know your thoughts",
         },
       ];
+    case "payment":
+      return [
+        {
+          id: crypto.randomUUID(),
+          type: "text",
+          label: "Full Name",
+          required: true,
+          placeholder: "Enter your full name",
+        },
+        {
+          id: crypto.randomUUID(),
+          type: "email",
+          label: "Email Address",
+          required: true,
+          placeholder: "Enter your email address",
+        },
+        {
+          id: crypto.randomUUID(),
+          type: "select",
+          label: "Payment Method",
+          required: true,
+          options: ["Credit Card", "PayPal", "Bank Transfer"],
+        },
+        {
+          id: crypto.randomUUID(),
+          type: "number",
+          label: "Amount",
+          required: true,
+          placeholder: "Enter amount",
+        },
+      ];
+    case "event":
+      return [
+        {
+          id: crypto.randomUUID(),
+          type: "text",
+          label: "Full Name",
+          required: true,
+          placeholder: "Enter your full name",
+        },
+        {
+          id: crypto.randomUUID(),
+          type: "email",
+          label: "Email Address",
+          required: true,
+          placeholder: "Enter your email address",
+        },
+        {
+          id: crypto.randomUUID(),
+          type: "select",
+          label: "Number of Attendees",
+          required: true,
+          options: ["1", "2", "3", "4", "5+"],
+        },
+        {
+          id: crypto.randomUUID(),
+          type: "checkbox",
+          label: "I agree to the terms and conditions",
+          required: true,
+        },
+      ];
+    case "donation":
+      return [
+        {
+          id: crypto.randomUUID(),
+          type: "text",
+          label: "Full Name",
+          required: true,
+          placeholder: "Enter your full name",
+        },
+        {
+          id: crypto.randomUUID(),
+          type: "email",
+          label: "Email Address",
+          required: true,
+          placeholder: "Enter your email address",
+        },
+        {
+          id: crypto.randomUUID(),
+          type: "select",
+          label: "Donation Amount",
+          required: true,
+          options: ["$10", "$25", "$50", "$100", "Other"],
+        },
+        {
+          id: crypto.randomUUID(),
+          type: "checkbox",
+          label: "Make this a monthly donation",
+          required: false,
+        },
+        {
+          id: crypto.randomUUID(),
+          type: "textarea",
+          label: "Comments",
+          required: false,
+          placeholder: "Any additional comments",
+        },
+      ];
     default:
       return [];
   }
