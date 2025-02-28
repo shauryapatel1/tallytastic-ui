@@ -200,7 +200,7 @@ export const UseCaseDemo = () => {
                 muted 
                 playsInline
                 className="w-full rounded-xl"
-                poster="https://img.freepik.com/free-vector/gradient-ui-ux-background_23-2149052117.jpg?w=1380&t=st=1701978969~exp=1701979569~hmac=33c8efe8ae0ee88582cbcdc91da10bce9e3c06004cb9a58384536d1e04226f48"
+                poster="https://images.unsplash.com/photo-1486312338219-ce68d2c6f44d"
               >
                 <source src="https://static.vecteezy.com/system/resources/previews/022/128/626/mp4/user-testing-app-mobile-app-ui-ux-design-screen-recording-mobile-phone-free-video.mp4" type="video/mp4" />
                 Your browser does not support the video tag.
