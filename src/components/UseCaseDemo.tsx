@@ -14,12 +14,21 @@ import {
   CreditCard,
   ChevronRight 
 } from "lucide-react";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 
 export const UseCaseDemo = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
   const [activeDemo, setActiveDemo] = useState<number>(0);
+  
+  // Auto-advance demo with proper useEffect
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setActiveDemo((prev) => (prev + 1) % demos.length);
+    }, 5000);
+    
+    return () => clearTimeout(timer);
+  }, [activeDemo]);
   
   const handleTryTemplate = (templateName: string) => {
     localStorage.setItem('selectedTemplate', templateName);
@@ -213,7 +222,8 @@ export const UseCaseDemo = () => {
             transition={{ duration: 0.5, delay: 0.2 }}
             className="lg:pl-6"
           >
-            <div className="relative rounded-xl overflow-hidden shadow-2xl border border-indigo-100 bg-white">
+            <div className="relative rounded-xl overflow-hidden shadow-2xl border border-indigo-100 bg-white h-[400px]">
+              {/* Navigation dots */}
               <div className="absolute top-4 right-4 z-10 flex gap-2">
                 {demos.map((_, index) => (
                   <button
@@ -226,6 +236,7 @@ export const UseCaseDemo = () => {
                 ))}
               </div>
               
+              {/* Demos */}
               {demos.map((demo, index) => (
                 <div
                   key={index}
@@ -246,13 +257,6 @@ export const UseCaseDemo = () => {
                   </div>
                 </div>
               ))}
-              
-              {/* Auto-advance demo */}
-              <div className="invisible">
-                {setTimeout(() => {
-                  setActiveDemo((prev) => (prev + 1) % demos.length);
-                }, 5000)}
-              </div>
             </div>
           </motion.div>
         </div>
