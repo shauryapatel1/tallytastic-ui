@@ -14,10 +14,12 @@ import {
   CreditCard,
   ChevronRight 
 } from "lucide-react";
+import { useState } from "react";
 
 export const UseCaseDemo = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
+  const [activeDemo, setActiveDemo] = useState<number>(0);
   
   const handleTryTemplate = (templateName: string) => {
     localStorage.setItem('selectedTemplate', templateName);
@@ -78,6 +80,24 @@ export const UseCaseDemo = () => {
       title: "Payment collection",
       description: "Accept payments directly through your forms with Stripe integration.",
       useCase: "A small business increased product sales by 75% by embedding payment forms on their website."
+    }
+  ];
+
+  const demos = [
+    {
+      title: "Creating a form with AI",
+      description: "Generate a complete form by describing what you need in natural language",
+      image: "https://cdn.dribbble.com/users/1187836/screenshots/17853175/media/83357048adf0db2e33bbc7fcee3a9cfb.gif"
+    },
+    {
+      title: "Building with drag and drop",
+      description: "Easily arrange form elements with our intuitive builder",
+      image: "https://cdn.dribbble.com/users/702789/screenshots/17885355/media/bc1061527c28c3867a73d3735231e49d.gif"
+    },
+    {
+      title: "Analyzing responses in real-time",
+      description: "Get instant insights from your form submissions",
+      image: "https://cdn.dribbble.com/users/2478333/screenshots/16675712/media/ad69d120a9fdc4713f2039486cd8a930.gif"
     }
   ];
   
@@ -194,22 +214,44 @@ export const UseCaseDemo = () => {
             className="lg:pl-6"
           >
             <div className="relative rounded-xl overflow-hidden shadow-2xl border border-indigo-100 bg-white">
-              <video 
-                autoPlay 
-                loop 
-                muted 
-                playsInline
-                className="w-full rounded-xl"
-                poster="https://images.unsplash.com/photo-1486312338219-ce68d2c6f44d"
-              >
-                <source src="https://static.vecteezy.com/system/resources/previews/022/128/626/mp4/user-testing-app-mobile-app-ui-ux-design-screen-recording-mobile-phone-free-video.mp4" type="video/mp4" />
-                Your browser does not support the video tag.
-              </video>
-              <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent flex items-end p-6">
-                <div className="text-white">
-                  <h3 className="text-xl font-medium mb-2">AI-Powered Form Creation</h3>
-                  <p className="text-sm text-white/80">Create professional forms instantly with AI assistance</p>
+              <div className="absolute top-4 right-4 z-10 flex gap-2">
+                {demos.map((_, index) => (
+                  <button
+                    key={index}
+                    className={`w-2.5 h-2.5 rounded-full transition-all ${
+                      activeDemo === index ? "bg-white scale-125" : "bg-white/50"
+                    }`}
+                    onClick={() => setActiveDemo(index)}
+                  />
+                ))}
+              </div>
+              
+              {demos.map((demo, index) => (
+                <div
+                  key={index}
+                  className={`absolute inset-0 transition-opacity duration-500 ${
+                    activeDemo === index ? "opacity-100 z-0" : "opacity-0 -z-10"
+                  }`}
+                >
+                  <img 
+                    src={demo.image} 
+                    alt={demo.title}
+                    className="w-full h-full object-cover"
+                  />
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/70 to-transparent flex items-end p-6">
+                    <div className="text-white">
+                      <h3 className="text-xl font-medium mb-2">{demo.title}</h3>
+                      <p className="text-sm text-white/80">{demo.description}</p>
+                    </div>
+                  </div>
                 </div>
+              ))}
+              
+              {/* Auto-advance demo */}
+              <div className="invisible">
+                {setTimeout(() => {
+                  setActiveDemo((prev) => (prev + 1) % demos.length);
+                }, 5000)}
               </div>
             </div>
           </motion.div>
