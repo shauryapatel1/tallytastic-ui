@@ -1,104 +1,108 @@
 
-import { createContext, useContext, useEffect, useState } from "react";
-import { supabase } from "./supabase";
-import { Session, User } from "@supabase/supabase-js";
-import { useNavigate } from "react-router-dom";
-import { toast } from "sonner";
+import React, { createContext, useContext, useState, ReactNode } from 'react';
 
-interface AuthContextType {
-  session: Session | null;
-  user: User | null;
-  signIn: (email: string, password: string) => Promise<void>;
-  signUp: (email: string, password: string) => Promise<void>;
-  signOut: () => Promise<void>;
-  loading: boolean;
+// Define the structure of the user object
+export interface User {
+  id: string;
+  email: string;
+  name: string;
+  avatar?: string;
 }
 
-const AuthContext = createContext<AuthContextType | undefined>(undefined);
+// Define the auth context type with isLoading property
+export interface AuthContextType {
+  user: User | null;
+  isAuthenticated: boolean;
+  isLoading: boolean; // Add the missing isLoading property
+  login: (email: string, password: string) => Promise<void>;
+  signup: (email: string, password: string, name: string) => Promise<void>;
+  logout: () => Promise<void>;
+}
 
-export function AuthProvider({ children }: { children: React.ReactNode }) {
-  const [session, setSession] = useState<Session | null>(null);
+// Create the auth context with a default value
+const AuthContext = createContext<AuthContextType>({
+  user: null,
+  isAuthenticated: false,
+  isLoading: false, // Initialize the isLoading property
+  login: async () => {},
+  signup: async () => {},
+  logout: async () => {},
+});
+
+// Custom hook for using the auth context
+export const useAuth = () => useContext(AuthContext);
+
+// Provider component that wraps your app and makes auth object available
+export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
   const [user, setUser] = useState<User | null>(null);
-  const [loading, setLoading] = useState(true);
-  const navigate = useNavigate();
+  const [isLoading, setIsLoading] = useState<boolean>(false);
 
-  useEffect(() => {
-    // Get initial session
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      setSession(session);
-      setUser(session?.user ?? null);
-      setLoading(false);
-    });
-
-    // Listen for auth changes
-    const {
-      data: { subscription },
-    } = supabase.auth.onAuthStateChange((_event, session) => {
-      setSession(session);
-      setUser(session?.user ?? null);
-      setLoading(false);
-    });
-
-    return () => subscription.unsubscribe();
-  }, []);
-
-  const signIn = async (email: string, password: string) => {
+  // Mock login function
+  const login = async (email: string, password: string) => {
+    setIsLoading(true);
     try {
-      const { error } = await supabase.auth.signInWithPassword({
+      // Simulate API request
+      await new Promise(resolve => setTimeout(resolve, 1000));
+      
+      // Mock user data
+      setUser({
+        id: '1',
         email,
-        password,
+        name: email.split('@')[0],
       });
-      if (error) throw error;
-      navigate("/dashboard");
-      toast.success("Successfully signed in!");
     } catch (error) {
-      toast.error(error instanceof Error ? error.message : "Failed to sign in");
+      console.error('Login error', error);
       throw error;
+    } finally {
+      setIsLoading(false);
     }
   };
 
-  const signUp = async (email: string, password: string) => {
+  // Mock signup function
+  const signup = async (email: string, password: string, name: string) => {
+    setIsLoading(true);
     try {
-      const { error } = await supabase.auth.signUp({
+      // Simulate API request
+      await new Promise(resolve => setTimeout(resolve, 1000));
+      
+      // Mock user data
+      setUser({
+        id: '1',
         email,
-        password,
+        name,
       });
-      if (error) throw error;
-      toast.success("Check your email to confirm your account!");
     } catch (error) {
-      toast.error(error instanceof Error ? error.message : "Failed to sign up");
+      console.error('Signup error', error);
       throw error;
+    } finally {
+      setIsLoading(false);
     }
   };
 
-  const signOut = async () => {
+  // Mock logout function
+  const logout = async () => {
+    setIsLoading(true);
     try {
-      const { error } = await supabase.auth.signOut();
-      if (error) throw error;
-      navigate("/");
-      toast.success("Successfully signed out!");
+      // Simulate API request
+      await new Promise(resolve => setTimeout(resolve, 500));
+      setUser(null);
     } catch (error) {
-      toast.error(error instanceof Error ? error.message : "Failed to sign out");
+      console.error('Logout error', error);
       throw error;
+    } finally {
+      setIsLoading(false);
     }
   };
 
+  // The value that will be available to consumers of this context
   const value = {
-    session,
     user,
-    signIn,
-    signUp,
-    signOut,
-    loading,
+    isAuthenticated: !!user,
+    isLoading,
+    login,
+    signup,
+    logout,
   };
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
-}
-
-export const useAuth = () => {
-  const context = useContext(AuthContext);
-  if (context === undefined) {
-    throw new Error("useAuth must be used within an AuthProvider");
-  }
-  return context;
 };

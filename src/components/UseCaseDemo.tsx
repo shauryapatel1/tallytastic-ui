@@ -1,4 +1,5 @@
-import { motion } from "framer-motion";
+
+import { motion, useInView, AnimatePresence } from "framer-motion";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { useNavigate } from "react-router-dom";
@@ -11,14 +12,20 @@ import {
   CheckCircle, 
   Upload, 
   CreditCard,
-  ChevronRight 
+  ChevronRight,
+  ArrowRight,
+  ArrowLeft,
+  Sparkles,
+  Zap
 } from "lucide-react";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 
 export const UseCaseDemo = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
   const [activeDemo, setActiveDemo] = useState<number>(0);
+  const containerRef = useRef<HTMLDivElement>(null);
+  const isInView = useInView(containerRef, { once: false, margin: "-100px" });
   
   // Auto-advance demo with proper useEffect
   useEffect(() => {
@@ -91,27 +98,35 @@ export const UseCaseDemo = () => {
     }
   ];
 
-  // Fix GIFs with working links to high-quality demo GIFs
+  // Animated demo content instead of GIFs
   const demos = [
     {
       title: "Creating a form with AI",
       description: "Generate a complete form by describing what you need in natural language",
-      image: "https://i.imgur.com/6TfpJ48.gif" // New GIF - AI form generation
+      color: "from-blue-500 to-purple-600"
     },
     {
       title: "Building with drag and drop",
       description: "Easily arrange form elements with our intuitive builder",
-      image: "https://i.imgur.com/V1Ia9bA.gif" // New GIF - drag and drop building
+      color: "from-indigo-500 to-pink-500"
     },
     {
       title: "Analyzing responses in real-time",
       description: "Get instant insights from your form submissions",
-      image: "https://i.imgur.com/jcBdUu9.gif" // New GIF - analytics dashboard
+      color: "from-green-400 to-teal-500"
     }
   ];
+
+  const nextDemo = () => {
+    setActiveDemo((prev) => (prev + 1) % demos.length);
+  };
+
+  const prevDemo = () => {
+    setActiveDemo((prev) => (prev - 1 + demos.length) % demos.length);
+  };
   
   return (
-    <section className="py-24 bg-gradient-to-b from-white to-indigo-50/30">
+    <section className="py-24 bg-gradient-to-b from-white to-indigo-50/30 overflow-hidden">
       <div className="container mx-auto px-4">
         <div className="max-w-3xl mx-auto text-center mb-16">
           <Badge variant="outline" className="px-3 py-1 border-indigo-200 text-indigo-700 bg-indigo-50 mb-4">
@@ -198,10 +213,17 @@ export const UseCaseDemo = () => {
                 <Button 
                   variant="default"
                   onClick={() => handleTryTemplate("contact")}
-                  className="bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 transition-all shadow-md hover:shadow-lg"
+                  className="bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 transition-all shadow-md hover:shadow-lg group"
                 >
-                  <MousePointerClick className="mr-2 h-4 w-4" />
-                  Try AI Form Builder
+                  <MousePointerClick className="mr-2 h-4 w-4 group-hover:animate-bounce" />
+                  <span>Try AI Form Builder</span>
+                  <motion.span
+                    className="ml-1"
+                    animate={{ x: [0, 3, 0] }}
+                    transition={{ repeat: Infinity, duration: 1.5 }}
+                  >
+                    <Sparkles className="h-4 w-4" />
+                  </motion.span>
                 </Button>
                 <Button 
                   variant="outline"
@@ -216,51 +238,237 @@ export const UseCaseDemo = () => {
           </motion.div>
           
           <motion.div
+            ref={containerRef}
             initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
+            animate={isInView ? { opacity: 1, y: 0 } : { opacity: 0, y: 20 }}
             transition={{ duration: 0.5, delay: 0.2 }}
-            className="lg:pl-6"
+            className="lg:pl-6 relative"
           >
             <div className="relative rounded-xl overflow-hidden shadow-2xl border border-indigo-100 bg-white h-[500px]">
               {/* Navigation dots */}
               <div className="absolute top-4 right-4 z-10 flex gap-2">
                 {demos.map((_, index) => (
-                  <button
+                  <motion.button
                     key={index}
                     className={`w-3 h-3 rounded-full transition-all ${
                       activeDemo === index ? "bg-white scale-125 shadow-md" : "bg-white/50"
                     }`}
                     onClick={() => setActiveDemo(index)}
+                    whileHover={{ scale: 1.2 }}
+                    whileTap={{ scale: 0.9 }}
                   />
                 ))}
               </div>
               
-              {/* Demos */}
-              {demos.map((demo, index) => (
-                <div
-                  key={index}
-                  className={`absolute inset-0 transition-all duration-500 ${
-                    activeDemo === index ? "opacity-100 z-0" : "opacity-0 -z-10"
-                  }`}
+              {/* Navigation arrows */}
+              <div className="absolute inset-y-0 left-4 z-10 flex items-center">
+                <motion.button
+                  onClick={prevDemo}
+                  className="w-10 h-10 rounded-full bg-white/20 backdrop-blur-sm flex items-center justify-center hover:bg-white/40 transition-colors"
+                  whileHover={{ scale: 1.1, boxShadow: "0 0 15px rgba(255,255,255,0.5)" }}
+                  whileTap={{ scale: 0.95 }}
                 >
-                  <img 
-                    src={demo.image} 
-                    alt={demo.title}
-                    className="w-full h-full object-cover"
-                    onError={(e) => {
-                      console.error(`Failed to load image: ${demo.image}`);
-                      e.currentTarget.src = "https://placehold.co/600x400/indigo/white?text=FormCraft+Demo";
-                    }}
-                  />
-                  <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/40 to-transparent flex items-end p-6">
-                    <div className="text-white">
-                      <h3 className="text-xl font-semibold mb-2">{demo.title}</h3>
-                      <p className="text-sm text-white/90">{demo.description}</p>
-                    </div>
+                  <ArrowLeft className="h-5 w-5 text-white" />
+                </motion.button>
+              </div>
+              
+              <div className="absolute inset-y-0 right-4 z-10 flex items-center">
+                <motion.button
+                  onClick={nextDemo}
+                  className="w-10 h-10 rounded-full bg-white/20 backdrop-blur-sm flex items-center justify-center hover:bg-white/40 transition-colors"
+                  whileHover={{ scale: 1.1, boxShadow: "0 0 15px rgba(255,255,255,0.5)" }}
+                  whileTap={{ scale: 0.95 }}
+                >
+                  <ArrowRight className="h-5 w-5 text-white" />
+                </motion.button>
+              </div>
+              
+              {/* Interactive Demo */}
+              <AnimatePresence mode="wait">
+                <motion.div
+                  key={activeDemo}
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  exit={{ opacity: 0 }}
+                  transition={{ duration: 0.5 }}
+                  className={`absolute inset-0 bg-gradient-to-br ${demos[activeDemo].color} p-6 flex flex-col justify-between`}
+                >
+                  <div className="space-y-4">
+                    <motion.div 
+                      initial={{ y: -20, opacity: 0 }}
+                      animate={{ y: 0, opacity: 1 }}
+                      transition={{ delay: 0.2, duration: 0.5 }}
+                      className="flex items-center gap-2"
+                    >
+                      <div className="w-3 h-3 rounded-full bg-white opacity-70"></div>
+                      <div className="w-3 h-3 rounded-full bg-white opacity-70"></div>
+                      <div className="w-3 h-3 rounded-full bg-white opacity-70"></div>
+                    </motion.div>
+                    
+                    <motion.div 
+                      className="h-12 bg-white/10 rounded-md backdrop-blur-sm w-2/3"
+                      initial={{ width: "20%" }}
+                      animate={{ width: "50%" }}
+                      transition={{ delay: 0.3, duration: 0.8 }}
+                    ></motion.div>
+                    
+                    {activeDemo === 0 && (
+                      <div className="space-y-3 mt-6">
+                        <motion.div
+                          initial={{ opacity: 0, y: 10 }}
+                          animate={{ opacity: 1, y: 0 }}
+                          transition={{ delay: 0.4, duration: 0.5 }}
+                          className="flex items-center gap-2"
+                        >
+                          <Zap className="h-5 w-5 text-white" />
+                          <div className="h-8 bg-white/10 rounded w-full max-w-[250px] backdrop-blur-sm"></div>
+                        </motion.div>
+                        
+                        {[1, 2, 3].map((_, i) => (
+                          <motion.div
+                            key={i}
+                            initial={{ opacity: 0, y: 10 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            transition={{ delay: 0.5 + (i * 0.2), duration: 0.5 }}
+                            className="h-16 bg-white/10 rounded-md backdrop-blur-sm w-full"
+                          ></motion.div>
+                        ))}
+                        
+                        <motion.div
+                          initial={{ opacity: 0, scale: 0.9 }}
+                          animate={{ opacity: 1, scale: 1 }}
+                          transition={{ delay: 1.2, duration: 0.5 }}
+                          className="flex justify-end"
+                        >
+                          <div className="h-10 w-40 bg-white rounded-md flex items-center justify-center">
+                            <motion.span 
+                              className="text-sm font-medium text-indigo-600 flex items-center" 
+                              animate={{ scale: [1, 1.05, 1] }}
+                              transition={{ repeat: Infinity, duration: 1.5 }}
+                            >
+                              <Sparkles className="h-4 w-4 mr-2" />
+                              Generate Form
+                            </motion.span>
+                          </div>
+                        </motion.div>
+                      </div>
+                    )}
+                    
+                    {activeDemo === 1 && (
+                      <div className="space-y-3 mt-6">
+                        <div className="grid grid-cols-3 gap-3">
+                          {[1, 2, 3, 4, 5, 6].map((_, i) => (
+                            <motion.div
+                              key={i}
+                              initial={{ opacity: 0, scale: 0.8 }}
+                              animate={{ opacity: 1, scale: 1 }}
+                              transition={{ delay: 0.3 + (i * 0.1), duration: 0.5 }}
+                              className="h-20 bg-white/10 rounded-md backdrop-blur-sm flex items-center justify-center cursor-move"
+                              whileHover={{ 
+                                y: -5, 
+                                boxShadow: "0 10px 25px -5px rgba(0,0,0,0.1)", 
+                                backgroundColor: "rgba(255,255,255,0.2)" 
+                              }}
+                              drag
+                              dragConstraints={{
+                                top: -50,
+                                right: 50,
+                                bottom: 50,
+                                left: -50,
+                              }}
+                            >
+                              <div className="h-6 w-6 bg-white/30 rounded-full"></div>
+                            </motion.div>
+                          ))}
+                        </div>
+                        
+                        <motion.div
+                          initial={{ opacity: 0, y: 20 }}
+                          animate={{ opacity: 1, y: 0 }}
+                          transition={{ delay: 1, duration: 0.5 }}
+                          className="h-32 mt-6 border-2 border-dashed border-white/30 rounded-lg flex items-center justify-center"
+                        >
+                          <motion.div
+                            animate={{ y: [0, -5, 0] }}
+                            transition={{ repeat: Infinity, duration: 1.5 }}
+                            className="text-white/70 flex flex-col items-center"
+                          >
+                            <MousePointerClick className="h-8 w-8 mb-2" />
+                            <span className="text-sm">Drag and drop form elements here</span>
+                          </motion.div>
+                        </motion.div>
+                      </div>
+                    )}
+                    
+                    {activeDemo === 2 && (
+                      <div className="space-y-4 mt-6">
+                        <div className="grid grid-cols-2 gap-4">
+                          {[1, 2, 3, 4].map((_, i) => (
+                            <motion.div
+                              key={i}
+                              initial={{ opacity: 0, y: 20 }}
+                              animate={{ opacity: 1, y: 0 }}
+                              transition={{ delay: 0.3 + (i * 0.1), duration: 0.5 }}
+                              className="h-24 bg-white/10 rounded-lg p-3 backdrop-blur-sm"
+                            >
+                              <div className="h-4 w-1/2 bg-white/20 rounded-sm mb-2"></div>
+                              <motion.div 
+                                className="h-8 bg-white/20 rounded-sm"
+                                initial={{ width: "30%" }}
+                                animate={{ width: ["30%", "80%", "60%"] }}
+                                transition={{ duration: 4, repeat: Infinity }}
+                              ></motion.div>
+                            </motion.div>
+                          ))}
+                        </div>
+                        
+                        <motion.div
+                          initial={{ opacity: 0, y: 20 }}
+                          animate={{ opacity: 1, y: 0 }}
+                          transition={{ delay: 0.8, duration: 0.5 }}
+                          className="h-32 bg-white/10 rounded-lg p-3 backdrop-blur-sm mt-4"
+                        >
+                          <div className="flex justify-between mb-2">
+                            <div className="h-4 w-1/4 bg-white/20 rounded-sm"></div>
+                            <div className="h-4 w-1/6 bg-white/20 rounded-sm"></div>
+                          </div>
+                          <div className="relative h-20">
+                            {[1, 2, 3, 4, 5].map((_, i) => (
+                              <motion.div
+                                key={i}
+                                className="absolute bottom-0 w-[8%] bg-white/40 rounded-sm"
+                                style={{ left: `${i * 20}%`, height: `${20 + Math.random() * 60}%` }}
+                                initial={{ height: 0 }}
+                                animate={{ height: `${20 + Math.random() * 60}%` }}
+                                transition={{ duration: 0.5, delay: 0.9 + (i * 0.1) }}
+                              ></motion.div>
+                            ))}
+                          </div>
+                        </motion.div>
+                      </div>
+                    )}
                   </div>
-                </div>
-              ))}
+                  
+                  <div className="text-white">
+                    <motion.h3 
+                      className="text-xl font-semibold mb-2"
+                      initial={{ opacity: 0, x: -20 }}
+                      animate={{ opacity: 1, x: 0 }}
+                      transition={{ delay: 0.2, duration: 0.5 }}
+                    >
+                      {demos[activeDemo].title}
+                    </motion.h3>
+                    <motion.p 
+                      className="text-sm text-white/80"
+                      initial={{ opacity: 0, x: -20 }}
+                      animate={{ opacity: 1, x: 0 }}
+                      transition={{ delay: 0.3, duration: 0.5 }}
+                    >
+                      {demos[activeDemo].description}
+                    </motion.p>
+                  </div>
+                </motion.div>
+              </AnimatePresence>
             </div>
           </motion.div>
         </div>
