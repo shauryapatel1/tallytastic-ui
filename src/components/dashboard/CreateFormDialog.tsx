@@ -1,5 +1,5 @@
 
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useToast } from "@/hooks/use-toast";
@@ -13,11 +13,50 @@ import {
 } from "@/components/ui/dialog";
 import { FormInfoStep } from "./form-templates/FormInfoStep";
 import { TemplateSelector } from "./form-templates/TemplateSelector";
-import { templates } from "./form-templates/templateData";
+import { Button } from "@/components/ui/button";
+import { Sparkles, Loader2, AlertCircle } from "lucide-react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Textarea } from "@/components/ui/textarea";
-import { Button } from "@/components/ui/button";
-import { Sparkles, Loader2 } from "lucide-react";
+import { motion, AnimatePresence } from "framer-motion";
+
+// Simplified template data
+const simplifiedTemplates = [
+  {
+    id: "blank",
+    name: "Blank Form",
+    description: "Start from scratch with a blank canvas",
+    icon: "📋",
+    category: "basic"
+  },
+  {
+    id: "contact",
+    name: "Contact Form",
+    description: "Basic contact information collection",
+    icon: "✉️",
+    category: "basic"
+  },
+  {
+    id: "survey",
+    name: "Feedback Survey",
+    description: "Get user feedback and ratings",
+    icon: "📊",
+    category: "feedback"
+  },
+  {
+    id: "event",
+    name: "Event Registration",
+    description: "Register attendees for your event",
+    icon: "🗓️",
+    category: "popular"
+  },
+  {
+    id: "payment",
+    name: "Payment Form",
+    description: "Collect payment details securely",
+    icon: "💳",
+    category: "data"
+  },
+];
 
 interface CreateFormDialogProps {
   open: boolean;
@@ -30,33 +69,17 @@ export const CreateFormDialog = ({
 }: CreateFormDialogProps) => {
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
-  const [step, setStep] = useState<"info" | "template" | "ai">("info");
+  const [step, setStep] = useState<"info" | "template" | "ai" | "builder">("info");
   const [selectedTemplate, setSelectedTemplate] = useState<string | null>(null);
   const [templateCategory, setTemplateCategory] = useState<"basic" | "feedback" | "data" | "popular">("popular");
   const [aiPrompt, setAiPrompt] = useState("");
-  const [selectedTab, setSelectedTab] = useState<"template" | "ai">("template");
+  const [selectedTab, setSelectedTab] = useState<"template" | "ai" | "builder">("template");
   const [isGenerating, setIsGenerating] = useState(false);
   const queryClient = useQueryClient();
   const navigate = useNavigate();
   const { toast } = useToast();
 
-  const filteredTemplates = templates.filter(t => t.category === templateCategory);
-
-  // Check for a selected template from localStorage (from landing page)
-  useEffect(() => {
-    const savedTemplate = localStorage.getItem('selectedTemplate');
-    if (savedTemplate) {
-      const foundTemplate = templates.find(t => t.id === savedTemplate);
-      if (foundTemplate) {
-        setSelectedTemplate(savedTemplate);
-        toast({
-          title: `${foundTemplate.name} template selected`,
-          description: "You can customize this template to fit your needs.",
-        });
-      }
-      localStorage.removeItem('selectedTemplate');
-    }
-  }, [toast]);
+  const filteredTemplates = simplifiedTemplates.filter(t => t.category === templateCategory);
 
   const { mutate: create, isPending } = useMutation({
     mutationFn: createForm,
@@ -116,6 +139,8 @@ export const CreateFormDialog = ({
     
     if (selectedTab === "ai") {
       setStep("ai");
+    } else if (selectedTab === "builder") {
+      setStep("builder");
     } else {
       setStep("template");
     }
@@ -153,46 +178,16 @@ export const CreateFormDialog = ({
       // Simulate AI generation
       setTimeout(() => {
         // In a real implementation, this would call an AI service
-        const generatedFormTitle = aiPrompt.split(" ").slice(0, 3).join(" ");
-        const formattedTitle = title || `${generatedFormTitle} Form`;
-        
-        // Simulate AI determining the best template type based on the prompt
-        const promptLowerCase = aiPrompt.toLowerCase();
-        let bestTemplate = "contact"; // Default template
-        
-        // Dictionary of keywords that map to template types
-        const keywords = {
-          feedback: ["feedback", "opinion", "rating", "review", "survey"],
-          contact: ["contact", "email", "reach", "message", "inquiry"],
-          payment: ["payment", "order", "purchase", "buy", "product"],
-          event: ["event", "registration", "signup", "join", "attend"],
-          donation: ["donation", "charity", "contribute", "give", "fundraising"],
-          quiz: ["quiz", "test", "assessment", "question", "knowledge"],
-          survey: ["survey", "poll", "feedback", "research", "data"],
-          lead_capture: ["lead", "prospect", "customer", "capture", "generate"]
-        };
-        
-        // Find the template with the most keyword matches in the prompt
-        let highestMatches = 0;
-        
-        for (const [template, words] of Object.entries(keywords)) {
-          const matches = words.filter(word => promptLowerCase.includes(word)).length;
-          if (matches > highestMatches) {
-            highestMatches = matches;
-            bestTemplate = template;
-          }
-        }
-        
         toast({
           title: "Form generated successfully!",
           description: "Your AI-generated form is ready to use.",
         });
         
-        // Create the form with the determined template
+        // Create the form
         create({ 
-          title: formattedTitle, 
+          title: title || `${aiPrompt.split(" ").slice(0, 3).join(" ")} Form`, 
           description: description || aiPrompt,
-          templateId: bestTemplate
+          templateId: "contact" // Default template for AI generation
         });
         
         setIsGenerating(false);
@@ -208,108 +203,185 @@ export const CreateFormDialog = ({
     }
   };
 
+  const formBuilderContent = (
+    <div className="space-y-6">
+      <div className="flex items-center justify-between">
+        <Button variant="ghost" onClick={handleBack} className="gap-2">
+          Back
+        </Button>
+      </div>
+      
+      <div className="border rounded-lg p-6 bg-gray-50">
+        <div className="flex items-center justify-center p-8 text-center">
+          <div>
+            <Sparkles className="h-12 w-12 text-indigo-500 mx-auto mb-4" />
+            <h3 className="text-lg font-medium">Form Builder</h3>
+            <p className="text-sm text-gray-500 mt-2 mb-6">
+              The drag and drop form builder is coming soon! This feature will allow you to visually build your form.
+            </p>
+            <Button onClick={() => {
+              toast({
+                title: "Coming Soon!",
+                description: "The drag and drop form builder will be available in the next update.",
+              });
+            }}>
+              Create Basic Form
+            </Button>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+
+  const dialogContentVariants = {
+    initial: { opacity: 0, y: 20 },
+    animate: { opacity: 1, y: 0 },
+    exit: { opacity: 0, y: -20 }
+  };
+
   return (
     <Dialog open={open} onOpenChange={handleClose}>
       <DialogContent className="sm:max-w-[650px] p-0 overflow-hidden">
         <div className="bg-gradient-to-r from-indigo-500 to-purple-600 text-white p-6">
           <DialogHeader>
             <DialogTitle className="text-2xl text-white">
-              {step === "info" ? "Create a new form" : step === "template" ? "Choose a template" : "AI Form Generator"}
+              {step === "info" ? "Create a new form" : 
+               step === "template" ? "Choose a template" : 
+               step === "ai" ? "AI Form Generator" : 
+               "Form Builder"}
             </DialogTitle>
             <DialogDescription className="text-white/80">
               {step === "info" 
                 ? "Start by giving your form a name and description" 
                 : step === "template"
                 ? "Select a template to jumpstart your form creation"
-                : "Describe the form you want to create and our AI will do the rest"}
+                : step === "ai"
+                ? "Describe the form you want to create and our AI will do the rest"
+                : "Build your form by adding elements"}
             </DialogDescription>
           </DialogHeader>
         </div>
         
-        <div className="p-6">
-          {step === "info" ? (
-            <>
-              <Tabs defaultValue="template" value={selectedTab} onValueChange={(value) => setSelectedTab(value as "template" | "ai")}>
-                <TabsList className="grid w-full grid-cols-2 mb-6">
-                  <TabsTrigger value="template">Use Template</TabsTrigger>
-                  <TabsTrigger value="ai">AI Generator</TabsTrigger>
-                </TabsList>
-              </Tabs>
-              <FormInfoStep
-                title={title}
-                setTitle={setTitle}
-                description={description}
-                setDescription={setDescription}
-                handleNext={handleNext}
+        <AnimatePresence mode="wait">
+          <motion.div 
+            key={step}
+            initial="initial"
+            animate="animate"
+            exit="exit"
+            variants={dialogContentVariants}
+            transition={{ duration: 0.3 }}
+            className="p-6"
+          >
+            {step === "info" ? (
+              <>
+                <Tabs defaultValue="template" value={selectedTab} onValueChange={(value) => setSelectedTab(value as "template" | "ai" | "builder")}>
+                  <TabsList className="grid w-full grid-cols-3 mb-6">
+                    <TabsTrigger value="template">Use Template</TabsTrigger>
+                    <TabsTrigger value="ai">AI Generator</TabsTrigger>
+                    <TabsTrigger value="builder">Form Builder</TabsTrigger>
+                  </TabsList>
+                </Tabs>
+                <FormInfoStep
+                  title={title}
+                  setTitle={setTitle}
+                  description={description}
+                  setDescription={setDescription}
+                  handleNext={handleNext}
+                  isPending={isPending}
+                />
+              </>
+            ) : step === "template" ? (
+              <TemplateSelector
+                selectedTemplate={selectedTemplate}
+                setSelectedTemplate={setSelectedTemplate}
+                templateCategory={templateCategory}
+                setTemplateCategory={setTemplateCategory}
+                filteredTemplates={filteredTemplates.map(t => ({
+                  ...t,
+                  icon: <div className="text-2xl">{t.icon}</div>
+                }))}
+                handleBack={handleBack}
+                handleSubmit={handleSubmit}
                 isPending={isPending}
               />
-            </>
-          ) : step === "template" ? (
-            <TemplateSelector
-              selectedTemplate={selectedTemplate}
-              setSelectedTemplate={setSelectedTemplate}
-              templateCategory={templateCategory}
-              setTemplateCategory={setTemplateCategory}
-              filteredTemplates={filteredTemplates}
-              handleBack={handleBack}
-              handleSubmit={handleSubmit}
-              isPending={isPending}
-            />
-          ) : (
-            <div className="space-y-6">
-              <div className="flex items-center justify-between">
-                <Button variant="ghost" onClick={handleBack} className="gap-2">
-                  Back
-                </Button>
-              </div>
-              
-              <div className="space-y-4">
-                <div className="space-y-2">
-                  <label htmlFor="ai-prompt" className="text-sm font-medium">
-                    Describe your form <span className="text-red-500">*</span>
-                  </label>
-                  <Textarea
-                    id="ai-prompt"
-                    placeholder="e.g., 'Create a customer feedback survey with ratings and open-ended questions' or 'Make a simple contact form with name, email, and message fields'"
-                    value={aiPrompt}
-                    onChange={(e) => setAiPrompt(e.target.value)}
-                    className="resize-none h-40"
-                    disabled={isGenerating}
-                  />
-                  <p className="text-sm text-primary/60">
-                    Be as specific as possible about the type of form, fields, and purpose.
-                  </p>
+            ) : step === "ai" ? (
+              <div className="space-y-6">
+                <div className="flex items-center justify-between">
+                  <Button variant="ghost" onClick={handleBack} className="gap-2">
+                    Back
+                  </Button>
                 </div>
                 
-                <div className="bg-amber-50 border border-amber-200 rounded-md p-4">
-                  <h4 className="text-sm font-medium text-amber-800 mb-2">AI Form Generation Tips:</h4>
-                  <ul className="text-xs text-amber-700 space-y-1">
-                    <li>• Include the type of form (contact, survey, registration, etc.)</li>
-                    <li>• Specify important fields you want to include</li>
-                    <li>• Mention any conditional logic or validation needs</li>
-                    <li>• Describe your target audience</li>
-                  </ul>
+                <div className="space-y-4">
+                  <div className="space-y-2">
+                    <label htmlFor="ai-prompt" className="text-sm font-medium">
+                      Describe your form <span className="text-red-500">*</span>
+                    </label>
+                    <Textarea
+                      id="ai-prompt"
+                      placeholder="e.g., 'Create a customer feedback survey with ratings and open-ended questions' or 'Make a simple contact form with name, email, and message fields'"
+                      value={aiPrompt}
+                      onChange={(e) => setAiPrompt(e.target.value)}
+                      className="resize-none h-40"
+                      disabled={isGenerating}
+                    />
+                    <p className="text-sm text-primary/60">
+                      Be as specific as possible about the type of form, fields, and purpose.
+                    </p>
+                  </div>
+                  
+                  <div className="bg-amber-50 border border-amber-200 rounded-md p-4">
+                    <h4 className="text-sm font-medium text-amber-800 mb-2 flex items-center">
+                      <AlertCircle className="h-4 w-4 mr-2" />
+                      AI Form Generation Tips:
+                    </h4>
+                    <ul className="text-xs text-amber-700 space-y-1">
+                      <li>• Include the type of form (contact, survey, registration, etc.)</li>
+                      <li>• Specify important fields you want to include</li>
+                      <li>• Mention any conditional logic or validation needs</li>
+                      <li>• Describe your target audience</li>
+                    </ul>
+                  </div>
+                </div>
+                
+                <div className="flex justify-end">
+                  <Button 
+                    onClick={handleAiGeneration} 
+                    disabled={isGenerating || !aiPrompt.trim()}
+                    className="relative overflow-hidden"
+                  >
+                    {isGenerating ? (
+                      <>
+                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                        Generating...
+                      </>
+                    ) : (
+                      <>
+                        <Sparkles className="mr-2 h-4 w-4" />
+                        Generate Form
+                      </>
+                    )}
+                    
+                    {/* Animated gradient border effect */}
+                    {!isGenerating && (
+                      <motion.div
+                        className="absolute -z-10 inset-0 rounded-md opacity-0 bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500"
+                        animate={{ opacity: [0, 0.5, 0] }}
+                        transition={{ 
+                          duration: 2, 
+                          repeat: Infinity,
+                          repeatType: "reverse" 
+                        }}
+                      />
+                    )}
+                  </Button>
                 </div>
               </div>
-              
-              <div className="flex justify-end">
-                <Button onClick={handleAiGeneration} disabled={isGenerating || !aiPrompt.trim()}>
-                  {isGenerating ? (
-                    <>
-                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                      Generating...
-                    </>
-                  ) : (
-                    <>
-                      <Sparkles className="mr-2 h-4 w-4" />
-                      Generate Form
-                    </>
-                  )}
-                </Button>
-              </div>
-            </div>
-          )}
-        </div>
+            ) : (
+              formBuilderContent
+            )}
+          </motion.div>
+        </AnimatePresence>
       </DialogContent>
     </Dialog>
   );
