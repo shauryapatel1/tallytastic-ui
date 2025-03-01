@@ -9,7 +9,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 
 export const Navbar = () => {
-  const { session, signOut } = useAuth();
+  const { user, logout } = useAuth();
 
   return (
     <nav className="h-16 border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
@@ -24,12 +24,12 @@ export const Navbar = () => {
               <DropdownMenuTrigger asChild>
                 <Button variant="ghost" className="relative h-8 w-8 rounded-full">
                   <div className="flex h-full w-full items-center justify-center rounded-full bg-primary/10">
-                    {session?.user.email?.[0].toUpperCase()}
+                    {user?.email?.[0].toUpperCase()}
                   </div>
                 </Button>
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end">
-                <DropdownMenuItem onClick={() => signOut()}>
+                <DropdownMenuItem onClick={() => logout()}>
                   Log out
                 </DropdownMenuItem>
               </DropdownMenuContent>

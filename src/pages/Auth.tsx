@@ -9,16 +9,16 @@ const Auth = () => {
   const [password, setPassword] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [mode, setMode] = useState<"signin" | "signup">("signin");
-  const { signIn, signUp } = useAuth();
+  const { login, signup } = useAuth();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
     try {
       if (mode === "signin") {
-        await signIn(email, password);
+        await login(email, password);
       } else {
-        await signUp(email, password);
+        await signup(email, password, email.split('@')[0]);
       }
     } catch (error) {
       console.error(error);

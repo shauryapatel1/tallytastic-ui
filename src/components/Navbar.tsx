@@ -6,7 +6,7 @@ import { useNavigate } from "react-router-dom";
 
 export const Navbar = () => {
   const [isScrolled, setIsScrolled] = useState(false);
-  const { session, signOut } = useAuth();
+  const { user, logout } = useAuth();
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -69,7 +69,7 @@ export const Navbar = () => {
             </a>
           </div>
           <div className="flex items-center space-x-4">
-            {session ? (
+            {user ? (
               <>
                 <Button
                   variant="ghost"
@@ -78,7 +78,7 @@ export const Navbar = () => {
                 >
                   Dashboard
                 </Button>
-                <Button size="sm" onClick={() => signOut()}>
+                <Button size="sm" onClick={() => logout()}>
                   Log out
                 </Button>
               </>

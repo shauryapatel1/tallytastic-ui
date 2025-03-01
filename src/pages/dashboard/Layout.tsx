@@ -11,12 +11,12 @@ interface DashboardLayoutProps {
 }
 
 export const DashboardLayout = ({ children }: DashboardLayoutProps) => {
-  const { session, isLoading } = useAuth();
+  const { user, isLoading } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
 
   useEffect(() => {
-    if (!isLoading && !session) {
+    if (!isLoading && !user) {
       // Store the current path to redirect back after login
       const currentPath = location.pathname;
       if (currentPath !== "/auth") {
@@ -24,7 +24,7 @@ export const DashboardLayout = ({ children }: DashboardLayoutProps) => {
       }
       navigate("/auth");
     }
-  }, [session, navigate, isLoading, location.pathname]);
+  }, [user, navigate, isLoading, location.pathname]);
 
   if (isLoading) {
     return (
@@ -38,7 +38,7 @@ export const DashboardLayout = ({ children }: DashboardLayoutProps) => {
     );
   }
 
-  if (!session) {
+  if (!user) {
     return null;
   }
 
