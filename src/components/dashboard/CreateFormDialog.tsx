@@ -1,5 +1,5 @@
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useToast } from "@/hooks/use-toast";
@@ -43,13 +43,20 @@ export const CreateFormDialog = ({
   const filteredTemplates = templates.filter(t => t.category === templateCategory);
 
   // Check for a selected template from localStorage (from landing page)
-  useState(() => {
+  useEffect(() => {
     const savedTemplate = localStorage.getItem('selectedTemplate');
     if (savedTemplate) {
-      setSelectedTemplate(savedTemplate);
+      const foundTemplate = templates.find(t => t.id === savedTemplate);
+      if (foundTemplate) {
+        setSelectedTemplate(savedTemplate);
+        toast({
+          title: `${foundTemplate.name} template selected`,
+          description: "You can customize this template to fit your needs.",
+        });
+      }
       localStorage.removeItem('selectedTemplate');
     }
-  });
+  }, [toast]);
 
   const { mutate: create, isPending } = useMutation({
     mutationFn: createForm,
@@ -88,6 +95,7 @@ export const CreateFormDialog = ({
       });
       return;
     }
+    
     create({ 
       title, 
       description,
@@ -141,43 +149,63 @@ export const CreateFormDialog = ({
     
     setIsGenerating(true);
     
-    // Simulate AI generation
-    setTimeout(() => {
-      // In a real implementation, this would call an AI service
-      const generatedFormTitle = aiPrompt.split(" ").slice(0, 3).join(" ");
-      setTitle(title || `${generatedFormTitle} Form`);
-      
-      toast({
-        title: "Form generated successfully!",
-        description: "Your AI-generated form is ready to use.",
-      });
-      
-      // Select a random template based on the prompt keywords
-      const keywords = {
-        survey: ["survey", "feedback", "opinion", "rating", "review"],
-        contact: ["contact", "email", "reach", "message"],
-        payment: ["payment", "order", "purchase", "buy", "pricing"],
-        event: ["event", "registration", "signup", "join", "attend"],
-        donation: ["donation", "charity", "contribute", "give"],
-      };
-      
-      let selectedCategory: string | null = null;
-      
-      for (const [category, words] of Object.entries(keywords)) {
-        if (words.some(word => aiPrompt.toLowerCase().includes(word))) {
-          selectedCategory = category;
-          break;
+    try {
+      // Simulate AI generation
+      setTimeout(() => {
+        // In a real implementation, this would call an AI service
+        const generatedFormTitle = aiPrompt.split(" ").slice(0, 3).join(" ");
+        const formattedTitle = title || `${generatedFormTitle} Form`;
+        
+        // Simulate AI determining the best template type based on the prompt
+        const promptLowerCase = aiPrompt.toLowerCase();
+        let bestTemplate = "contact"; // Default template
+        
+        // Dictionary of keywords that map to template types
+        const keywords = {
+          feedback: ["feedback", "opinion", "rating", "review", "survey"],
+          contact: ["contact", "email", "reach", "message", "inquiry"],
+          payment: ["payment", "order", "purchase", "buy", "product"],
+          event: ["event", "registration", "signup", "join", "attend"],
+          donation: ["donation", "charity", "contribute", "give", "fundraising"],
+          quiz: ["quiz", "test", "assessment", "question", "knowledge"],
+          survey: ["survey", "poll", "feedback", "research", "data"],
+          lead_capture: ["lead", "prospect", "customer", "capture", "generate"]
+        };
+        
+        // Find the template with the most keyword matches in the prompt
+        let highestMatches = 0;
+        
+        for (const [template, words] of Object.entries(keywords)) {
+          const matches = words.filter(word => promptLowerCase.includes(word)).length;
+          if (matches > highestMatches) {
+            highestMatches = matches;
+            bestTemplate = template;
+          }
         }
-      }
-      
-      setSelectedTemplate(selectedCategory || "contact");
+        
+        toast({
+          title: "Form generated successfully!",
+          description: "Your AI-generated form is ready to use.",
+        });
+        
+        // Create the form with the determined template
+        create({ 
+          title: formattedTitle, 
+          description: description || aiPrompt,
+          templateId: bestTemplate
+        });
+        
+        setIsGenerating(false);
+      }, 2000);
+    } catch (error) {
+      console.error("Error generating form with AI:", error);
       setIsGenerating(false);
-      create({ 
-        title: title || `${generatedFormTitle} Form`, 
-        description: description || aiPrompt,
-        templateId: selectedCategory || "contact"
+      toast({
+        title: "Generation failed",
+        description: "There was an error generating your form. Please try again.",
+        variant: "destructive",
       });
-    }, 2000);
+    }
   };
 
   return (
@@ -201,7 +229,7 @@ export const CreateFormDialog = ({
         <div className="p-6">
           {step === "info" ? (
             <>
-              <Tabs defaultValue="template" onValueChange={(value) => setSelectedTab(value as "template" | "ai")}>
+              <Tabs defaultValue="template" value={selectedTab} onValueChange={(value) => setSelectedTab(value as "template" | "ai")}>
                 <TabsList className="grid w-full grid-cols-2 mb-6">
                   <TabsTrigger value="template">Use Template</TabsTrigger>
                   <TabsTrigger value="ai">AI Generator</TabsTrigger>

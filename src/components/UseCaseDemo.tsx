@@ -92,21 +92,22 @@ export const UseCaseDemo = () => {
     }
   ];
 
+  // Fix GIFs with working links to high-quality demo GIFs
   const demos = [
     {
       title: "Creating a form with AI",
       description: "Generate a complete form by describing what you need in natural language",
-      image: "https://cdn.dribbble.com/users/1187836/screenshots/17853175/media/83357048adf0db2e33bbc7fcee3a9cfb.gif"
+      image: "https://i.imgur.com/6TfpJ48.gif" // New GIF - AI form generation
     },
     {
       title: "Building with drag and drop",
       description: "Easily arrange form elements with our intuitive builder",
-      image: "https://cdn.dribbble.com/users/702789/screenshots/17885355/media/bc1061527c28c3867a73d3735231e49d.gif"
+      image: "https://i.imgur.com/V1Ia9bA.gif" // New GIF - drag and drop building
     },
     {
       title: "Analyzing responses in real-time",
       description: "Get instant insights from your form submissions",
-      image: "https://cdn.dribbble.com/users/2478333/screenshots/16675712/media/ad69d120a9fdc4713f2039486cd8a930.gif"
+      image: "https://i.imgur.com/jcBdUu9.gif" // New GIF - analytics dashboard
     }
   ];
   
@@ -222,14 +223,14 @@ export const UseCaseDemo = () => {
             transition={{ duration: 0.5, delay: 0.2 }}
             className="lg:pl-6"
           >
-            <div className="relative rounded-xl overflow-hidden shadow-2xl border border-indigo-100 bg-white h-[400px]">
+            <div className="relative rounded-xl overflow-hidden shadow-2xl border border-indigo-100 bg-white h-[500px]">
               {/* Navigation dots */}
               <div className="absolute top-4 right-4 z-10 flex gap-2">
                 {demos.map((_, index) => (
                   <button
                     key={index}
-                    className={`w-2.5 h-2.5 rounded-full transition-all ${
-                      activeDemo === index ? "bg-white scale-125" : "bg-white/50"
+                    className={`w-3 h-3 rounded-full transition-all ${
+                      activeDemo === index ? "bg-white scale-125 shadow-md" : "bg-white/50"
                     }`}
                     onClick={() => setActiveDemo(index)}
                   />
@@ -240,7 +241,7 @@ export const UseCaseDemo = () => {
               {demos.map((demo, index) => (
                 <div
                   key={index}
-                  className={`absolute inset-0 transition-opacity duration-500 ${
+                  className={`absolute inset-0 transition-all duration-500 ${
                     activeDemo === index ? "opacity-100 z-0" : "opacity-0 -z-10"
                   }`}
                 >
@@ -248,11 +249,15 @@ export const UseCaseDemo = () => {
                     src={demo.image} 
                     alt={demo.title}
                     className="w-full h-full object-cover"
+                    onError={(e) => {
+                      console.error(`Failed to load image: ${demo.image}`);
+                      e.currentTarget.src = "https://placehold.co/600x400/indigo/white?text=FormCraft+Demo";
+                    }}
                   />
-                  <div className="absolute inset-0 bg-gradient-to-t from-black/70 to-transparent flex items-end p-6">
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/40 to-transparent flex items-end p-6">
                     <div className="text-white">
-                      <h3 className="text-xl font-medium mb-2">{demo.title}</h3>
-                      <p className="text-sm text-white/80">{demo.description}</p>
+                      <h3 className="text-xl font-semibold mb-2">{demo.title}</h3>
+                      <p className="text-sm text-white/90">{demo.description}</p>
                     </div>
                   </div>
                 </div>

@@ -243,6 +243,218 @@ function getTemplateFields(templateId: string) {
           placeholder: "Any additional comments",
         },
       ];
+    case "quiz":
+      return [
+        {
+          id: crypto.randomUUID(),
+          type: "text",
+          label: "Your Name",
+          required: true,
+          placeholder: "Enter your name",
+        },
+        {
+          id: crypto.randomUUID(),
+          type: "email",
+          label: "Email Address",
+          required: true,
+          placeholder: "Enter your email address for results",
+        },
+        {
+          id: crypto.randomUUID(),
+          type: "radio",
+          label: "Question 1: What is the capital of France?",
+          required: true,
+          options: ["Paris", "London", "Berlin", "Madrid"],
+        },
+        {
+          id: crypto.randomUUID(),
+          type: "radio",
+          label: "Question 2: Which planet is closest to the sun?",
+          required: true,
+          options: ["Mercury", "Venus", "Earth", "Mars"],
+        },
+        {
+          id: crypto.randomUUID(),
+          type: "checkbox",
+          label: "I want to receive my score by email",
+          required: false,
+        },
+      ];
+    case "lead_capture":
+      return [
+        {
+          id: crypto.randomUUID(),
+          type: "text",
+          label: "Full Name",
+          required: true,
+          placeholder: "Enter your full name",
+        },
+        {
+          id: crypto.randomUUID(),
+          type: "email",
+          label: "Email Address",
+          required: true,
+          placeholder: "Enter your email address",
+        },
+        {
+          id: crypto.randomUUID(),
+          type: "text",
+          label: "Company",
+          required: false,
+          placeholder: "Enter your company name",
+        },
+        {
+          id: crypto.randomUUID(),
+          type: "phone",
+          label: "Phone Number",
+          required: false,
+          placeholder: "Enter your phone number",
+        },
+        {
+          id: crypto.randomUUID(),
+          type: "select",
+          label: "How did you hear about us?",
+          required: false,
+          options: ["Google", "Social Media", "Friend/Colleague", "Event", "Other"],
+        },
+        {
+          id: crypto.randomUUID(),
+          type: "checkbox",
+          label: "I'd like to receive updates about your products and services",
+          required: false,
+        },
+      ];
+    case "newsletter":
+      return [
+        {
+          id: crypto.randomUUID(),
+          type: "text",
+          label: "Name",
+          required: false,
+          placeholder: "Enter your name",
+        },
+        {
+          id: crypto.randomUUID(),
+          type: "email",
+          label: "Email Address",
+          required: true,
+          placeholder: "Enter your email address",
+        },
+        {
+          id: crypto.randomUUID(),
+          type: "checkbox",
+          label: "Weekly newsletter",
+          required: false,
+        },
+        {
+          id: crypto.randomUUID(),
+          type: "checkbox",
+          label: "Monthly product updates",
+          required: false,
+        },
+        {
+          id: crypto.randomUUID(),
+          type: "checkbox",
+          label: "Special offers and promotions",
+          required: false,
+        },
+      ];
+    case "feedback":
+      return [
+        {
+          id: crypto.randomUUID(),
+          type: "text",
+          label: "Name",
+          required: false,
+          placeholder: "Enter your name",
+        },
+        {
+          id: crypto.randomUUID(),
+          type: "email",
+          label: "Email Address",
+          required: false,
+          placeholder: "Enter your email address",
+        },
+        {
+          id: crypto.randomUUID(),
+          type: "radio",
+          label: "Overall, how satisfied are you with our product/service?",
+          required: true,
+          options: ["Very Satisfied", "Satisfied", "Neutral", "Dissatisfied", "Very Dissatisfied"],
+        },
+        {
+          id: crypto.randomUUID(),
+          type: "textarea",
+          label: "What do you like most about our product/service?",
+          required: false,
+          placeholder: "Please share your thoughts",
+        },
+        {
+          id: crypto.randomUUID(),
+          type: "textarea",
+          label: "How could we improve our product/service?",
+          required: false,
+          placeholder: "Please share your suggestions",
+        },
+        {
+          id: crypto.randomUUID(),
+          type: "radio",
+          label: "How likely are you to recommend us to a friend or colleague?",
+          required: false,
+          options: ["Extremely likely", "Very likely", "Somewhat likely", "Not so likely", "Not at all likely"],
+        },
+      ];
+    case "job_application":
+      return [
+        {
+          id: crypto.randomUUID(),
+          type: "text",
+          label: "Full Name",
+          required: true,
+          placeholder: "Enter your full name",
+        },
+        {
+          id: crypto.randomUUID(),
+          type: "email",
+          label: "Email Address",
+          required: true,
+          placeholder: "Enter your email address",
+        },
+        {
+          id: crypto.randomUUID(),
+          type: "text",
+          label: "Phone Number",
+          required: true,
+          placeholder: "Enter your phone number",
+        },
+        {
+          id: crypto.randomUUID(),
+          type: "select",
+          label: "Position Applied For",
+          required: true,
+          options: ["Software Developer", "UI/UX Designer", "Product Manager", "Marketing Specialist", "Other"],
+        },
+        {
+          id: crypto.randomUUID(),
+          type: "textarea",
+          label: "Cover Letter",
+          required: false,
+          placeholder: "Tell us why you're interested in this position",
+        },
+        {
+          id: crypto.randomUUID(),
+          type: "file",
+          label: "Resume/CV",
+          required: true,
+          placeholder: "Upload your resume (PDF, DOC, DOCX)",
+        },
+        {
+          id: crypto.randomUUID(),
+          type: "checkbox",
+          label: "I certify that all information provided is true and complete",
+          required: true,
+        },
+      ];
     default:
       return [];
   }
