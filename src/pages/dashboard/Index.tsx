@@ -1,27 +1,23 @@
 
 import { DashboardLayout } from "./Layout";
-import { Button } from "@/components/ui/button";
-import { 
-  Plus, Search, SortDesc, BarChart, Grid, Clock, Box
-} from "lucide-react";
-import { FormCard } from "@/components/dashboard/FormCard";
 import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { getForms } from "@/lib/api";
 import { CreateFormDialog } from "@/components/dashboard/CreateFormDialog";
-import { Input } from "@/components/ui/input";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
 import { useToast } from "@/hooks/use-toast";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { motion, AnimatePresence } from "framer-motion";
-import { formatDistanceToNow } from "date-fns";
-import { Link } from "react-router-dom";
+import { useLocation } from "react-router-dom";
+import { DashboardHeader } from "@/components/dashboard/DashboardHeader";
+import { StatisticsGrid } from "@/components/dashboard/StatisticsGrid";
+import { FormsToolbar } from "@/components/dashboard/FormsToolbar";
+import { FormsGridView } from "@/components/dashboard/FormsGridView";
+import { FormsTableView } from "@/components/dashboard/FormsTableView";
+import { 
+  EmptyState, 
+  ErrorState, 
+  LoadingState, 
+  SearchEmptyState 
+} from "@/components/dashboard/DashboardStates";
 
 export default function Dashboard() {
   const [isCreateFormOpen, setIsCreateFormOpen] = useState(false);
@@ -29,8 +25,9 @@ export default function Dashboard() {
   const [sortBy, setSortBy] = useState("updated_at");
   const [viewMode, setViewMode] = useState<"grid" | "insights">("grid");
   const { toast } = useToast();
+  const location = useLocation();
   
-  const { data: forms, isLoading, error } = useQuery({
+  const { data: forms, isLoading, error, refetch } = useQuery({
     queryKey: ["forms"],
     queryFn: getForms
   });
@@ -90,11 +87,6 @@ export default function Dashboard() {
     out: { opacity: 0, y: -20 }
   };
 
-  const itemVariants = {
-    hidden: { opacity: 0, y: 20 },
-    visible: { opacity: 1, y: 0 }
-  };
-
   return (
     <DashboardLayout>
       <motion.div 
@@ -106,97 +98,10 @@ export default function Dashboard() {
         className="space-y-8"
       >
         <div className="flex flex-col gap-4">
-          <motion.div 
-            className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 bg-gradient-to-br from-indigo-500/5 to-purple-500/5 p-6 rounded-xl border border-indigo-100"
-            initial={{ opacity: 0, y: -20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.5 }}
-          >
-            <div>
-              <h1 className="text-2xl font-bold tracking-tight bg-clip-text text-transparent bg-gradient-to-r from-indigo-500 to-purple-600">
-                Your Forms
-              </h1>
-              <p className="text-sm text-primary/60 mt-1">
-                Create, manage, and share your forms with the world
-              </p>
-            </div>
-            <Button 
-              onClick={handleCreateForm} 
-              size="lg" 
-              className="bg-gradient-to-r from-indigo-500 to-purple-600 hover:from-indigo-600 hover:to-purple-700 transition-all shadow-md hover:shadow-lg group"
-            >
-              <Plus className="mr-2 h-4 w-4 group-hover:rotate-90 transition-transform duration-200" />
-              Create Form
-            </Button>
-          </motion.div>
+          <DashboardHeader onCreateForm={handleCreateForm} />
 
           {!isLoading && forms && forms.length > 0 && (
-            <motion.div 
-              initial={{ opacity: 0, y: 10 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.2, duration: 0.4 }}
-              className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4"
-            >
-              <motion.div 
-                className="bg-white p-4 rounded-lg border shadow-sm hover:shadow-md transition-all"
-                whileHover={{ y: -5, boxShadow: "0 12px 20px -10px rgba(0, 0, 0, 0.1)" }}
-              >
-                <div className="flex justify-between items-start">
-                  <div>
-                    <p className="text-sm text-gray-500">Total Forms</p>
-                    <p className="text-2xl font-bold mt-1">{stats.total}</p>
-                  </div>
-                  <div className="bg-indigo-100 p-2 rounded-md">
-                    <Grid className="h-5 w-5 text-indigo-600" />
-                  </div>
-                </div>
-              </motion.div>
-              
-              <motion.div 
-                className="bg-white p-4 rounded-lg border shadow-sm hover:shadow-md transition-all"
-                whileHover={{ y: -5, boxShadow: "0 12px 20px -10px rgba(0, 0, 0, 0.1)" }}
-              >
-                <div className="flex justify-between items-start">
-                  <div>
-                    <p className="text-sm text-gray-500">Published</p>
-                    <p className="text-2xl font-bold mt-1">{stats.published}</p>
-                  </div>
-                  <div className="bg-green-100 p-2 rounded-md">
-                    <Box className="h-5 w-5 text-green-600" />
-                  </div>
-                </div>
-              </motion.div>
-              
-              <motion.div 
-                className="bg-white p-4 rounded-lg border shadow-sm hover:shadow-md transition-all"
-                whileHover={{ y: -5, boxShadow: "0 12px 20px -10px rgba(0, 0, 0, 0.1)" }}
-              >
-                <div className="flex justify-between items-start">
-                  <div>
-                    <p className="text-sm text-gray-500">Drafts</p>
-                    <p className="text-2xl font-bold mt-1">{stats.draft}</p>
-                  </div>
-                  <div className="bg-amber-100 p-2 rounded-md">
-                    <Clock className="h-5 w-5 text-amber-600" />
-                  </div>
-                </div>
-              </motion.div>
-              
-              <motion.div 
-                className="bg-white p-4 rounded-lg border shadow-sm hover:shadow-md transition-all"
-                whileHover={{ y: -5, boxShadow: "0 12px 20px -10px rgba(0, 0, 0, 0.1)" }}
-              >
-                <div className="flex justify-between items-start">
-                  <div>
-                    <p className="text-sm text-gray-500">Total Responses</p>
-                    <p className="text-2xl font-bold mt-1">{stats.responses}</p>
-                  </div>
-                  <div className="bg-blue-100 p-2 rounded-md">
-                    <BarChart className="h-5 w-5 text-blue-600" />
-                  </div>
-                </div>
-              </motion.div>
-            </motion.div>
+            <StatisticsGrid stats={stats} />
           )}
         </div>
 
@@ -210,238 +115,38 @@ export default function Dashboard() {
             transition={{ duration: 0.4 }}
           >
             {error ? (
-              <motion.div 
-                className="flex flex-col items-center justify-center h-[40vh] space-y-4 bg-red-50 text-red-800 rounded-lg p-8 border border-red-200"
-                variants={pageVariants}
-              >
-                <div className="text-4xl">⚠️</div>
-                <h3 className="text-xl font-semibold">Error loading forms</h3>
-                <p className="text-sm text-center">
-                  There was a problem loading your forms. Please try again.
-                </p>
-                <Button 
-                  variant="outline" 
-                  onClick={() => window.location.reload()}
-                  className="border-red-300 hover:bg-red-100"
-                >
-                  Reload Page
-                </Button>
-              </motion.div>
+              <ErrorState onRetry={() => window.location.reload()} />
             ) : !isLoading && forms && forms.length > 0 ? (
               <motion.div className="space-y-6" variants={pageVariants}>
-                <motion.div 
-                  className="flex flex-col sm:flex-row items-center gap-4 justify-between bg-white p-4 rounded-lg border shadow-sm"
-                  initial={{ opacity: 0, y: 10 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ duration: 0.3 }}
-                >
-                  <div className="relative w-full sm:w-80">
-                    <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-primary/40" />
-                    <Input
-                      placeholder="Search forms..."
-                      className="pl-10"
-                      value={searchTerm}
-                      onChange={(e) => setSearchTerm(e.target.value)}
-                    />
-                  </div>
-                  
-                  <div className="flex items-center gap-4 ml-auto">
-                    <Tabs defaultValue="grid" className="w-[200px]" onValueChange={(v) => setViewMode(v as "grid" | "insights")}>
-                      <TabsList className="grid w-full grid-cols-2">
-                        <TabsTrigger value="grid">
-                          <Grid className="mr-2 h-4 w-4" />
-                          Grid
-                        </TabsTrigger>
-                        <TabsTrigger value="insights">
-                          <BarChart className="mr-2 h-4 w-4" />
-                          Insights
-                        </TabsTrigger>
-                      </TabsList>
-                    </Tabs>
-                    
-                    <Select value={sortBy} onValueChange={setSortBy}>
-                      <SelectTrigger className="w-[180px]">
-                        <SortDesc className="mr-2 h-4 w-4" />
-                        <SelectValue placeholder="Sort by" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="updated_at">Last Updated</SelectItem>
-                        <SelectItem value="title">Form Title</SelectItem>
-                        <SelectItem value="responses">Response Count</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </div>
-                </motion.div>
+                <FormsToolbar 
+                  searchTerm={searchTerm}
+                  setSearchTerm={setSearchTerm}
+                  sortBy={sortBy}
+                  setSortBy={setSortBy}
+                  viewMode={viewMode}
+                  setViewMode={setViewMode as (mode: "grid" | "insights") => void}
+                />
 
                 {/* View modes */}
                 {viewMode === "grid" ? (
-                  <motion.div 
-                    className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"
-                    initial="hidden"
-                    animate="visible"
-                    variants={{ 
-                      visible: { 
-                        transition: { 
-                          staggerChildren: 0.1
-                        } 
-                      } 
-                    }}
-                  >
-                    {sortedForms?.map((form, index) => (
-                      <motion.div
-                        key={form.id}
-                        variants={itemVariants}
-                        transition={{ 
-                          duration: 0.4,
-                          type: "spring",
-                          stiffness: 100
-                        }}
-                        whileHover={{ y: -5, transition: { duration: 0.2 } }}
-                      >
-                        <FormCard form={form} />
-                      </motion.div>
-                    ))}
-                  </motion.div>
+                  <FormsGridView forms={sortedForms || []} />
                 ) : (
-                  <motion.div 
-                    className="bg-white rounded-lg border shadow-sm overflow-hidden"
-                    initial={{ opacity: 0 }}
-                    animate={{ opacity: 1 }}
-                    transition={{ duration: 0.5 }}
-                  >
-                    <table className="min-w-full divide-y divide-gray-200">
-                      <thead className="bg-gray-50">
-                        <tr>
-                          <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Form</th>
-                          <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
-                          <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Responses</th>
-                          <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Last Updated</th>
-                          <th scope="col" className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
-                        </tr>
-                      </thead>
-                      <tbody className="bg-white divide-y divide-gray-200">
-                        {sortedForms?.map((form, index) => (
-                          <motion.tr 
-                            key={form.id} 
-                            className="hover:bg-gray-50"
-                            initial={{ opacity: 0, x: -20 }}
-                            animate={{ opacity: 1, x: 0 }}
-                            transition={{ delay: index * 0.05, duration: 0.3 }}
-                          >
-                            <td className="px-6 py-4 whitespace-nowrap">
-                              <div className="flex items-center">
-                                <div className="ml-4">
-                                  <div className="text-sm font-medium text-gray-900">{form.title}</div>
-                                  <div className="text-sm text-gray-500 line-clamp-1">{form.description || "No description"}</div>
-                                </div>
-                              </div>
-                            </td>
-                            <td className="px-6 py-4 whitespace-nowrap">
-                              <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${form.published ? 'bg-green-100 text-green-800' : 'bg-amber-100 text-amber-800'}`}>
-                                {form.published ? 'Published' : 'Draft'}
-                              </span>
-                            </td>
-                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                              {Math.floor(Math.random() * 50)} {/* Mock response count */}
-                            </td>
-                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                              {formatDistanceToNow(new Date(form.updated_at), { addSuffix: true })}
-                            </td>
-                            <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                              <div className="flex justify-end space-x-2">
-                                <Button variant="ghost" size="sm" asChild className="h-8">
-                                  <Link to={`/dashboard/forms/${form.id}`}>
-                                    Edit
-                                  </Link>
-                                </Button>
-                                <Button variant="ghost" size="sm" asChild className="h-8">
-                                  <Link to={`/dashboard/forms/${form.id}/preview`}>
-                                    Preview
-                                  </Link>
-                                </Button>
-                              </div>
-                            </td>
-                          </motion.tr>
-                        ))}
-                      </tbody>
-                    </table>
-                  </motion.div>
+                  <FormsTableView forms={sortedForms || []} />
                 )}
               </motion.div>
             ) : null}
 
             {isLoading ? (
-              <motion.div 
-                className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"
-                variants={pageVariants}
-              >
-                {[...Array(6)].map((_, i) => (
-                  <motion.div
-                    key={i}
-                    className="h-64 rounded-lg bg-card animate-pulse shadow"
-                    initial={{ opacity: 0 }}
-                    animate={{ opacity: 1 }}
-                    transition={{ delay: i * 0.1, duration: 0.3 }}
-                  />
-                ))}
-              </motion.div>
+              <LoadingState />
             ) : forms?.length === 0 ? (
-              <motion.div 
-                className="flex flex-col items-center justify-center h-[60vh] space-y-6 bg-gradient-to-br from-indigo-50 to-purple-50 rounded-lg p-12 border border-indigo-100"
-                variants={pageVariants}
-              >
-                <motion.div 
-                  className="p-6 rounded-full bg-white shadow-md"
-                  initial={{ scale: 0.8, opacity: 0 }}
-                  animate={{ scale: 1, opacity: 1 }}
-                  transition={{ 
-                    type: "spring",
-                    stiffness: 500,
-                    damping: 30
-                  }}
-                >
-                  <div className="text-6xl">📋</div>
-                </motion.div>
-                <motion.div 
-                  className="text-center"
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: 0.3 }}
-                >
-                  <h3 className="text-2xl font-bold mb-2 bg-gradient-to-r from-indigo-500 to-purple-600 bg-clip-text text-transparent">No forms yet</h3>
-                  <p className="text-primary/60 max-w-md mb-6">
-                    Create your first form to get started building beautiful forms that captivate your audience and collect valuable insights.
-                  </p>
-                  <Button 
-                    size="lg" 
-                    onClick={handleCreateForm}
-                    className="bg-gradient-to-r from-indigo-500 to-purple-600 hover:from-indigo-600 hover:to-purple-700 transition-all shadow-md hover:shadow-lg"
-                  >
-                    <Plus className="mr-2 h-4 w-4" />
-                    Create Your First Form
-                  </Button>
-                </motion.div>
-              </motion.div>
+              <EmptyState onCreateForm={handleCreateForm} />
             ) : null}
 
             {searchTerm && filteredForms?.length === 0 ? (
-              <motion.div 
-                className="flex flex-col items-center justify-center h-[40vh] space-y-4 bg-gradient-to-br from-indigo-50 to-purple-50 rounded-lg p-8 border border-indigo-100"
-                variants={pageVariants}
-              >
-                <div className="text-4xl">🔍</div>
-                <h3 className="text-xl font-semibold bg-gradient-to-r from-indigo-500 to-purple-600 bg-clip-text text-transparent">No matching forms</h3>
-                <p className="text-sm text-primary/60 text-center">
-                  We couldn't find any forms matching "{searchTerm}"
-                </p>
-                <Button 
-                  variant="outline" 
-                  onClick={() => setSearchTerm("")}
-                  className="border-indigo-200 hover:bg-indigo-50"
-                >
-                  Clear Search
-                </Button>
-              </motion.div>
+              <SearchEmptyState 
+                searchTerm={searchTerm} 
+                onClearSearch={() => setSearchTerm("")} 
+              />
             ) : null}
           </motion.div>
         </AnimatePresence>
