@@ -1,5 +1,6 @@
 
-import React, { createContext, useContext, useState, ReactNode } from 'react';
+import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
+import { useToast } from '@/hooks/use-toast';
 
 // Define the structure of the user object
 export interface User {
@@ -13,7 +14,7 @@ export interface User {
 export interface AuthContextType {
   user: User | null;
   isAuthenticated: boolean;
-  isLoading: boolean; // Add the missing isLoading property
+  isLoading: boolean;
   login: (email: string, password: string) => Promise<void>;
   signup: (email: string, password: string, name: string) => Promise<void>;
   logout: () => Promise<void>;
@@ -23,7 +24,7 @@ export interface AuthContextType {
 const AuthContext = createContext<AuthContextType>({
   user: null,
   isAuthenticated: false,
-  isLoading: false, // Initialize the isLoading property
+  isLoading: false,
   login: async () => {},
   signup: async () => {},
   logout: async () => {},
@@ -35,7 +36,27 @@ export const useAuth = () => useContext(AuthContext);
 // Provider component that wraps your app and makes auth object available
 export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
   const [user, setUser] = useState<User | null>(null);
-  const [isLoading, setIsLoading] = useState<boolean>(false);
+  const [isLoading, setIsLoading] = useState<boolean>(true);
+  const { toast } = useToast();
+
+  // Check local storage for user on initial load
+  useEffect(() => {
+    const checkUserSession = async () => {
+      try {
+        const storedUser = localStorage.getItem('formcraft_user');
+        
+        if (storedUser) {
+          setUser(JSON.parse(storedUser));
+        }
+      } catch (error) {
+        console.error('Error restoring session:', error);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    checkUserSession();
+  }, []);
 
   // Mock login function
   const login = async (email: string, password: string) => {
@@ -45,13 +66,28 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
       await new Promise(resolve => setTimeout(resolve, 1000));
       
       // Mock user data
-      setUser({
+      const userData = {
         id: '1',
         email,
         name: email.split('@')[0],
+      };
+      
+      setUser(userData);
+      
+      // Store in localStorage for session persistence
+      localStorage.setItem('formcraft_user', JSON.stringify(userData));
+      
+      toast({
+        title: "Login successful",
+        description: `Welcome back, ${userData.name}!`,
       });
     } catch (error) {
       console.error('Login error', error);
+      toast({
+        title: "Login failed",
+        description: "Please check your credentials and try again.",
+        variant: "destructive",
+      });
       throw error;
     } finally {
       setIsLoading(false);
@@ -66,13 +102,28 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
       await new Promise(resolve => setTimeout(resolve, 1000));
       
       // Mock user data
-      setUser({
+      const userData = {
         id: '1',
         email,
         name,
+      };
+      
+      setUser(userData);
+      
+      // Store in localStorage for session persistence
+      localStorage.setItem('formcraft_user', JSON.stringify(userData));
+      
+      toast({
+        title: "Account created",
+        description: `Welcome to FormCraft, ${name}!`,
       });
     } catch (error) {
       console.error('Signup error', error);
+      toast({
+        title: "Signup failed",
+        description: "There was a problem creating your account. Please try again.",
+        variant: "destructive",
+      });
       throw error;
     } finally {
       setIsLoading(false);
@@ -86,8 +137,21 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
       // Simulate API request
       await new Promise(resolve => setTimeout(resolve, 500));
       setUser(null);
+      
+      // Remove from localStorage
+      localStorage.removeItem('formcraft_user');
+      
+      toast({
+        title: "Logged out",
+        description: "You have been successfully logged out.",
+      });
     } catch (error) {
       console.error('Logout error', error);
+      toast({
+        title: "Logout failed",
+        description: "There was a problem logging you out. Please try again.",
+        variant: "destructive",
+      });
       throw error;
     } finally {
       setIsLoading(false);

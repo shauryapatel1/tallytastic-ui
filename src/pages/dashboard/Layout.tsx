@@ -7,6 +7,7 @@ import { useAuth } from "@/lib/auth";
 import { Loader2, Menu, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { motion, AnimatePresence } from "framer-motion";
+import { useToast } from "@/hooks/use-toast";
 
 interface DashboardLayoutProps {
   children: React.ReactNode;
@@ -17,6 +18,7 @@ export const DashboardLayout = ({ children }: DashboardLayoutProps) => {
   const navigate = useNavigate();
   const location = useLocation();
   const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
+  const { toast } = useToast();
 
   useEffect(() => {
     if (!isLoading && !user) {
@@ -24,10 +26,20 @@ export const DashboardLayout = ({ children }: DashboardLayoutProps) => {
       const currentPath = location.pathname;
       if (currentPath !== "/auth") {
         localStorage.setItem("redirectAfterAuth", currentPath);
+        
+        toast({
+          title: "Authentication required",
+          description: "Please log in to access the dashboard",
+        });
       }
       navigate("/auth");
     }
-  }, [user, navigate, isLoading, location.pathname]);
+  }, [user, navigate, isLoading, location.pathname, toast]);
+
+  // Close mobile sidebar when route changes
+  useEffect(() => {
+    setMobileSidebarOpen(false);
+  }, [location.pathname]);
 
   const toggleMobileSidebar = () => {
     setMobileSidebarOpen(!mobileSidebarOpen);
@@ -69,6 +81,7 @@ export const DashboardLayout = ({ children }: DashboardLayoutProps) => {
           size="icon" 
           className="fixed bottom-4 right-4 z-50 rounded-full shadow-lg bg-indigo-600 text-white hover:bg-indigo-700 md:hidden"
           onClick={toggleMobileSidebar}
+          aria-label={mobileSidebarOpen ? "Close menu" : "Open menu"}
         >
           {mobileSidebarOpen ? <X /> : <Menu />}
         </Button>
