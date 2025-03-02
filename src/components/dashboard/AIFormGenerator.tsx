@@ -5,12 +5,15 @@ import { Input } from "@/components/ui/input";
 import { useState } from "react";
 import { Loader2, Wand2 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+import { supabase } from "@/lib/supabase";
+import { useAuth } from "@/lib/auth";
 
 export function AIFormGenerator({ onFormGenerated }: { onFormGenerated: (formData: any) => void }) {
   const [prompt, setPrompt] = useState("");
   const [formTitle, setFormTitle] = useState("");
   const [isGenerating, setIsGenerating] = useState(false);
   const { toast } = useToast();
+  const { user } = useAuth();
 
   const handleGenerate = async () => {
     if (!prompt.trim() || !formTitle.trim()) {
@@ -22,16 +25,26 @@ export function AIFormGenerator({ onFormGenerated }: { onFormGenerated: (formDat
       return;
     }
 
+    if (!user) {
+      toast({
+        title: "Authentication required",
+        description: "You need to be logged in to create forms",
+        variant: "destructive",
+      });
+      return;
+    }
+
     setIsGenerating(true);
     
-    // Simulate AI generation
     try {
+      // Simulate AI generation
       await new Promise(resolve => setTimeout(resolve, 2000));
       
       // Example generated form
       const generatedForm = {
         title: formTitle,
         description: prompt,
+        user_id: user.id, // Add user_id to link form to current user
         fields: [
           {
             id: crypto.randomUUID(),
@@ -57,7 +70,19 @@ export function AIFormGenerator({ onFormGenerated }: { onFormGenerated: (formDat
         ]
       };
       
-      onFormGenerated(generatedForm);
+      // Save the form to the database
+      const { data, error } = await supabase
+        .from('forms')
+        .insert([generatedForm])
+        .select()
+        .single();
+        
+      if (error) {
+        console.error("Error creating form:", error);
+        throw error;
+      }
+      
+      onFormGenerated(data);
       
       toast({
         title: "Form generated!",

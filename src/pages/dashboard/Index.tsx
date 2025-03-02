@@ -1,6 +1,6 @@
 
 import { DashboardLayout } from "./Layout";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { getForms } from "@/lib/api";
 import { CreateFormDialog } from "@/components/dashboard/CreateFormDialog";
@@ -18,6 +18,7 @@ import {
   LoadingState, 
   SearchEmptyState 
 } from "@/components/dashboard/DashboardStates";
+import { useAuth } from "@/lib/auth";
 
 export default function Dashboard() {
   const [isCreateFormOpen, setIsCreateFormOpen] = useState(false);
@@ -26,21 +27,37 @@ export default function Dashboard() {
   const [viewMode, setViewMode] = useState<"grid" | "insights">("grid");
   const { toast } = useToast();
   const location = useLocation();
+  const { user } = useAuth();
   
-  const { data: forms, isLoading, error, refetch } = useQuery({
-    queryKey: ["forms"],
-    queryFn: getForms
+  const { 
+    data: forms, 
+    isLoading, 
+    error, 
+    refetch 
+  } = useQuery({
+    queryKey: ["forms", user?.id],
+    queryFn: getForms,
+    enabled: !!user // Only fetch if user is authenticated
   });
 
+  // Refetch forms when user changes
+  useEffect(() => {
+    if (user) {
+      refetch();
+    }
+  }, [user, refetch]);
+
   // Show error toast if there's an error
-  if (error && !forms) {
-    console.error("Error fetching forms:", error);
-    toast({
-      title: "Error loading forms",
-      description: "There was a problem loading your forms. Please try again.",
-      variant: "destructive",
-    });
-  }
+  useEffect(() => {
+    if (error && !forms) {
+      console.error("Error fetching forms:", error);
+      toast({
+        title: "Error loading forms",
+        description: "There was a problem loading your forms. Please try again.",
+        variant: "destructive",
+      });
+    }
+  }, [error, forms, toast]);
 
   const filteredForms = forms?.filter(form => 
     form.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -87,6 +104,10 @@ export default function Dashboard() {
     out: { opacity: 0, y: -20 }
   };
 
+  const handleFormCreated = () => {
+    refetch();
+  };
+
   return (
     <DashboardLayout>
       <motion.div 
@@ -115,7 +136,7 @@ export default function Dashboard() {
             transition={{ duration: 0.4 }}
           >
             {error ? (
-              <ErrorState onRetry={() => window.location.reload()} />
+              <ErrorState onRetry={() => refetch()} />
             ) : !isLoading && forms && forms.length > 0 ? (
               <motion.div className="space-y-6" variants={pageVariants}>
                 <FormsToolbar 
@@ -155,6 +176,7 @@ export default function Dashboard() {
       <CreateFormDialog
         open={isCreateFormOpen}
         onOpenChange={setIsCreateFormOpen}
+        onFormCreated={handleFormCreated}
       />
     </DashboardLayout>
   );

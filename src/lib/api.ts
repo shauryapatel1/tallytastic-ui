@@ -1,12 +1,16 @@
-
 import { supabase } from "./supabase";
 import { Form } from "./types";
+import { User } from "./auth";
 
 export async function getForms() {
   try {
+    const { data: userData } = await supabase.auth.getUser();
+    if (!userData.user) throw new Error("User not authenticated");
+    
     const { data, error } = await supabase
       .from("forms")
       .select("*")
+      .eq("user_id", userData.user.id)
       .order("created_at", { ascending: false });
 
     if (error) throw error;
@@ -21,12 +25,16 @@ export async function createForm({
   title,
   description,
   templateId,
+  user,
 }: {
   title: string;
   description: string;
   templateId?: string;
+  user: User | null;
 }) {
   try {
+    if (!user) throw new Error("User not authenticated");
+    
     console.log("Creating form with template:", templateId);
     
     // This would eventually get template data from a templates API
@@ -39,6 +47,7 @@ export async function createForm({
           title,
           description,
           fields: templateFields,
+          user_id: user.id, // Add user_id to link form to current user
         },
       ])
       .select()
