@@ -13,6 +13,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { TemplateType } from "./form-templates/types";
 import { AIFormGenerator } from "./AIFormGenerator";
 import { DragDropFormBuilder } from "./DragDropFormBuilder";
+import { useAuth } from "@/lib/auth";
 
 // Simplified template data with just one example per category
 const simplifiedTemplates: TemplateType[] = [
@@ -56,9 +57,11 @@ const simplifiedTemplates: TemplateType[] = [
 export function CreateFormDialog({
   open,
   onOpenChange,
+  onFormCreated,
 }: {
   open: boolean;
   onOpenChange: (open: boolean) => void;
+  onFormCreated?: () => void;
 }) {
   const [step, setStep] = useState<"info" | "template" | "ai" | "builder">("info");
   const [title, setTitle] = useState("");
@@ -67,6 +70,7 @@ export function CreateFormDialog({
   const [isLoading, setIsLoading] = useState(false);
   const queryClient = useQueryClient();
   const { toast } = useToast();
+  const { user } = useAuth();
 
   const resetForm = () => {
     setTitle("");
@@ -91,6 +95,7 @@ export function CreateFormDialog({
       title: "Form created with AI",
       description: "Your AI-generated form has been created successfully.",
     });
+    if (onFormCreated) onFormCreated();
     handleClose();
   };
 
@@ -99,6 +104,7 @@ export function CreateFormDialog({
       title: "Form created",
       description: "Your custom form has been created successfully.",
     });
+    if (onFormCreated) onFormCreated();
     handleClose();
   };
 
@@ -128,6 +134,15 @@ export function CreateFormDialog({
       return;
     }
 
+    if (!user) {
+      toast({
+        title: "Authentication required",
+        description: "You need to be logged in to create forms",
+        variant: "destructive",
+      });
+      return;
+    }
+
     setIsLoading(true);
 
     try {
@@ -135,6 +150,7 @@ export function CreateFormDialog({
         title,
         description,
         templateId: templateId || selectedTemplate || undefined,
+        user: user
       });
 
       await queryClient.invalidateQueries({ queryKey: ["forms"] });
@@ -144,6 +160,7 @@ export function CreateFormDialog({
         description: "Your new form has been created successfully",
       });
 
+      if (onFormCreated) onFormCreated();
       handleClose();
     } catch (error) {
       console.error("Error creating form:", error);
