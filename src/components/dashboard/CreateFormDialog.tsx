@@ -18,9 +18,10 @@ import { Sparkles, Loader2, AlertCircle } from "lucide-react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Textarea } from "@/components/ui/textarea";
 import { motion, AnimatePresence } from "framer-motion";
+import { TemplateType } from "./form-templates/types";
 
 // Simplified template data
-const simplifiedTemplates = [
+const simplifiedTemplates: TemplateType[] = [
   {
     id: "blank",
     name: "Blank Form",
