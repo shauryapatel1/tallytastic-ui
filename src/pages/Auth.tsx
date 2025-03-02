@@ -1,27 +1,60 @@
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useAuth } from "@/lib/auth";
+import { useNavigate, useLocation } from "react-router-dom";
+import { useToast } from "@/hooks/use-toast";
 
 const Auth = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [mode, setMode] = useState<"signin" | "signup">("signin");
-  const { login, signup } = useAuth();
+  const { login, signup, user } = useAuth();
+  const navigate = useNavigate();
+  const location = useLocation();
+  const { toast } = useToast();
+
+  // If user is already logged in, redirect to dashboard
+  useEffect(() => {
+    if (user) {
+      const redirectPath = localStorage.getItem("redirectAfterAuth") || "/dashboard";
+      localStorage.removeItem("redirectAfterAuth");
+      navigate(redirectPath);
+    }
+  }, [user, navigate]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
+    
     try {
       if (mode === "signin") {
         await login(email, password);
+        toast({
+          title: "Sign in successful",
+          description: "Welcome back to FormCraft!",
+        });
       } else {
         await signup(email, password, email.split('@')[0]);
+        toast({
+          title: "Account created",
+          description: "Your account has been created successfully!",
+        });
       }
+      
+      // After successful auth, redirect
+      const redirectPath = localStorage.getItem("redirectAfterAuth") || "/dashboard";
+      localStorage.removeItem("redirectAfterAuth");
+      navigate(redirectPath);
     } catch (error) {
       console.error(error);
+      toast({
+        title: mode === "signin" ? "Sign in failed" : "Sign up failed",
+        description: "Please check your credentials and try again.",
+        variant: "destructive",
+      });
     } finally {
       setIsLoading(false);
     }

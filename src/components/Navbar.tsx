@@ -19,7 +19,29 @@ export const Navbar = () => {
 
   const scrollToSection = (e: React.MouseEvent, sectionId: string) => {
     e.preventDefault();
-    document.getElementById(sectionId)?.scrollIntoView({ behavior: 'smooth' });
+    const element = document.getElementById(sectionId);
+    if (element) {
+      element.scrollIntoView({ behavior: 'smooth' });
+    } else {
+      console.log(`Element with id ${sectionId} not found`);
+    }
+  };
+
+  const handleLoginClick = () => {
+    navigate("/auth");
+  };
+
+  const handleDashboardClick = () => {
+    navigate("/dashboard");
+  };
+
+  const handleLogoutClick = async () => {
+    try {
+      await logout();
+      navigate("/");
+    } catch (error) {
+      console.error("Logout error:", error);
+    }
   };
 
   return (
@@ -74,11 +96,11 @@ export const Navbar = () => {
                 <Button
                   variant="ghost"
                   size="sm"
-                  onClick={() => navigate("/dashboard")}
+                  onClick={handleDashboardClick}
                 >
                   Dashboard
                 </Button>
-                <Button size="sm" onClick={() => logout()}>
+                <Button size="sm" onClick={handleLogoutClick}>
                   Log out
                 </Button>
               </>
@@ -87,13 +109,13 @@ export const Navbar = () => {
                 <Button
                   variant="ghost"
                   size="sm"
-                  onClick={() => navigate("/auth")}
+                  onClick={handleLoginClick}
                 >
                   Log in
                 </Button>
                 <Button
                   size="sm"
-                  onClick={() => navigate("/auth")}
+                  onClick={handleLoginClick}
                 >
                   Get Started
                 </Button>

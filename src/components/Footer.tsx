@@ -1,227 +1,128 @@
 
-import { Button } from "@/components/ui/button";
-import { LogoIcon } from "@/components/ui/logo";
-import { useNavigate } from "react-router-dom";
-import { useToast } from "@/hooks/use-toast";
+import { Link } from "react-router-dom";
 
 export const Footer = () => {
-  const navigate = useNavigate();
-  const { toast } = useToast();
-  
-  const handleLinkClick = (path: string, external: boolean = false) => {
-    if (external) {
-      window.open(path, "_blank");
-    } else if (path.startsWith("#")) {
-      document.querySelector(path)?.scrollIntoView({ behavior: "smooth" });
-    } else {
-      toast({
-        title: "Navigation",
-        description: "Sign in to access this page",
-      });
-      navigate("/auth");
-    }
-  };
-  
-  const footerLinks = [
-    {
-      title: "Product",
-      links: [
-        { label: "Features", path: "#features" },
-        { label: "Pricing", path: "#pricing" },
-        { label: "Templates", path: "/dashboard/templates" },
-        { label: "Integrations", path: "/dashboard/integrations" },
-        { label: "Enterprise", path: "/enterprise" },
-      ],
-    },
-    {
-      title: "Resources",
-      links: [
-        { label: "Documentation", path: "/docs" },
-        { label: "Tutorials", path: "/tutorials" },
-        { label: "Blog", path: "/blog" },
-        { label: "API Reference", path: "/api" },
-        { label: "Developer Guide", path: "/developers" },
-      ],
-    },
-    {
-      title: "Company",
-      links: [
-        { label: "About", path: "/about" },
-        { label: "Careers", path: "/careers" },
-        { label: "Contact", path: "/contact" },
-        { label: "Partners", path: "/partners" },
-        { label: "Terms", path: "/terms", external: true },
-      ],
-    },
-    {
-      title: "Support",
-      links: [
-        { label: "Help Center", path: "/help" },
-        { label: "Community Forum", path: "/community" },
-        { label: "Status", path: "https://status.formcraft.com", external: true },
-        { label: "Security", path: "/security" },
-        { label: "Privacy", path: "/privacy", external: true },
-      ],
-    },
-  ];
-
   return (
-    <footer className="bg-primary-foreground border-t">
-      <div className="container mx-auto px-4 py-16">
+    <footer className="bg-white border-t py-12">
+      <div className="container mx-auto px-4">
         <div className="grid grid-cols-2 md:grid-cols-5 gap-8">
           <div className="col-span-2">
-            <div className="flex items-center gap-2 mb-4">
-              <LogoIcon className="h-8 w-8" />
-              <span className="font-semibold text-lg">FormCraft</span>
-            </div>
-            <p className="text-sm text-primary/60 mb-4 max-w-xs">
-              The fastest way to create beautiful forms that convert. No coding required.
+            <h3 className="text-xl font-semibold mb-4">FormCraft</h3>
+            <p className="text-sm text-muted-foreground mb-4">
+              Create beautiful forms and surveys in minutes. Collect data, gather feedback,
+              and make better decisions.
             </p>
-            <div className="flex gap-4">
-              <Button
-                size="icon"
-                variant="outline"
-                onClick={() => handleLinkClick("https://twitter.com/formcraft", true)}
-                className="rounded-full hover:bg-blue-50 hover:border-blue-200 hover:text-blue-500 transition-colors"
-              >
-                <TwitterIcon className="h-4 w-4" />
-              </Button>
-              <Button
-                size="icon"
-                variant="outline"
-                onClick={() => handleLinkClick("https://github.com/formcraft", true)}
-                className="rounded-full hover:bg-slate-800 hover:border-slate-800 hover:text-white transition-colors"
-              >
-                <GithubIcon className="h-4 w-4" />
-              </Button>
-              <Button
-                size="icon"
-                variant="outline"
-                onClick={() => handleLinkClick("https://linkedin.com/company/formcraft", true)}
-                className="rounded-full hover:bg-blue-600 hover:border-blue-600 hover:text-white transition-colors"
-              >
-                <LinkedinIcon className="h-4 w-4" />
-              </Button>
-              <Button
-                size="icon"
-                variant="outline"
-                onClick={() => handleLinkClick("https://youtube.com/formcraft", true)}
-                className="rounded-full hover:bg-red-500 hover:border-red-500 hover:text-white transition-colors"
-              >
-                <YoutubeIcon className="h-4 w-4" />
-              </Button>
+            <div className="flex space-x-4">
+              <a href="#" className="text-gray-400 hover:text-gray-500" aria-label="Twitter">
+                <svg className="h-6 w-6" fill="currentColor" viewBox="0 0 24 24">
+                  <path d="M8.29 20.251c7.547 0 11.675-6.253 11.675-11.675 0-.178 0-.355-.012-.53A8.348 8.348 0 0022 5.92a8.19 8.19 0 01-2.357.646 4.118 4.118 0 001.804-2.27 8.224 8.224 0 01-2.605.996 4.107 4.107 0 00-6.993 3.743 11.65 11.65 0 01-8.457-4.287 4.106 4.106 0 001.27 5.477A4.072 4.072 0 012.8 9.713v.052a4.105 4.105 0 003.292 4.022 4.095 4.095 0 01-1.853.07 4.108 4.108 0 003.834 2.85A8.233 8.233 0 012 18.407a11.616 11.616 0 006.29 1.84"></path>
+                </svg>
+              </a>
+              <a href="#" className="text-gray-400 hover:text-gray-500" aria-label="LinkedIn">
+                <svg className="h-6 w-6" fill="currentColor" viewBox="0 0 24 24">
+                  <path d="M19 0h-14c-2.761 0-5 2.239-5 5v14c0 2.761 2.239 5 5 5h14c2.762 0 5-2.239 5-5v-14c0-2.761-2.238-5-5-5zm-11 19h-3v-11h3v11zm-1.5-12.268c-.966 0-1.75-.79-1.75-1.764s.784-1.764 1.75-1.764 1.75.79 1.75 1.764-.783 1.764-1.75 1.764zm13.5 12.268h-3v-5.604c0-3.368-4-3.113-4 0v5.604h-3v-11h3v1.765c1.396-2.586 7-2.777 7 2.476v6.759z"></path>
+                </svg>
+              </a>
+              <a href="#" className="text-gray-400 hover:text-gray-500" aria-label="GitHub">
+                <svg className="h-6 w-6" fill="currentColor" viewBox="0 0 24 24">
+                  <path fillRule="evenodd" d="M12 2C6.477 2 2 6.484 2 12.017c0 4.425 2.865 8.18 6.839 9.504.5.092.682-.217.682-.483 0-.237-.008-.868-.013-1.703-2.782.605-3.369-1.343-3.369-1.343-.454-1.158-1.11-1.466-1.11-1.466-.908-.62.069-.608.069-.608 1.003.07 1.531 1.032 1.531 1.032.892 1.53 2.341 1.088 2.91.832.092-.647.35-1.088.636-1.338-2.22-.253-4.555-1.113-4.555-4.951 0-1.093.39-1.988 1.029-2.688-.103-.253-.446-1.272.098-2.65 0 0 .84-.27 2.75 1.026A9.564 9.564 0 0112 6.844c.85.004 1.705.115 2.504.337 1.909-1.296 2.747-1.027 2.747-1.027.546 1.379.202 2.398.1 2.651.64.7 1.028 1.595 1.028 2.688 0 3.848-2.339 4.695-4.566 4.943.359.309.678.92.678 1.855 0 1.338-.012 2.419-.012 2.747 0 .268.18.58.688.482A10.019 10.019 0 0022 12.017C22 6.484 17.522 2 12 2z" clipRule="evenodd"></path>
+                </svg>
+              </a>
             </div>
           </div>
-
-          {footerLinks.map((group) => (
-            <div key={group.title}>
-              <h3 className="font-medium mb-4">{group.title}</h3>
-              <ul className="space-y-3">
-                {group.links.map((link) => (
-                  <li key={link.label}>
-                    <button
-                      onClick={() => handleLinkClick(link.path, link.external)}
-                      className="text-primary/60 hover:text-primary transition-colors text-sm"
-                    >
-                      {link.label}
-                    </button>
-                  </li>
-                ))}
-              </ul>
-            </div>
-          ))}
+          <div>
+            <h4 className="text-sm font-semibold text-gray-900 mb-4">Product</h4>
+            <ul className="space-y-2 text-sm">
+              <li>
+                <Link to="/auth" className="text-muted-foreground hover:text-gray-900">
+                  Get Started
+                </Link>
+              </li>
+              <li>
+                <a href="#features" className="text-muted-foreground hover:text-gray-900">
+                  Features
+                </a>
+              </li>
+              <li>
+                <a href="#pricing" className="text-muted-foreground hover:text-gray-900">
+                  Pricing
+                </a>
+              </li>
+              <li>
+                <a href="#" className="text-muted-foreground hover:text-gray-900">
+                  Templates
+                </a>
+              </li>
+            </ul>
+          </div>
+          <div>
+            <h4 className="text-sm font-semibold text-gray-900 mb-4">Company</h4>
+            <ul className="space-y-2 text-sm">
+              <li>
+                <a href="#" className="text-muted-foreground hover:text-gray-900">
+                  About
+                </a>
+              </li>
+              <li>
+                <a href="#" className="text-muted-foreground hover:text-gray-900">
+                  Blog
+                </a>
+              </li>
+              <li>
+                <a href="#" className="text-muted-foreground hover:text-gray-900">
+                  Careers
+                </a>
+              </li>
+              <li>
+                <a href="#testimonials" className="text-muted-foreground hover:text-gray-900">
+                  Testimonials
+                </a>
+              </li>
+            </ul>
+          </div>
+          <div>
+            <h4 className="text-sm font-semibold text-gray-900 mb-4">Support</h4>
+            <ul className="space-y-2 text-sm">
+              <li>
+                <a href="#faq" className="text-muted-foreground hover:text-gray-900">
+                  FAQ
+                </a>
+              </li>
+              <li>
+                <a href="#" className="text-muted-foreground hover:text-gray-900">
+                  Help Center
+                </a>
+              </li>
+              <li>
+                <a href="#" className="text-muted-foreground hover:text-gray-900">
+                  Contact Us
+                </a>
+              </li>
+              <li>
+                <a href="#" className="text-muted-foreground hover:text-gray-900">
+                  Privacy Policy
+                </a>
+              </li>
+            </ul>
+          </div>
         </div>
-
-        <div className="mt-16 pt-8 border-t border-accent/20 flex flex-col md:flex-row justify-between items-center">
-          <p className="text-sm text-primary/60">
-            &copy; {new Date().getFullYear()} FormCraft, Inc. All rights reserved.
+        <div className="border-t mt-8 pt-8 flex flex-col md:flex-row justify-between">
+          <p className="text-sm text-muted-foreground">
+            © {new Date().getFullYear()} FormCraft. All rights reserved.
           </p>
-          <div className="flex gap-6 mt-4 md:mt-0">
-            <button
-              onClick={() => handleLinkClick("/terms", true)}
-              className="text-sm text-primary/60 hover:text-primary transition-colors"
-            >
+          <div className="flex space-x-6 mt-4 md:mt-0">
+            <a href="#" className="text-sm text-muted-foreground hover:text-gray-900">
               Terms
-            </button>
-            <button
-              onClick={() => handleLinkClick("/privacy", true)}
-              className="text-sm text-primary/60 hover:text-primary transition-colors"
-            >
+            </a>
+            <a href="#" className="text-sm text-muted-foreground hover:text-gray-900">
               Privacy
-            </button>
-            <button
-              onClick={() => handleLinkClick("/cookies", true)}
-              className="text-sm text-primary/60 hover:text-primary transition-colors"
-            >
+            </a>
+            <a href="#" className="text-sm text-muted-foreground hover:text-gray-900">
               Cookies
-            </button>
+            </a>
           </div>
         </div>
       </div>
     </footer>
   );
 };
-
-const TwitterIcon = ({ className }: { className?: string }) => (
-  <svg
-    xmlns="http://www.w3.org/2000/svg"
-    viewBox="0 0 24 24"
-    fill="none"
-    stroke="currentColor"
-    strokeWidth="2"
-    strokeLinecap="round"
-    strokeLinejoin="round"
-    className={className}
-  >
-    <path d="M22 4s-.7 2.1-2 3.4c1.6 10-9.4 17.3-18 11.6 2.2.1 4.4-.6 6-2C3 15.5.5 9.6 3 5c2.2 2.6 5.6 4.1 9 4-1-4.8 4-8.9 8-5 1.6-1 3-2.2 3.8-4z" />
-  </svg>
-);
-
-const GithubIcon = ({ className }: { className?: string }) => (
-  <svg
-    xmlns="http://www.w3.org/2000/svg"
-    viewBox="0 0 24 24"
-    fill="none"
-    stroke="currentColor"
-    strokeWidth="2"
-    strokeLinecap="round"
-    strokeLinejoin="round"
-    className={className}
-  >
-    <path d="M15 22v-4a4.8 4.8 0 0 0-1-3.5c3 0 6-2 6-5.5.08-1.25-.27-2.48-1-3.5.28-1.15.28-2.35 0-3.5 0 0-1 0-3 1.5-2.64-.5-5.36-.5-8 0C6 2 5 2 5 2c-.3 1.15-.3 2.35 0 3.5A5.403 5.403 0 0 0 4 9c0 3.5 3 5.5 6 5.5-.39.49-.68 1.05-.85 1.65-.17.6-.22 1.23-.15 1.85v4" />
-    <path d="M9 18c-4.51 2-5-2-7-2" />
-  </svg>
-);
-
-const LinkedinIcon = ({ className }: { className?: string }) => (
-  <svg
-    xmlns="http://www.w3.org/2000/svg"
-    viewBox="0 0 24 24"
-    fill="none"
-    stroke="currentColor"
-    strokeWidth="2"
-    strokeLinecap="round"
-    strokeLinejoin="round"
-    className={className}
-  >
-    <path d="M16 8a6 6 0 0 1 6 6v7h-4v-7a2 2 0 0 0-2-2 2 2 0 0 0-2 2v7h-4v-7a6 6 0 0 1 6-6z" />
-    <rect width="4" height="12" x="2" y="9" />
-    <circle cx="4" cy="4" r="2" />
-  </svg>
-);
-
-const YoutubeIcon = ({ className }: { className?: string }) => (
-  <svg
-    xmlns="http://www.w3.org/2000/svg"
-    viewBox="0 0 24 24"
-    fill="none"
-    stroke="currentColor"
-    strokeWidth="2"
-    strokeLinecap="round"
-    strokeLinejoin="round"
-    className={className}
-  >
-    <path d="M2.5 17a24.12 24.12 0 0 1 0-10 2 2 0 0 1 1.4-1.4 49.56 49.56 0 0 1 16.2 0A2 2 0 0 1 21.5 7a24.12 24.12 0 0 1 0 10 2 2 0 0 1-1.4 1.4 49.55 49.55 0 0 1-16.2 0A2 2 0 0 1 2.5 17" />
-    <path d="m10 15 5-3-5-3z" />
-  </svg>
-);

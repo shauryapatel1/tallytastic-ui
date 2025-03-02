@@ -41,8 +41,6 @@ const App = () => (
               <Route path="/dashboard/integrations" element={<Dashboard />} />
               <Route path="/dashboard/analytics" element={<Dashboard />} />
               <Route path="/dashboard/responses" element={<Dashboard />} />
-              <Route path="/dashboard/users" element={<Dashboard />} />
-              <Route path="/dashboard/notifications" element={<Dashboard />} />
               <Route path="/dashboard/settings" element={<Dashboard />} />
               <Route path="/dashboard/forms/:id" element={<Dashboard />} />
               <Route path="/dashboard/forms/:id/preview" element={<Dashboard />} />
@@ -52,7 +50,7 @@ const App = () => (
               {/* Public form routes */}
               <Route path="/f/:id" element={<Dashboard />} />
               
-              {/* Redirects */}
+              {/* Fallback route for any other dashboard path */}
               <Route path="/dashboard/*" element={<Dashboard />} />
               
               {/* 404 catch-all */}
