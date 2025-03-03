@@ -1,9 +1,8 @@
 
 import { useLocation, Link } from "react-router-dom";
-import { BarChart, FileText, LayoutDashboard, Mail } from "lucide-react";
+import { FileText, LayoutDashboard } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
-import { useToast } from "@/hooks/use-toast";
 
 export const sidebarLinks = [
   {
@@ -17,19 +16,7 @@ export const sidebarLinks = [
     href: "/dashboard",
     icon: FileText,
     implemented: true,
-  },
-  {
-    title: "Analytics",
-    href: "/dashboard/analytics",
-    icon: BarChart,
-    implemented: false,
-  },
-  {
-    title: "Responses",
-    href: "/dashboard/responses",
-    icon: Mail,
-    implemented: false,
-  },
+  }
 ];
 
 interface SidebarLinksProps {
@@ -38,18 +25,6 @@ interface SidebarLinksProps {
 
 export function SidebarLinks({ isCollapsed }: SidebarLinksProps) {
   const location = useLocation();
-  const { toast } = useToast();
-
-  const handleNavigation = (e: React.MouseEvent, href: string, implemented: boolean) => {
-    if (!implemented) {
-      e.preventDefault();
-      toast({
-        title: "Coming Soon",
-        description: "This feature is still in development.",
-        variant: "default",
-      });
-    }
-  };
 
   return (
     <nav className="space-y-1">
@@ -67,10 +42,9 @@ export function SidebarLinks({ isCollapsed }: SidebarLinksProps) {
               isActive && "bg-indigo-50 text-indigo-700",
               isCollapsed && "justify-center"
             )}
-            onClick={(e) => handleNavigation(e, link.href, link.implemented)}
             asChild
           >
-            <Link to={link.implemented ? link.href : "#"}>
+            <Link to={link.href}>
               <link.icon className={cn(
                 "h-5 w-5", 
                 isCollapsed ? "mr-0" : "mr-2",
