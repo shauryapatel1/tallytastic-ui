@@ -1,3 +1,4 @@
+
 import { DashboardLayout } from "./Layout";
 import { useState, useEffect } from "react";
 import { useQuery } from "@tanstack/react-query";
@@ -105,6 +106,10 @@ export default function Dashboard() {
 
   const handleFormCreated = () => {
     refetch();
+    toast({
+      title: "Form created",
+      description: "Your form has been created successfully",
+    });
   };
 
   return (

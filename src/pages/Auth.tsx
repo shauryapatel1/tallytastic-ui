@@ -27,6 +27,16 @@ const Auth = () => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    
+    if (!email || !password) {
+      toast({
+        title: "Missing information",
+        description: "Please provide both email and password",
+        variant: "destructive",
+      });
+      return;
+    }
+    
     setIsLoading(true);
     
     try {
@@ -49,7 +59,7 @@ const Auth = () => {
       localStorage.removeItem("redirectAfterAuth");
       navigate(redirectPath);
     } catch (error) {
-      console.error(error);
+      console.error("Authentication error:", error);
       toast({
         title: mode === "signin" ? "Sign in failed" : "Sign up failed",
         description: "Please check your credentials and try again.",
@@ -81,6 +91,7 @@ const Auth = () => {
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               required
+              autoComplete="email"
             />
           </div>
           <div className="space-y-2">
@@ -90,6 +101,7 @@ const Auth = () => {
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               required
+              autoComplete={mode === "signin" ? "current-password" : "new-password"}
             />
           </div>
           <Button className="w-full" type="submit" disabled={isLoading}>

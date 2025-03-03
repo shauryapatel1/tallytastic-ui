@@ -2,12 +2,15 @@
 import { Button } from "@/components/ui/button";
 import { useState, useEffect } from "react";
 import { useAuth } from "@/lib/auth";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
+import { useToast } from "@/hooks/use-toast";
 
 export const Navbar = () => {
   const [isScrolled, setIsScrolled] = useState(false);
   const { user, logout } = useAuth();
   const navigate = useNavigate();
+  const location = useLocation();
+  const { toast } = useToast();
 
   useEffect(() => {
     const handleScroll = () => {
@@ -19,6 +22,13 @@ export const Navbar = () => {
 
   const scrollToSection = (e: React.MouseEvent, sectionId: string) => {
     e.preventDefault();
+    
+    // If we're not on the home page, navigate there first
+    if (location.pathname !== '/') {
+      navigate('/', { state: { scrollTo: sectionId } });
+      return;
+    }
+    
     const element = document.getElementById(sectionId);
     if (element) {
       element.scrollIntoView({ behavior: 'smooth' });
@@ -38,9 +48,18 @@ export const Navbar = () => {
   const handleLogoutClick = async () => {
     try {
       await logout();
+      toast({
+        title: "Logged out",
+        description: "You have been successfully logged out.",
+      });
       navigate("/");
     } catch (error) {
       console.error("Logout error:", error);
+      toast({
+        title: "Logout failed",
+        description: "There was a problem logging you out. Please try again.",
+        variant: "destructive",
+      });
     }
   };
 

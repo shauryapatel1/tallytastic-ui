@@ -10,21 +10,25 @@ export const sidebarLinks = [
     title: "Dashboard",
     href: "/dashboard",
     icon: LayoutDashboard,
+    implemented: true,
   },
   {
     title: "My Forms",
-    href: "/dashboard/forms",
+    href: "/dashboard",
     icon: FileText,
+    implemented: true,
   },
   {
     title: "Analytics",
     href: "/dashboard/analytics",
     icon: BarChart,
+    implemented: false,
   },
   {
     title: "Responses",
     href: "/dashboard/responses",
     icon: Mail,
+    implemented: false,
   },
 ];
 
@@ -36,17 +40,15 @@ export function SidebarLinks({ isCollapsed }: SidebarLinksProps) {
   const location = useLocation();
   const { toast } = useToast();
 
-  const handleNavigation = (href: string) => {
-    // For routes that are not implemented yet
-    if (["/dashboard/analytics", "/dashboard/responses"].includes(href)) {
+  const handleNavigation = (e: React.MouseEvent, href: string, implemented: boolean) => {
+    if (!implemented) {
+      e.preventDefault();
       toast({
         title: "Coming Soon",
         description: "This feature is still in development.",
         variant: "default",
       });
-      return false;
     }
-    return true;
   };
 
   return (
@@ -65,14 +67,10 @@ export function SidebarLinks({ isCollapsed }: SidebarLinksProps) {
               isActive && "bg-indigo-50 text-indigo-700",
               isCollapsed && "justify-center"
             )}
-            onClick={(e) => {
-              if (!handleNavigation(link.href)) {
-                e.preventDefault();
-              }
-            }}
+            onClick={(e) => handleNavigation(e, link.href, link.implemented)}
             asChild
           >
-            <Link to={link.href}>
+            <Link to={link.implemented ? link.href : "#"}>
               <link.icon className={cn(
                 "h-5 w-5", 
                 isCollapsed ? "mr-0" : "mr-2",

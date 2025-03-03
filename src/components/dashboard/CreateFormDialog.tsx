@@ -6,7 +6,7 @@ import { Input } from "@/components/ui/input";
 import { useToast } from "@/hooks/use-toast";
 import { useQueryClient } from "@tanstack/react-query";
 import { createForm } from "@/lib/api";
-import { CircleDashed, FileText, Plus, Mail, Check, MessageSquare } from "lucide-react";
+import { CircleDashed, FileText, Plus, Mail, Check } from "lucide-react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Textarea } from "@/components/ui/textarea";
 import { motion, AnimatePresence } from "framer-motion";
@@ -15,7 +15,7 @@ import { AIFormGenerator } from "./AIFormGenerator";
 import { DragDropFormBuilder } from "./DragDropFormBuilder";
 import { useAuth } from "@/lib/auth";
 
-// Simplified template data with just one example per category
+// Simplified template data with just core examples
 const simplifiedTemplates: TemplateType[] = [
   {
     id: "blank",
@@ -32,25 +32,11 @@ const simplifiedTemplates: TemplateType[] = [
     icon: <Mail className="h-5 w-5" />,
   },
   {
-    id: "survey",
-    name: "Survey",
-    description: "Gather feedback and opinions from your audience.",
-    category: "feedback",
-    icon: <Check className="h-5 w-5" />,
-  },
-  {
-    id: "job_application",
-    name: "Job Application",
-    description: "Receive job applications with relevant information.",
-    category: "data",
-    icon: <FileText className="h-5 w-5" />,
-  },
-  {
     id: "feedback",
     name: "Feedback Form",
     description: "Collect detailed feedback about your product or service.",
     category: "feedback",
-    icon: <MessageSquare className="h-5 w-5" />,
+    icon: <Check className="h-5 w-5" />,
   }
 ];
 
@@ -150,10 +136,10 @@ export function CreateFormDialog({
         title,
         description,
         templateId: templateId || selectedTemplate || undefined,
-        user: user
+        user
       });
 
-      await queryClient.invalidateQueries({ queryKey: ["forms"] });
+      await queryClient.invalidateQueries({ queryKey: ["forms", user.id] });
 
       toast({
         title: "Form created",

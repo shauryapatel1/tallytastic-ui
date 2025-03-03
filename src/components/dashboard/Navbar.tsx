@@ -9,9 +9,52 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { motion } from "framer-motion";
+import { useNavigate } from "react-router-dom";
+import { useToast } from "@/hooks/use-toast";
 
 export const Navbar = () => {
   const { user, logout } = useAuth();
+  const navigate = useNavigate();
+  const { toast } = useToast();
+
+  const handleNotificationClick = () => {
+    toast({
+      title: "Notifications",
+      description: "You have no new notifications",
+    });
+  };
+
+  const handleHelpClick = () => {
+    toast({
+      title: "Help Center",
+      description: "The help documentation is coming soon!",
+    });
+  };
+
+  const handleSettingsClick = () => {
+    toast({
+      title: "Account Settings",
+      description: "Account settings page is under development",
+    });
+  };
+
+  const handleLogout = async () => {
+    try {
+      await logout();
+      navigate("/");
+      toast({
+        title: "Logged out",
+        description: "You have been successfully logged out",
+      });
+    } catch (error) {
+      console.error("Logout error:", error);
+      toast({
+        title: "Logout failed",
+        description: "There was a problem logging you out. Please try again.",
+        variant: "destructive",
+      });
+    }
+  };
 
   return (
     <motion.nav 
@@ -32,12 +75,21 @@ export const Navbar = () => {
           </motion.a>
 
           <div className="flex items-center gap-4">
-            <Button variant="ghost" size="icon" className="relative">
+            <Button 
+              variant="ghost" 
+              size="icon" 
+              className="relative"
+              onClick={handleNotificationClick}
+            >
               <Bell className="h-5 w-5" />
               <span className="absolute top-0 right-0 h-2 w-2 rounded-full bg-red-500"></span>
             </Button>
             
-            <Button variant="ghost" size="icon">
+            <Button 
+              variant="ghost" 
+              size="icon"
+              onClick={handleHelpClick}
+            >
               <HelpCircle className="h-5 w-5" />
             </Button>
             
@@ -56,12 +108,10 @@ export const Navbar = () => {
                 <div className="px-4 py-3 border-b">
                   <p className="text-sm font-medium">{user?.email}</p>
                 </div>
-                <DropdownMenuItem asChild>
-                  <a href="/dashboard/settings" className="cursor-pointer">
-                    Account settings
-                  </a>
+                <DropdownMenuItem onClick={handleSettingsClick} className="cursor-pointer">
+                  Account settings
                 </DropdownMenuItem>
-                <DropdownMenuItem onClick={() => logout()} className="text-red-500">
+                <DropdownMenuItem onClick={handleLogout} className="text-red-500 cursor-pointer">
                   Log out
                 </DropdownMenuItem>
               </DropdownMenuContent>
