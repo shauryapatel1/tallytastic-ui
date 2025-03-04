@@ -13,7 +13,7 @@ export const sidebarLinks = [
   },
   {
     title: "My Forms",
-    href: "/dashboard",
+    href: "/dashboard/forms",
     icon: FileText,
     implemented: true,
   }
