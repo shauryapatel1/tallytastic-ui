@@ -10,6 +10,11 @@ import Index from "./pages/Index";
 import Dashboard from "./pages/dashboard/Index";
 import Auth from "./pages/Auth";
 import NotFound from "./pages/NotFound";
+import FormBuilder from "./pages/dashboard/FormBuilder";
+import FormPublish from "./pages/dashboard/FormPublish";
+import FormResponses from "./pages/dashboard/FormResponses";
+import FormSettings from "./pages/dashboard/FormSettings";
+import PublicForm from "./pages/public/PublicForm";
 
 // Create a new QueryClient instance
 const queryClient = new QueryClient({
@@ -42,13 +47,16 @@ const App = () => (
               <Route path="/dashboard/analytics" element={<Dashboard />} />
               <Route path="/dashboard/responses" element={<Dashboard />} />
               <Route path="/dashboard/settings" element={<Dashboard />} />
-              <Route path="/dashboard/forms/:id" element={<Dashboard />} />
-              <Route path="/dashboard/forms/:id/preview" element={<Dashboard />} />
-              <Route path="/dashboard/forms/:id/responses" element={<Dashboard />} />
-              <Route path="/dashboard/forms/:id/settings" element={<Dashboard />} />
+              
+              {/* Form management routes */}
+              <Route path="/dashboard/forms/:id" element={<FormBuilder />} />
+              <Route path="/dashboard/forms/:id/publish" element={<FormPublish />} />
+              <Route path="/dashboard/forms/:id/responses" element={<FormResponses />} />
+              <Route path="/dashboard/forms/:id/settings" element={<FormSettings />} />
+              <Route path="/dashboard/forms/:id/collaborate" element={<FormSettings />} />
               
               {/* Public form routes */}
-              <Route path="/f/:id" element={<Dashboard />} />
+              <Route path="/f/:id" element={<PublicForm />} />
               
               {/* Fallback route for any other dashboard path */}
               <Route path="/dashboard/*" element={<Dashboard />} />
