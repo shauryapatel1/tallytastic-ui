@@ -1,5 +1,5 @@
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useParams, Link } from "react-router-dom";
 import { DashboardLayout } from "./Layout";
 import { CollaborationPanel } from "@/components/dashboard/collaboration/CollaborationPanel";
@@ -87,18 +87,22 @@ export default function FormSettings() {
     queryKey: ["form", id],
     queryFn: () => id ? getFormById(id) : Promise.reject("No form ID provided"),
     enabled: !!id,
-    onSuccess: (data) => {
-      // Initialize form data
-      setFormTitle(data.title);
-      setFormDescription(data.description || "");
-      setNotifyOnSubmission(data.settings?.notifications?.onSubmission || false);
-      setNotificationEmail(data.settings?.notifications?.emailAddresses?.[0] || "");
-      setRedirectUrl(data.settings?.behavior?.redirectUrl || "");
-      setSuccessMessage(data.settings?.behavior?.successMessage || "");
-      setAllowMultiple(data.settings?.behavior?.allowMultipleSubmissions || false);
-      setEnableCaptcha(data.settings?.behavior?.captchaEnabled || false);
-    }
   });
+
+  // Set form data when it's loaded
+  useEffect(() => {
+    if (form) {
+      // Initialize form data
+      setFormTitle(form.title);
+      setFormDescription(form.description || "");
+      setNotifyOnSubmission(form.settings?.notifications?.onSubmission || false);
+      setNotificationEmail(form.settings?.notifications?.emailAddresses?.[0] || "");
+      setRedirectUrl(form.settings?.behavior?.redirectUrl || "");
+      setSuccessMessage(form.settings?.behavior?.successMessage || "");
+      setAllowMultiple(form.settings?.behavior?.allowMultipleSubmissions || false);
+      setEnableCaptcha(form.settings?.behavior?.captchaEnabled || false);
+    }
+  }, [form]);
 
   const handleSaveSettings = () => {
     setIsSaving(true);

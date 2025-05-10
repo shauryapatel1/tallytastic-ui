@@ -94,12 +94,12 @@ export default function PublicForm() {
     loadForm();
   }, [id, toast]);
 
-  const handleSubmit = async (formData: Record<string, any>) => {
+  const handleSubmit = async (formData: Record<string, any>): Promise<void> => {
     if (!id) return;
     
     try {
       await submitFormResponse(id, formData);
-      return true;
+      // Return void instead of boolean to match the expected function type
     } catch (err) {
       console.error("Error submitting form:", err);
       throw new Error("Failed to submit form");
