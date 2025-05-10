@@ -15,6 +15,9 @@ import FormPublish from "./pages/dashboard/FormPublish";
 import FormResponses from "./pages/dashboard/FormResponses";
 import FormSettings from "./pages/dashboard/FormSettings";
 import PublicForm from "./pages/public/PublicForm";
+import Integrations from "./pages/dashboard/Integrations";
+import Analytics from "./pages/dashboard/Analytics";
+import UserProfile from "./pages/dashboard/UserProfile";
 
 // Create a new QueryClient instance
 const queryClient = new QueryClient({
@@ -43,9 +46,10 @@ const App = () => (
               <Route path="/dashboard" element={<Dashboard />} />
               <Route path="/dashboard/forms" element={<Dashboard />} />
               <Route path="/dashboard/templates" element={<Dashboard />} />
-              <Route path="/dashboard/integrations" element={<Dashboard />} />
-              <Route path="/dashboard/analytics" element={<Dashboard />} />
+              <Route path="/dashboard/integrations" element={<Integrations />} />
+              <Route path="/dashboard/analytics" element={<Analytics />} />
               <Route path="/dashboard/responses" element={<Dashboard />} />
+              <Route path="/dashboard/profile" element={<UserProfile />} />
               <Route path="/dashboard/settings" element={<Dashboard />} />
               
               {/* Form management routes */}

@@ -53,7 +53,8 @@ const getPublicFormById = async (id: string) => {
       primaryColor: "#6366f1",
       backgroundColor: "#ffffff",
       fontFamily: "Inter, sans-serif",
-      borderRadius: 8
+      borderRadius: 8,
+      logo: "https://via.placeholder.com/150x50?text=Logo"
     }
   };
 };
@@ -133,8 +134,23 @@ export default function PublicForm() {
     );
   }
 
+  // Apply the form theme as a style to the entire container
+  const themeStyle = {
+    '--primary-color': form.theme.primaryColor,
+    '--background-color': form.theme.backgroundColor,
+    '--font-family': form.theme.fontFamily,
+    '--border-radius': `${form.theme.borderRadius}px`,
+  } as React.CSSProperties;
+
   return (
-    <div className="min-h-screen bg-gray-50 py-12 px-4">
+    <div 
+      className="min-h-screen py-12 px-4"
+      style={{
+        ...themeStyle,
+        backgroundColor: form.theme.backgroundColor,
+        fontFamily: form.theme.fontFamily,
+      }}
+    >
       <PublicFormView 
         title={form.title}
         description={form.description}

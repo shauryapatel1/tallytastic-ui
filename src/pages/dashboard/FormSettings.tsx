@@ -14,6 +14,8 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
+import { FormTheme } from "@/lib/types";
+import { ThemeCustomizer } from "@/components/dashboard/theme-customization/ThemeCustomizer";
 
 // Mock collaborators for demo
 const mockCollaborators = [
@@ -81,7 +83,9 @@ export default function FormSettings() {
   const [successMessage, setSuccessMessage] = useState("");
   const [allowMultiple, setAllowMultiple] = useState(false);
   const [enableCaptcha, setEnableCaptcha] = useState(true);
+  const [formTheme, setFormTheme] = useState<FormTheme | null>(null);
   const [isSaving, setIsSaving] = useState(false);
+  const [activeTab, setActiveTab] = useState("general");
   
   const { data: form, isLoading, error } = useQuery({
     queryKey: ["form", id],
@@ -101,6 +105,7 @@ export default function FormSettings() {
       setSuccessMessage(form.settings?.behavior?.successMessage || "");
       setAllowMultiple(form.settings?.behavior?.allowMultipleSubmissions || false);
       setEnableCaptcha(form.settings?.behavior?.captchaEnabled || false);
+      setFormTheme(form.settings?.theme || null);
     }
   }, [form]);
 
@@ -130,6 +135,11 @@ export default function FormSettings() {
   const handleRemoveCollaborator = (id: string) => {
     // This would normally remove the collaborator
     console.log(`Removed ${id}`);
+  };
+
+  const handleThemeChange = (theme: FormTheme) => {
+    setFormTheme(theme);
+    console.log("Theme updated:", theme);
   };
 
   if (isLoading) {
@@ -190,11 +200,17 @@ export default function FormSettings() {
           </div>
         </div>
 
-        <Tabs defaultValue="general" className="w-full">
-          <TabsList className="grid w-full grid-cols-4 mb-6">
+        <Tabs 
+          defaultValue={activeTab} 
+          className="w-full"
+          value={activeTab}
+          onValueChange={setActiveTab}
+        >
+          <TabsList className="grid w-full grid-cols-5 mb-6">
             <TabsTrigger value="general">General</TabsTrigger>
             <TabsTrigger value="notifications">Notifications</TabsTrigger>
             <TabsTrigger value="behavior">Behavior</TabsTrigger>
+            <TabsTrigger value="theme">Theme</TabsTrigger>
             <TabsTrigger value="collaboration">Collaboration</TabsTrigger>
           </TabsList>
 
@@ -344,6 +360,15 @@ export default function FormSettings() {
                 </div>
               </CardContent>
             </Card>
+          </TabsContent>
+          
+          <TabsContent value="theme" className="space-y-4">
+            {formTheme && (
+              <ThemeCustomizer 
+                initialTheme={formTheme}
+                onThemeChange={handleThemeChange}
+              />
+            )}
           </TabsContent>
           
           <TabsContent value="collaboration" className="space-y-4">
