@@ -11,7 +11,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Textarea } from "@/components/ui/textarea";
 import { motion, AnimatePresence } from "framer-motion";
 import { TemplateType } from "./form-templates/types";
-import { AIFormGenerator } from "./AIFormGenerator";
+import { AIFormGenerator } from "./ai-form-generator/AIFormGenerator";
 import { DragDropFormBuilder } from "./DragDropFormBuilder";
 import { useAuth } from "@/lib/auth";
 

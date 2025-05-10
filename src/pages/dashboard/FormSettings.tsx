@@ -16,6 +16,9 @@ import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
 import { FormTheme } from "@/lib/types";
 import { ThemeCustomizer } from "@/components/dashboard/theme-customization/ThemeCustomizer";
+import { ResponseIntelligence } from "@/components/dashboard/analytics/ResponseIntelligence";
+import { WorkflowBuilder } from "@/components/dashboard/automation/WorkflowBuilder";
+import { PredictiveAnalytics } from "@/components/dashboard/analytics/PredictiveAnalytics";
 
 // Mock collaborators for demo
 const mockCollaborators = [
@@ -141,6 +144,14 @@ export default function FormSettings() {
     setFormTheme(theme);
     console.log("Theme updated:", theme);
   };
+  
+  const handleSaveWorkflow = (workflow: any) => {
+    console.log("Saving workflow:", workflow);
+    toast({
+      title: "Workflow saved",
+      description: "Your workflow automation has been saved",
+    });
+  };
 
   if (isLoading) {
     return (
@@ -206,11 +217,13 @@ export default function FormSettings() {
           value={activeTab}
           onValueChange={setActiveTab}
         >
-          <TabsList className="grid w-full grid-cols-5 mb-6">
+          <TabsList className="grid w-full grid-cols-7 mb-6">
             <TabsTrigger value="general">General</TabsTrigger>
             <TabsTrigger value="notifications">Notifications</TabsTrigger>
             <TabsTrigger value="behavior">Behavior</TabsTrigger>
             <TabsTrigger value="theme">Theme</TabsTrigger>
+            <TabsTrigger value="intelligence">Intelligence</TabsTrigger>
+            <TabsTrigger value="automation">Automation</TabsTrigger>
             <TabsTrigger value="collaboration">Collaboration</TabsTrigger>
           </TabsList>
 
@@ -369,6 +382,15 @@ export default function FormSettings() {
                 onThemeChange={handleThemeChange}
               />
             )}
+          </TabsContent>
+          
+          <TabsContent value="intelligence" className="space-y-4">
+            <ResponseIntelligence formId={form.id} />
+            <PredictiveAnalytics formId={form.id} />
+          </TabsContent>
+          
+          <TabsContent value="automation" className="space-y-4">
+            <WorkflowBuilder formId={form.id} onSave={handleSaveWorkflow} />
           </TabsContent>
           
           <TabsContent value="collaboration" className="space-y-4">
