@@ -17,6 +17,14 @@ export interface FormField {
   required: boolean;
   options?: string[];
   placeholder?: string;
+  description?: string;
+  validation?: {
+    pattern?: string;
+    minLength?: number;
+    maxLength?: number;
+    min?: number;
+    max?: number;
+  };
 }
 
 export interface Integration {
@@ -48,4 +56,17 @@ export interface FormSettings {
   };
   theme: FormTheme;
   integrations: string[]; // IDs of enabled integrations for this form
+}
+
+export interface AIFormPrompt {
+  industry?: string;
+  purpose?: string;
+  formType?: string;
+  additionalInfo?: string;
+}
+
+export interface AIFormSuggestion {
+  title: string;
+  description: string;
+  fields: FormField[];
 }
