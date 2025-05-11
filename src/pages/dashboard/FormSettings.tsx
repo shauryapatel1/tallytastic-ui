@@ -2,23 +2,22 @@
 import { useState, useEffect } from "react";
 import { useParams, Link } from "react-router-dom";
 import { DashboardLayout } from "./Layout";
-import { CollaborationPanel } from "@/components/dashboard/collaboration/CollaborationPanel";
 import { useQuery } from "@tanstack/react-query";
 import { useToast } from "@/hooks/use-toast";
 import { motion } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import { ChevronLeft, Loader2 } from "lucide-react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
-import { Switch } from "@/components/ui/switch";
-import { Label } from "@/components/ui/label";
-import { FormTheme } from "@/lib/types";
+import { FormSettingsHeader } from "@/components/dashboard/form-settings/FormSettingsHeader";
+import { GeneralSettings } from "@/components/dashboard/form-settings/GeneralSettings";
+import { NotificationSettings } from "@/components/dashboard/form-settings/NotificationSettings";
+import { BehaviorSettings } from "@/components/dashboard/form-settings/BehaviorSettings";
+import { CollaborationPanel } from "@/components/dashboard/collaboration/CollaborationPanel";
 import { ThemeCustomizer } from "@/components/dashboard/theme-customization/ThemeCustomizer";
 import { ResponseIntelligence } from "@/components/dashboard/analytics/ResponseIntelligence";
 import { WorkflowBuilder } from "@/components/dashboard/automation/WorkflowBuilder";
 import { PredictiveAnalytics } from "@/components/dashboard/analytics/PredictiveAnalytics";
+import { FormTheme } from "@/lib/types";
 
 // Mock collaborators for demo
 const mockCollaborators = [
@@ -177,6 +176,17 @@ export default function FormSettings() {
     );
   }
 
+  const formData = {
+    title: formTitle,
+    description: formDescription,
+    notifyOnSubmission,
+    notificationEmail,
+    redirectUrl,
+    successMessage,
+    allowMultiple,
+    enableCaptcha,
+  };
+
   return (
     <DashboardLayout>
       <motion.div
@@ -186,30 +196,12 @@ export default function FormSettings() {
         transition={{ duration: 0.2 }}
         className="space-y-6"
       >
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            <Button variant="ghost" size="sm" asChild>
-              <Link to={`/dashboard/forms/${id}`}>
-                <ChevronLeft className="h-4 w-4 mr-1" />
-                Back to Editor
-              </Link>
-            </Button>
-            <div>
-              <h1 className="text-2xl font-bold">{form.title}</h1>
-              <p className="text-sm text-gray-500">Form settings</p>
-            </div>
-          </div>
-          
-          <div className="flex items-center gap-2">
-            {isSaving ? (
-              <Button disabled>
-                <Loader2 className="h-4 w-4 animate-spin mr-2" /> Saving...
-              </Button>
-            ) : (
-              <Button onClick={handleSaveSettings}>Save Settings</Button>
-            )}
-          </div>
-        </div>
+        <FormSettingsHeader 
+          title={form.title}
+          isSaving={isSaving}
+          onSave={handleSaveSettings}
+          formId={id || ''}
+        />
 
         <Tabs 
           defaultValue={activeTab} 
@@ -217,162 +209,45 @@ export default function FormSettings() {
           value={activeTab}
           onValueChange={setActiveTab}
         >
-          <TabsList className="grid w-full grid-cols-7 mb-6">
-            <TabsTrigger value="general">General</TabsTrigger>
-            <TabsTrigger value="notifications">Notifications</TabsTrigger>
-            <TabsTrigger value="behavior">Behavior</TabsTrigger>
-            <TabsTrigger value="theme">Theme</TabsTrigger>
-            <TabsTrigger value="intelligence">Intelligence</TabsTrigger>
-            <TabsTrigger value="automation">Automation</TabsTrigger>
-            <TabsTrigger value="collaboration">Collaboration</TabsTrigger>
+          <TabsList className="grid w-full grid-cols-7 mb-6 bg-slate-100/50 dark:bg-slate-800/50 rounded-xl p-1">
+            <TabsTrigger value="general" className="data-[state=active]:bg-white dark:data-[state=active]:bg-slate-700 rounded-lg">General</TabsTrigger>
+            <TabsTrigger value="notifications" className="data-[state=active]:bg-white dark:data-[state=active]:bg-slate-700 rounded-lg">Notifications</TabsTrigger>
+            <TabsTrigger value="behavior" className="data-[state=active]:bg-white dark:data-[state=active]:bg-slate-700 rounded-lg">Behavior</TabsTrigger>
+            <TabsTrigger value="theme" className="data-[state=active]:bg-white dark:data-[state=active]:bg-slate-700 rounded-lg">Theme</TabsTrigger>
+            <TabsTrigger value="intelligence" className="data-[state=active]:bg-white dark:data-[state=active]:bg-slate-700 rounded-lg">Intelligence</TabsTrigger>
+            <TabsTrigger value="automation" className="data-[state=active]:bg-white dark:data-[state=active]:bg-slate-700 rounded-lg">Automation</TabsTrigger>
+            <TabsTrigger value="collaboration" className="data-[state=active]:bg-white dark:data-[state=active]:bg-slate-700 rounded-lg">Collaboration</TabsTrigger>
           </TabsList>
 
           <TabsContent value="general" className="space-y-4">
-            <Card>
-              <CardHeader>
-                <CardTitle>Form Details</CardTitle>
-                <CardDescription>Basic information about your form</CardDescription>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <div className="space-y-2">
-                  <Label htmlFor="form-title">Form Title</Label>
-                  <Input 
-                    id="form-title" 
-                    value={formTitle}
-                    onChange={(e) => setFormTitle(e.target.value)}
-                  />
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="form-description">Form Description</Label>
-                  <Textarea 
-                    id="form-description" 
-                    value={formDescription}
-                    onChange={(e) => setFormDescription(e.target.value)}
-                    rows={3}
-                  />
-                </div>
-              </CardContent>
-            </Card>
-
-            <Card>
-              <CardHeader>
-                <CardTitle>Danger Zone</CardTitle>
-                <CardDescription>Destructive actions for your form</CardDescription>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <div className="flex justify-between items-center">
-                  <div>
-                    <h3 className="font-medium text-red-600">Delete Form</h3>
-                    <p className="text-sm text-gray-500">
-                      This will permanently delete the form and all responses
-                    </p>
-                  </div>
-                  <Button variant="destructive">Delete</Button>
-                </div>
-              </CardContent>
-            </Card>
+            <GeneralSettings 
+              formTitle={formTitle}
+              formDescription={formDescription}
+              onFormTitleChange={setFormTitle}
+              onFormDescriptionChange={setFormDescription}
+            />
           </TabsContent>
           
           <TabsContent value="notifications" className="space-y-4">
-            <Card>
-              <CardHeader>
-                <CardTitle>Email Notifications</CardTitle>
-                <CardDescription>Configure email alerts for form activity</CardDescription>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <div className="flex items-center justify-between">
-                  <div className="space-y-0.5">
-                    <Label htmlFor="notify-submission">Notify on submission</Label>
-                    <p className="text-sm text-gray-500">
-                      Receive an email whenever someone submits your form
-                    </p>
-                  </div>
-                  <Switch 
-                    id="notify-submission"
-                    checked={notifyOnSubmission}
-                    onCheckedChange={setNotifyOnSubmission}
-                  />
-                </div>
-
-                {notifyOnSubmission && (
-                  <div className="space-y-2">
-                    <Label htmlFor="notification-email">Email address</Label>
-                    <Input 
-                      id="notification-email" 
-                      type="email"
-                      value={notificationEmail}
-                      onChange={(e) => setNotificationEmail(e.target.value)}
-                      placeholder="email@example.com"
-                    />
-                    <p className="text-xs text-gray-500">
-                      You can add multiple email addresses separated by commas
-                    </p>
-                  </div>
-                )}
-              </CardContent>
-            </Card>
+            <NotificationSettings
+              notifyOnSubmission={notifyOnSubmission}
+              notificationEmail={notificationEmail}
+              onNotifyOnSubmissionChange={setNotifyOnSubmission}
+              onNotificationEmailChange={setNotificationEmail}
+            />
           </TabsContent>
           
           <TabsContent value="behavior" className="space-y-4">
-            <Card>
-              <CardHeader>
-                <CardTitle>Form Behavior</CardTitle>
-                <CardDescription>Configure how your form behaves</CardDescription>
-              </CardHeader>
-              <CardContent className="space-y-6">
-                <div className="space-y-2">
-                  <Label htmlFor="success-message">Success Message</Label>
-                  <Textarea 
-                    id="success-message" 
-                    value={successMessage}
-                    onChange={(e) => setSuccessMessage(e.target.value)}
-                    placeholder="Thank you for your submission!"
-                    rows={2}
-                  />
-                </div>
-
-                <div className="space-y-2">
-                  <Label htmlFor="redirect-url">Redirect URL (optional)</Label>
-                  <Input 
-                    id="redirect-url" 
-                    value={redirectUrl}
-                    onChange={(e) => setRedirectUrl(e.target.value)}
-                    placeholder="https://example.com/thank-you"
-                  />
-                  <p className="text-xs text-gray-500">
-                    Redirect users to this URL after form submission
-                  </p>
-                </div>
-
-                <div className="flex items-center justify-between">
-                  <div className="space-y-0.5">
-                    <Label htmlFor="allow-multiple">Allow multiple submissions</Label>
-                    <p className="text-sm text-gray-500">
-                      Let users submit the form multiple times
-                    </p>
-                  </div>
-                  <Switch 
-                    id="allow-multiple"
-                    checked={allowMultiple}
-                    onCheckedChange={setAllowMultiple}
-                  />
-                </div>
-
-                <div className="flex items-center justify-between">
-                  <div className="space-y-0.5">
-                    <Label htmlFor="enable-captcha">CAPTCHA protection</Label>
-                    <p className="text-sm text-gray-500">
-                      Protect your form from spam with CAPTCHA
-                    </p>
-                  </div>
-                  <Switch 
-                    id="enable-captcha"
-                    checked={enableCaptcha}
-                    onCheckedChange={setEnableCaptcha}
-                  />
-                </div>
-              </CardContent>
-            </Card>
+            <BehaviorSettings
+              redirectUrl={redirectUrl}
+              successMessage={successMessage}
+              allowMultiple={allowMultiple}
+              enableCaptcha={enableCaptcha}
+              onRedirectUrlChange={setRedirectUrl}
+              onSuccessMessageChange={setSuccessMessage}
+              onAllowMultipleChange={setAllowMultiple}
+              onEnableCaptchaChange={setEnableCaptcha}
+            />
           </TabsContent>
           
           <TabsContent value="theme" className="space-y-4">
