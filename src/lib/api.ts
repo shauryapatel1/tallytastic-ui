@@ -1,6 +1,8 @@
-import { supabase } from "./supabase";
+
+import { supabase } from "@/integrations/supabase/client";
 import { Form } from "./types";
 import { User } from "./auth";
+import { v4 as uuidv4 } from 'uuid';
 
 export async function getForms() {
   try {
@@ -11,7 +13,7 @@ export async function getForms() {
       .from("forms")
       .select("*")
       .eq("user_id", userData.user.id)
-      .order("created_at", { ascending: false });
+      .order("updated_at", { ascending: false });
 
     if (error) throw error;
     return data as Form[];
@@ -37,33 +39,39 @@ export async function createForm({
     
     console.log("Creating form with template:", templateId);
     
-    // This would eventually get template data from a templates API
+    // Get template fields or use default empty array
     const templateFields = templateId ? getTemplateFields(templateId) : [];
+
+    // Generate a UUID for the form
+    const formId = uuidv4();
 
     const { data, error } = await supabase
       .from("forms")
       .insert([
         {
+          id: formId,
           title,
           description,
           fields: templateFields,
-          user_id: user.id, // Add user_id to link form to current user
+          user_id: user.id,
+          published: false,
+          created_at: new Date().toISOString(),
+          updated_at: new Date().toISOString()
         },
       ])
-      .select()
-      .single();
+      .select();
 
     if (error) {
       console.error("Supabase error creating form:", error);
       throw error;
     }
     
-    if (!data) {
+    if (!data || data.length === 0) {
       throw new Error("No data returned from form creation");
     }
     
-    console.log("Form created successfully:", data);
-    return data as Form;
+    console.log("Form created successfully:", data[0]);
+    return data[0] as Form;
   } catch (error) {
     console.error("Error creating form:", error);
     throw error;
@@ -88,9 +96,15 @@ export async function getForm(id: string) {
 
 export async function updateForm(id: string, updates: Partial<Form>) {
   try {
+    // Ensure we're updating the timestamp
+    const updatesWithTimestamp = {
+      ...updates,
+      updated_at: new Date().toISOString()
+    };
+    
     const { data, error } = await supabase
       .from("forms")
-      .update(updates)
+      .update(updatesWithTimestamp)
       .eq("id", id)
       .select()
       .single();
@@ -99,6 +113,68 @@ export async function updateForm(id: string, updates: Partial<Form>) {
     return data as Form;
   } catch (error) {
     console.error(`Error updating form ${id}:`, error);
+    throw error;
+  }
+}
+
+export async function deleteForm(id: string) {
+  try {
+    const { error } = await supabase
+      .from("forms")
+      .delete()
+      .eq("id", id);
+
+    if (error) throw error;
+    return true;
+  } catch (error) {
+    console.error(`Error deleting form ${id}:`, error);
+    throw error;
+  }
+}
+
+export async function publishForm(id: string, publish: boolean) {
+  try {
+    const { data, error } = await supabase
+      .from("forms")
+      .update({ 
+        published: publish,
+        updated_at: new Date().toISOString()
+      })
+      .eq("id", id)
+      .select()
+      .single();
+
+    if (error) throw error;
+    return data as Form;
+  } catch (error) {
+    console.error(`Error ${publish ? 'publishing' : 'unpublishing'} form ${id}:`, error);
+    throw error;
+  }
+}
+
+export async function submitFormResponse(formId: string, responseData: Record<string, any>) {
+  try {
+    // In a real app, we would have a form_responses table
+    const { data, error } = await supabase
+      .from("form_responses")
+      .insert([
+        {
+          form_id: formId,
+          response_data: responseData,
+          submitted_at: new Date().toISOString(),
+          metadata: {
+            browser: navigator.userAgent,
+            referrer: document.referrer,
+            timeSpent: 0, // This would be calculated on the client
+          }
+        }
+      ])
+      .select();
+
+    if (error) throw error;
+    return data;
+  } catch (error) {
+    console.error(`Error submitting response for form ${formId}:`, error);
     throw error;
   }
 }

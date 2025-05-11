@@ -18,6 +18,7 @@ import PublicForm from "./pages/public/PublicForm";
 import Integrations from "./pages/dashboard/Integrations";
 import Analytics from "./pages/dashboard/Analytics";
 import UserProfile from "./pages/dashboard/UserProfile";
+import { ProtectedRoute } from "./components/ProtectedRoute";
 
 // Create a new QueryClient instance
 const queryClient = new QueryClient({
@@ -41,29 +42,78 @@ const App = () => (
               {/* Public routes */}
               <Route path="/" element={<Index />} />
               <Route path="/auth" element={<Auth />} />
-              
-              {/* Dashboard routes */}
-              <Route path="/dashboard" element={<Dashboard />} />
-              <Route path="/dashboard/forms" element={<Dashboard />} />
-              <Route path="/dashboard/templates" element={<Dashboard />} />
-              <Route path="/dashboard/integrations" element={<Integrations />} />
-              <Route path="/dashboard/analytics" element={<Analytics />} />
-              <Route path="/dashboard/responses" element={<Dashboard />} />
-              <Route path="/dashboard/profile" element={<UserProfile />} />
-              <Route path="/dashboard/settings" element={<Dashboard />} />
-              
-              {/* Form management routes */}
-              <Route path="/dashboard/forms/:id" element={<FormBuilder />} />
-              <Route path="/dashboard/forms/:id/publish" element={<FormPublish />} />
-              <Route path="/dashboard/forms/:id/responses" element={<FormResponses />} />
-              <Route path="/dashboard/forms/:id/settings" element={<FormSettings />} />
-              <Route path="/dashboard/forms/:id/collaborate" element={<FormSettings />} />
-              
-              {/* Public form routes */}
               <Route path="/f/:id" element={<PublicForm />} />
               
+              {/* Protected dashboard routes */}
+              <Route path="/dashboard" element={
+                <ProtectedRoute>
+                  <Dashboard />
+                </ProtectedRoute>
+              } />
+              <Route path="/dashboard/forms" element={
+                <ProtectedRoute>
+                  <Dashboard />
+                </ProtectedRoute>
+              } />
+              <Route path="/dashboard/templates" element={
+                <ProtectedRoute>
+                  <Dashboard />
+                </ProtectedRoute>
+              } />
+              <Route path="/dashboard/integrations" element={
+                <ProtectedRoute>
+                  <Integrations />
+                </ProtectedRoute>
+              } />
+              <Route path="/dashboard/analytics" element={
+                <ProtectedRoute>
+                  <Analytics />
+                </ProtectedRoute>
+              } />
+              <Route path="/dashboard/profile" element={
+                <ProtectedRoute>
+                  <UserProfile />
+                </ProtectedRoute>
+              } />
+              <Route path="/dashboard/settings" element={
+                <ProtectedRoute>
+                  <Dashboard />
+                </ProtectedRoute>
+              } />
+              
+              {/* Form management routes */}
+              <Route path="/dashboard/forms/:id" element={
+                <ProtectedRoute>
+                  <FormBuilder />
+                </ProtectedRoute>
+              } />
+              <Route path="/dashboard/forms/:id/publish" element={
+                <ProtectedRoute>
+                  <FormPublish />
+                </ProtectedRoute>
+              } />
+              <Route path="/dashboard/forms/:id/responses" element={
+                <ProtectedRoute>
+                  <FormResponses />
+                </ProtectedRoute>
+              } />
+              <Route path="/dashboard/forms/:id/settings" element={
+                <ProtectedRoute>
+                  <FormSettings />
+                </ProtectedRoute>
+              } />
+              <Route path="/dashboard/forms/:id/collaborate" element={
+                <ProtectedRoute>
+                  <FormSettings />
+                </ProtectedRoute>
+              } />
+              
               {/* Fallback route for any other dashboard path */}
-              <Route path="/dashboard/*" element={<Dashboard />} />
+              <Route path="/dashboard/*" element={
+                <ProtectedRoute>
+                  <Dashboard />
+                </ProtectedRoute>
+              } />
               
               {/* 404 catch-all */}
               <Route path="*" element={<NotFound />} />

@@ -1,6 +1,8 @@
 
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 import { useToast } from '@/hooks/use-toast';
+import { supabase } from '@/integrations/supabase/client';
+import { User as SupabaseUser, Session } from '@supabase/supabase-js';
 
 // Define the structure of the user object
 export interface User {
@@ -33,59 +35,89 @@ const AuthContext = createContext<AuthContextType>({
 // Custom hook for using the auth context
 export const useAuth = () => useContext(AuthContext);
 
+// Helper function to map Supabase user to our User type
+const mapSupabaseUser = (supabaseUser: SupabaseUser): User => {
+  return {
+    id: supabaseUser.id,
+    email: supabaseUser.email || '',
+    name: supabaseUser.user_metadata?.name || supabaseUser.email?.split('@')[0] || 'User',
+    avatar: supabaseUser.user_metadata?.avatar_url,
+  };
+};
+
 // Provider component that wraps your app and makes auth object available
 export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
   const [user, setUser] = useState<User | null>(null);
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const { toast } = useToast();
 
-  // Check local storage for user on initial load
+  // Check for user on initial load
   useEffect(() => {
-    const checkUserSession = async () => {
+    const fetchUser = async () => {
       try {
-        const storedUser = localStorage.getItem('formcraft_user');
+        setIsLoading(true);
         
-        if (storedUser) {
-          setUser(JSON.parse(storedUser));
+        // Get current session and user
+        const { data: { session } } = await supabase.auth.getSession();
+        
+        if (session?.user) {
+          const mappedUser = mapSupabaseUser(session.user);
+          setUser(mappedUser);
         }
       } catch (error) {
-        console.error('Error restoring session:', error);
+        console.error('Error checking authentication:', error);
       } finally {
         setIsLoading(false);
       }
     };
 
-    checkUserSession();
+    fetchUser();
+
+    // Set up auth subscription
+    const { data: authListener } = supabase.auth.onAuthStateChange(
+      async (event, session) => {
+        if (session?.user) {
+          const mappedUser = mapSupabaseUser(session.user);
+          setUser(mappedUser);
+        } else {
+          setUser(null);
+        }
+        setIsLoading(false);
+      }
+    );
+
+    return () => {
+      authListener.subscription.unsubscribe();
+    };
   }, []);
 
-  // Mock login function
+  // Login function
   const login = async (email: string, password: string) => {
     setIsLoading(true);
     try {
-      // Simulate API request
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      
-      // Mock user data
-      const userData = {
-        id: '1',
+      const { data, error } = await supabase.auth.signInWithPassword({
         email,
-        name: email.split('@')[0],
-      };
-      
-      setUser(userData);
-      
-      // Store in localStorage for session persistence
-      localStorage.setItem('formcraft_user', JSON.stringify(userData));
-      
-      toast({
-        title: "Login successful",
-        description: `Welcome back, ${userData.name}!`,
+        password,
       });
-    } catch (error) {
-      console.error('Login error', error);
+
+      if (error) {
+        throw error;
+      }
+
+      if (data.user) {
+        const mappedUser = mapSupabaseUser(data.user);
+        setUser(mappedUser);
+        
+        toast({
+          title: "Login successful",
+          description: `Welcome back, ${mappedUser.name}!`,
+        });
+      }
+    } catch (error: any) {
+      console.error('Login error:', error);
       toast({
         title: "Login failed",
-        description: "Please check your credentials and try again.",
+        description: error.message || "Please check your credentials and try again.",
         variant: "destructive",
       });
       throw error;
@@ -94,34 +126,38 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     }
   };
 
-  // Mock signup function
+  // Signup function
   const signup = async (email: string, password: string, name: string) => {
     setIsLoading(true);
     try {
-      // Simulate API request
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      
-      // Mock user data
-      const userData = {
-        id: '1',
+      const { data, error } = await supabase.auth.signUp({
         email,
-        name,
-      };
-      
-      setUser(userData);
-      
-      // Store in localStorage for session persistence
-      localStorage.setItem('formcraft_user', JSON.stringify(userData));
-      
-      toast({
-        title: "Account created",
-        description: `Welcome to FormCraft, ${name}!`,
+        password,
+        options: {
+          data: {
+            name,
+          },
+        },
       });
-    } catch (error) {
-      console.error('Signup error', error);
+
+      if (error) {
+        throw error;
+      }
+
+      if (data.user) {
+        const mappedUser = mapSupabaseUser(data.user);
+        setUser(mappedUser);
+        
+        toast({
+          title: "Account created",
+          description: `Welcome to FormCraft, ${name}!`,
+        });
+      }
+    } catch (error: any) {
+      console.error('Signup error:', error);
       toast({
         title: "Signup failed",
-        description: "There was a problem creating your account. Please try again.",
+        description: error.message || "There was a problem creating your account. Please try again.",
         variant: "destructive",
       });
       throw error;
@@ -130,26 +166,27 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     }
   };
 
-  // Mock logout function
+  // Logout function
   const logout = async () => {
     setIsLoading(true);
     try {
-      // Simulate API request
-      await new Promise(resolve => setTimeout(resolve, 500));
-      setUser(null);
+      const { error } = await supabase.auth.signOut();
       
-      // Remove from localStorage
-      localStorage.removeItem('formcraft_user');
+      if (error) {
+        throw error;
+      }
+      
+      setUser(null);
       
       toast({
         title: "Logged out",
         description: "You have been successfully logged out.",
       });
-    } catch (error) {
-      console.error('Logout error', error);
+    } catch (error: any) {
+      console.error('Logout error:', error);
       toast({
         title: "Logout failed",
-        description: "There was a problem logging you out. Please try again.",
+        description: error.message || "There was a problem logging you out. Please try again.",
         variant: "destructive",
       });
       throw error;
