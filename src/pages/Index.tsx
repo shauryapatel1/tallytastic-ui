@@ -9,19 +9,23 @@ import { CTA } from "@/components/CTA";
 import { Footer } from "@/components/Footer";
 import { UseCaseDemo } from "@/components/UseCaseDemo";
 import { Integrations } from "@/components/Integrations";
+import { Benefits } from "@/components/Benefits";
+import { TemplateShowcase } from "@/components/TemplateShowcase";
 import { motion } from "framer-motion";
 
 const Index = () => {
   return (
     <motion.div 
-      className="min-h-screen bg-background"
+      className="min-h-screen bg-gradient-to-b from-white to-indigo-50/30"
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       transition={{ duration: 0.5 }}
     >
       <Navbar />
       <Hero />
+      <Benefits />
       <Features />
+      <TemplateShowcase />
       <UseCaseDemo />
       <Integrations />
       <Testimonials />
