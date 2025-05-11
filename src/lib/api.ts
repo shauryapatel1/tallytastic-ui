@@ -1,6 +1,6 @@
 
 import { supabase } from "@/integrations/supabase/client";
-import { Form } from "./types";
+import { Form, FormField, FormResponse } from "./types";
 import { User } from "./auth";
 import { v4 as uuidv4 } from 'uuid';
 
@@ -16,7 +16,12 @@ export async function getForms() {
       .order("updated_at", { ascending: false });
 
     if (error) throw error;
-    return data as Form[];
+    
+    // Explicitly cast the data to Form[] - we know the structure matches
+    return data.map(form => ({
+      ...form,
+      fields: form.fields as unknown as FormField[]
+    })) as Form[];
   } catch (error) {
     console.error("Error fetching forms:", error);
     throw error;
@@ -52,7 +57,7 @@ export async function createForm({
           id: formId,
           title,
           description,
-          fields: templateFields,
+          fields: templateFields as unknown as any, // Convert to whatever Supabase expects
           user_id: user.id,
           published: false,
           created_at: new Date().toISOString(),
@@ -71,7 +76,10 @@ export async function createForm({
     }
     
     console.log("Form created successfully:", data[0]);
-    return data[0] as Form;
+    return {
+      ...data[0],
+      fields: data[0].fields as unknown as FormField[]
+    } as Form;
   } catch (error) {
     console.error("Error creating form:", error);
     throw error;
@@ -87,7 +95,10 @@ export async function getForm(id: string) {
       .single();
 
     if (error) throw error;
-    return data as Form;
+    return {
+      ...data,
+      fields: data.fields as unknown as FormField[]
+    } as Form;
   } catch (error) {
     console.error(`Error fetching form ${id}:`, error);
     throw error;
@@ -99,6 +110,7 @@ export async function updateForm(id: string, updates: Partial<Form>) {
     // Ensure we're updating the timestamp
     const updatesWithTimestamp = {
       ...updates,
+      fields: updates.fields as unknown as any, // Convert to Supabase JSON format
       updated_at: new Date().toISOString()
     };
     
@@ -110,7 +122,10 @@ export async function updateForm(id: string, updates: Partial<Form>) {
       .single();
 
     if (error) throw error;
-    return data as Form;
+    return {
+      ...data,
+      fields: data.fields as unknown as FormField[]
+    } as Form;
   } catch (error) {
     console.error(`Error updating form ${id}:`, error);
     throw error;
@@ -145,34 +160,47 @@ export async function publishForm(id: string, publish: boolean) {
       .single();
 
     if (error) throw error;
-    return data as Form;
+    return {
+      ...data,
+      fields: data.fields as unknown as FormField[]
+    } as Form;
   } catch (error) {
     console.error(`Error ${publish ? 'publishing' : 'unpublishing'} form ${id}:`, error);
     throw error;
   }
 }
 
+interface FormResponseInput {
+  form_id: string;
+  response_data: Record<string, any>;
+  submitted_at: string;
+  metadata: {
+    browser: string;
+    referrer: string;
+    timeSpent: number;
+  };
+}
+
 export async function submitFormResponse(formId: string, responseData: Record<string, any>) {
   try {
-    // In a real app, we would have a form_responses table
+    const formResponseData: FormResponseInput = {
+      form_id: formId,
+      response_data: responseData,
+      submitted_at: new Date().toISOString(),
+      metadata: {
+        browser: navigator.userAgent,
+        referrer: document.referrer,
+        timeSpent: 0, // This would be calculated on the client
+      }
+    };
+
     const { data, error } = await supabase
       .from("form_responses")
-      .insert([
-        {
-          form_id: formId,
-          response_data: responseData,
-          submitted_at: new Date().toISOString(),
-          metadata: {
-            browser: navigator.userAgent,
-            referrer: document.referrer,
-            timeSpent: 0, // This would be calculated on the client
-          }
-        }
-      ])
+      .insert([formResponseData])
       .select();
 
     if (error) throw error;
-    return data;
+    return data as FormResponse[];
   } catch (error) {
     console.error(`Error submitting response for form ${formId}:`, error);
     throw error;
@@ -180,7 +208,7 @@ export async function submitFormResponse(formId: string, responseData: Record<st
 }
 
 // Helper function to get template fields
-function getTemplateFields(templateId: string) {
+function getTemplateFields(templateId: string): FormField[] {
   switch (templateId) {
     case "contact":
       return [
