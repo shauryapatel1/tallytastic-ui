@@ -170,20 +170,9 @@ export async function publishForm(id: string, publish: boolean) {
   }
 }
 
-interface FormResponseInput {
-  form_id: string;
-  response_data: Record<string, any>;
-  submitted_at: string;
-  metadata: {
-    browser: string;
-    referrer: string;
-    timeSpent: number;
-  };
-}
-
 export async function submitFormResponse(formId: string, responseData: Record<string, any>) {
   try {
-    const formResponseData: FormResponseInput = {
+    const formResponseData = {
       form_id: formId,
       response_data: responseData,
       submitted_at: new Date().toISOString(),
@@ -194,13 +183,24 @@ export async function submitFormResponse(formId: string, responseData: Record<st
       }
     };
 
+    // Use any casting because the form_responses table is not yet in the Supabase type definitions
     const { data, error } = await supabase
-      .from("form_responses")
-      .insert([formResponseData])
+      .from("form_responses" as any)
+      .insert([formResponseData] as any)
       .select();
 
     if (error) throw error;
-    return data as FormResponse[];
+    
+    // Convert the response to match our FormResponse type
+    const transformedData = (data || []).map(item => ({
+      id: item.id,
+      form_id: item.form_id,
+      submitted_at: item.submitted_at,
+      data: item.response_data,
+      metadata: item.metadata
+    })) as unknown as FormResponse[];
+    
+    return transformedData;
   } catch (error) {
     console.error(`Error submitting response for form ${formId}:`, error);
     throw error;
