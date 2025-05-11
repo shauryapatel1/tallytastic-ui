@@ -191,14 +191,19 @@ export async function submitFormResponse(formId: string, responseData: Record<st
 
     if (error) throw error;
     
-    // Convert the response to match our FormResponse type
-    const transformedData = (data || []).map(item => ({
+    if (!data || data.length === 0) {
+      throw new Error("No data returned after form response submission");
+    }
+    
+    // Safely create a transformed response by casting to any first to avoid TypeScript errors
+    const responseArray = data as any[];
+    const transformedData = responseArray.map(item => ({
       id: item.id,
       form_id: item.form_id,
       submitted_at: item.submitted_at,
       data: item.response_data,
       metadata: item.metadata
-    })) as unknown as FormResponse[];
+    })) as FormResponse[];
     
     return transformedData;
   } catch (error) {
