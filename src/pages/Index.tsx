@@ -12,6 +12,7 @@ import { Integrations } from "@/components/Integrations";
 import { Benefits } from "@/components/Benefits";
 import { TemplateShowcase } from "@/components/TemplateShowcase";
 import { motion } from "framer-motion";
+import { InteractiveDemo } from "@/components/InteractiveDemo";
 
 const Index = () => {
   return (
@@ -23,6 +24,7 @@ const Index = () => {
     >
       <Navbar />
       <Hero />
+      <InteractiveDemo />
       <Benefits />
       <Features />
       <TemplateShowcase />
