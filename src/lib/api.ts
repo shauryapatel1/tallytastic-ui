@@ -1,4 +1,3 @@
-
 import { supabase } from "@/integrations/supabase/client";
 import { Form, FormField, FormResponse } from "./types";
 import { User } from "./auth";
@@ -170,9 +169,17 @@ export async function publishForm(id: string, publish: boolean) {
   }
 }
 
+// Define a type for form response input to help with type safety
+interface FormResponseInput {
+  form_id: string;
+  response_data: Record<string, any>;
+  submitted_at: string;
+  metadata: Record<string, any>;
+}
+
 export async function submitFormResponse(formId: string, responseData: Record<string, any>) {
   try {
-    const formResponseData = {
+    const formResponseData: FormResponseInput = {
       form_id: formId,
       response_data: responseData,
       submitted_at: new Date().toISOString(),
@@ -183,7 +190,7 @@ export async function submitFormResponse(formId: string, responseData: Record<st
       }
     };
 
-    // Use any casting because the form_responses table is not yet in the Supabase type definitions
+    // Use type assertion to handle the untyped table
     const { data, error } = await supabase
       .from("form_responses" as any)
       .insert([formResponseData] as any)
