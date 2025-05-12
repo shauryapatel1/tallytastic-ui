@@ -176,3 +176,34 @@ export interface PredictiveAnalytics {
     }>;
   };
 }
+
+// Form validation types
+export interface FormValidationError {
+  fieldId: string;
+  message: string;
+}
+
+export interface FormValidationResult {
+  isValid: boolean;
+  errors: FormValidationError[];
+}
+
+// Form response analytics for visualization
+export interface FormAnalytics {
+  totalResponses: number;
+  responsesByDate: Record<string, number>;
+  browsers: Record<string, number>;
+  avgCompletionRate: number | null;
+  lastSubmission: string | null;
+}
+
+// Form payment integration
+export interface PaymentConfig {
+  enabled: boolean;
+  provider: 'stripe' | 'paypal';
+  amount?: number;
+  currency?: string;
+  productName?: string;
+  isSubscription?: boolean;
+  recurringInterval?: 'day' | 'week' | 'month' | 'year';
+}

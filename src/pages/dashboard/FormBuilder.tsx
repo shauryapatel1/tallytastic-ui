@@ -1,39 +1,20 @@
 
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { useParams } from "react-router-dom";
 import { DashboardLayout } from "./Layout";
 import { DragDropFormBuilder } from "@/components/dashboard/DragDropFormBuilder";
 import { FormField } from "@/components/dashboard/form-builder/types";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useMutation } from "@tanstack/react-query";
 import { useToast } from "@/hooks/use-toast";
 import { motion } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import { ChevronLeft, Loader2, Save } from "lucide-react";
 import { Link } from "react-router-dom";
-
-// This would normally fetch from an API
-const getFormById = async (id: string) => {
-  // Simulate API call
-  await new Promise(resolve => setTimeout(resolve, 800));
-  
-  return {
-    id,
-    title: "Sample Form",
-    description: "This is a sample form",
-    fields: [] as FormField[],
-  };
-};
-
-const updateForm = async (id: string, fields: FormField[]) => {
-  // Simulate API call
-  await new Promise(resolve => setTimeout(resolve, 800));
-  return { success: true };
-};
+import { getFormById, updateFormFields } from "@/services/formService";
 
 export default function FormBuilder() {
   const { id } = useParams<{ id: string }>();
   const { toast } = useToast();
-  const [isSaving, setIsSaving] = useState(false);
   
   const { data: form, isLoading, error } = useQuery({
     queryKey: ["form", id],
@@ -41,26 +22,29 @@ export default function FormBuilder() {
     enabled: !!id,
   });
 
-  const handleSave = async (fields: FormField[]) => {
-    if (!id) return;
-    
-    setIsSaving(true);
-    try {
-      await updateForm(id, fields);
+  const updateMutation = useMutation({
+    mutationFn: (fields: FormField[]) => {
+      if (!id) throw new Error("No form ID provided");
+      return updateFormFields(id, fields);
+    },
+    onSuccess: () => {
       toast({
         title: "Form saved",
         description: "Your form has been saved successfully",
       });
-    } catch (error) {
+    },
+    onError: (error) => {
       console.error("Error saving form:", error);
       toast({
         title: "Save failed",
         description: "There was a problem saving your form",
         variant: "destructive",
       });
-    } finally {
-      setIsSaving(false);
     }
+  });
+
+  const handleSave = async (fields: FormField[]) => {
+    updateMutation.mutate(fields);
   };
 
   if (isLoading) {
@@ -117,7 +101,7 @@ export default function FormBuilder() {
             <Button variant="outline" asChild>
               <Link to={`/dashboard/forms/${id}/publish`}>Publish</Link>
             </Button>
-            {isSaving && (
+            {updateMutation.isPending && (
               <Button disabled>
                 <Loader2 className="h-4 w-4 animate-spin mr-2" /> Saving...
               </Button>
