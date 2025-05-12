@@ -1,4 +1,3 @@
-
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -17,6 +16,14 @@ export function PredictiveAnalytics({ formId }: PredictiveAnalyticsProps) {
   
   // Mock data for demonstration
   const mockData: PredictiveAnalyticsType = {
+    // Required base properties from the interface
+    conversionRate: 0.35,
+    projectedResponses: [30, 45, 60, 75, 90],
+    topPerformingFields: ["email", "name", "feedback"],
+    dropOffPoints: ["address", "phone", "company"],
+    recommendedChanges: ["Simplify address field", "Make phone optional", "Add help text to company field"],
+    
+    // Additional properties used in the component
     submissionTrends: {
       daily: [12, 15, 10, 14, 20, 25, 18],
       weekly: [65, 72, 85, 93, 87],
