@@ -141,7 +141,7 @@ export interface WorkflowCondition {
 }
 
 export interface WorkflowAction {
-  type: 'email' | 'notification' | 'webhook' | 'database' | 'integration';
+  type: 'email' | 'notification' | 'webhook' | 'database' | 'integration' | 'api_call' | 'update_data';
   config: Record<string, any>;
 }
 
@@ -151,4 +151,28 @@ export interface PredictiveAnalytics {
   topPerformingFields: string[];
   dropOffPoints: string[];
   recommendedChanges: string[];
+  // Additional fields needed by the PredictiveAnalytics component
+  submissionTrends?: {
+    daily: number[];
+    weekly: number[];
+    monthly: number[];
+    forecast: number[];
+  };
+  conversionOptimization?: {
+    currentRate: number;
+    suggestions: string[];
+    predictedImprovement: number;
+  };
+  timingRecommendations?: {
+    bestDaysToPublish: string[];
+    bestTimesToPublish: string[];
+  };
+  audienceInsights?: {
+    segments: Array<{
+      name: string;
+      size: number;
+      conversionRate: number;
+      averageTimeSpent: number;
+    }>;
+  };
 }

@@ -337,7 +337,7 @@ export function WorkflowBuilder({ formId, onSave }: WorkflowBuilderProps) {
                 <Label htmlFor="trigger-type">Trigger Type</Label>
                 <Select
                   value={workflow.trigger.type}
-                  onValueChange={(value: any) => updateTrigger({
+                  onValueChange={(value: "form_submission" | "scheduled" | "api_call") => updateTrigger({
                     type: value,
                     config: {}
                   })}
@@ -414,16 +414,16 @@ export function WorkflowBuilder({ formId, onSave }: WorkflowBuilderProps) {
                             </SelectTrigger>
                             <SelectContent>
                               <SelectItem value="equals">Equals</SelectItem>
-                              <SelectItem value="not_equals">Not Equals</SelectItem>
+                              <SelectItem value="notEquals">Not Equals</SelectItem>
                               <SelectItem value="contains">Contains</SelectItem>
-                              <SelectItem value="greater_than">Greater Than</SelectItem>
+                              <SelectItem value="greaterThan">Greater Than</SelectItem>
                             </SelectContent>
                           </Select>
                         </div>
                         
                         <div>
                           <Input 
-                            value={condition.value || ""}
+                            value={condition.value as string}
                             onChange={(e) => updateCondition(index, {
                               ...condition,
                               value: e.target.value
