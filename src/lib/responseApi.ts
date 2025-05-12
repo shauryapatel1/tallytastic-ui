@@ -33,7 +33,9 @@ export async function getFormResponses(formId: string): Promise<FormResponse[]> 
     if (!data) return [];
     
     // Transform the data to match our FormResponse interface
-    return data.map(item => ({
+    // Cast the data to any[] first to avoid TypeScript errors
+    const responseArray = data as any[];
+    return responseArray.map(item => ({
       id: item.id,
       form_id: item.form_id,
       submitted_at: item.submitted_at,

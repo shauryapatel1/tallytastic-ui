@@ -12,6 +12,7 @@ import { ResponsesTable } from "@/components/dashboard/responses/ResponsesTable"
 import { getForm } from "@/lib/api";
 import { getFormResponses, getFormAnalytics } from "@/lib/responseApi";
 import { Form, FormResponse } from "@/lib/types";
+import { ErrorDisplay } from "@/components/ui/error-display";
 
 export default function FormResponses() {
   const { id } = useParams<{ id: string }>();
@@ -122,17 +123,12 @@ export default function FormResponses() {
   if (error) {
     return (
       <DashboardLayout>
-        <div className="flex flex-col items-center justify-center h-96 text-center">
-          <AlertTriangle className="h-12 w-12 text-destructive mb-4" />
-          <h2 className="text-2xl font-bold text-gray-800 mb-2">Something went wrong</h2>
-          <p className="text-gray-600 mb-4">We couldn't load the responses for this form.</p>
-          <div className="flex gap-4">
-            <Button onClick={() => refetchResponses()}>Try Again</Button>
-            <Button variant="outline" asChild>
-              <Link to="/dashboard">Back to Dashboard</Link>
-            </Button>
-          </div>
-        </div>
+        <ErrorDisplay 
+          title="Unable to load responses"
+          description="We couldn't load the responses for this form."
+          retryAction={() => refetchResponses()}
+          backAction={true}
+        />
       </DashboardLayout>
     );
   }

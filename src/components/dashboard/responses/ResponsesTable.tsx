@@ -6,7 +6,9 @@ import { Input } from "@/components/ui/input";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { ChevronDown, Download, Filter, Search } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+import { Form, FormResponse as AppFormResponse } from "@/lib/types";
 
+// Local interface to match the component's expectations
 export interface FormResponse {
   id: string;
   submittedAt: string;
@@ -15,15 +17,22 @@ export interface FormResponse {
 }
 
 interface ResponsesTableProps {
-  formId: string;
-  responses: FormResponse[];
-  fields: { id: string; label: string }[];
+  responses: AppFormResponse[];
+  form: Form;
 }
 
-export function ResponsesTable({ formId, responses, fields }: ResponsesTableProps) {
+export function ResponsesTable({ responses, form }: ResponsesTableProps) {
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedResponses, setSelectedResponses] = useState<string[]>([]);
   const { toast } = useToast();
+
+  // Transform the app FormResponse to the component's expected format
+  const transformedResponses: FormResponse[] = responses.map(response => ({
+    id: response.id,
+    submittedAt: response.submitted_at,
+    respondent: response.data.name || response.data.email || response.data.fullName || "Anonymous",
+    values: response.data
+  }));
 
   const handleExport = (format: "csv" | "excel" | "pdf") => {
     toast({
@@ -35,7 +44,7 @@ export function ResponsesTable({ formId, responses, fields }: ResponsesTableProp
 
   const handleSelectAll = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.checked) {
-      setSelectedResponses(responses.map(r => r.id));
+      setSelectedResponses(transformedResponses.map(r => r.id));
     } else {
       setSelectedResponses([]);
     }
@@ -51,7 +60,7 @@ export function ResponsesTable({ formId, responses, fields }: ResponsesTableProp
     });
   };
 
-  const filteredResponses = responses.filter(response => {
+  const filteredResponses = transformedResponses.filter(response => {
     if (!searchQuery) return true;
     
     // Search in all values
@@ -71,6 +80,12 @@ export function ResponsesTable({ formId, responses, fields }: ResponsesTableProp
       minute: '2-digit'
     }).format(date);
   };
+
+  // Extract field information from the form
+  const fields = form.fields.map(field => ({
+    id: field.id,
+    label: field.label
+  }));
 
   return (
     <div className="space-y-4">
@@ -122,7 +137,7 @@ export function ResponsesTable({ formId, responses, fields }: ResponsesTableProp
                 <Input 
                   type="checkbox"
                   className="h-4 w-4"
-                  checked={selectedResponses.length === responses.length && responses.length > 0}
+                  checked={selectedResponses.length === transformedResponses.length && transformedResponses.length > 0}
                   onChange={handleSelectAll}
                 />
               </TableHead>
@@ -137,7 +152,7 @@ export function ResponsesTable({ formId, responses, fields }: ResponsesTableProp
             {filteredResponses.length === 0 ? (
               <TableRow>
                 <TableCell colSpan={5 + fields.slice(0, 3).length} className="text-center py-10">
-                  {responses.length === 0 ? (
+                  {transformedResponses.length === 0 ? (
                     <div className="text-gray-500">
                       <p className="text-lg font-medium">No responses yet</p>
                       <p className="text-sm">Responses will appear here when people submit your form</p>
@@ -178,7 +193,7 @@ export function ResponsesTable({ formId, responses, fields }: ResponsesTableProp
       {filteredResponses.length > 0 && (
         <div className="flex justify-between items-center py-2">
           <div className="text-sm text-gray-500">
-            Showing {filteredResponses.length} of {responses.length} responses
+            Showing {filteredResponses.length} of {transformedResponses.length} responses
           </div>
           <div className="flex items-center gap-1">
             <Button variant="outline" size="sm" disabled>
