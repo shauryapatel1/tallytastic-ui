@@ -1,16 +1,17 @@
 
+import React from "react";
+import { FormField } from "@/lib/types";
+import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent } from "@/components/ui/card";
-import { Pencil, Trash2, GripVertical, Copy, ChevronDown, ChevronUp } from "lucide-react";
-import { FormField } from "./types";
 import { FieldEditor } from "./FieldEditor";
-import { useState } from "react";
+import { motion } from "framer-motion";
 
 interface FormFieldCardProps {
   field: FormField;
   editingField: string | null;
   draggingField: string | null;
   isDraggedOver: boolean;
+  allFields?: FormField[];
   setEditingField: (id: string | null) => void;
   handleDragStart: (id: string) => void;
   handleDragOver: (e: React.DragEvent, id: string) => void;
@@ -29,6 +30,7 @@ export function FormFieldCard({
   editingField,
   draggingField,
   isDraggedOver,
+  allFields = [],
   setEditingField,
   handleDragStart,
   handleDragOver,
@@ -41,95 +43,127 @@ export function FormFieldCard({
   handleRemoveOption,
   handleDuplicateField
 }: FormFieldCardProps) {
-  const [expanded, setExpanded] = useState(false);
+  const isEditing = editingField === field.id;
+  const isDragging = draggingField === field.id;
   
-  // Function to toggle field expansion
-  const toggleExpanded = () => {
-    if (editingField === field.id) {
-      setEditingField(null);
-    } else {
-      setEditingField(field.id);
+  // Simple summary of field type and properties
+  const getFieldSummary = () => {
+    switch (field.type) {
+      case 'text':
+        return 'Text input field';
+      case 'textarea':
+        return 'Multi-line text area';
+      case 'email':
+        return 'Email address field';
+      case 'checkbox':
+        return 'Single checkbox';
+      case 'select':
+        return `Dropdown with ${field.options?.length || 0} options`;
+      case 'radio':
+        return `Radio group with ${field.options?.length || 0} options`;
+      case 'number':
+        return 'Numeric input field';
+      case 'date':
+        return 'Date picker field';
+      case 'file':
+        return 'File upload field';
+      case 'phone':
+        return 'Phone number field';
+      case 'rating':
+        return 'Rating selection field';
+      case 'section':
+        return 'Section divider';
+      default:
+        return field.type;
     }
-    setExpanded(!expanded);
+  };
+
+  // Render conditional logic info if present
+  const renderConditionalInfo = () => {
+    if (!field.conditional?.fieldId) return null;
+    
+    const conditionField = allFields.find(f => f.id === field.conditional?.fieldId);
+    if (!conditionField) return null;
+    
+    return (
+      <div className="bg-blue-50 text-xs p-1 rounded text-blue-600 inline-flex items-center mr-2">
+        <span>Conditional</span>
+      </div>
+    );
   };
 
   return (
-    <Card 
-      key={field.id}
-      className={`relative transition-all duration-200 ${
-        draggingField === field.id ? 'opacity-50' : ''
-      } ${
-        isDraggedOver ? 'border-2 border-indigo-500' : ''
-      }`}
-      draggable
-      onDragStart={() => handleDragStart(field.id)}
-      onDragOver={(e) => handleDragOver(e, field.id)}
-      onDragEnd={handleDragEnd}
-      onDragLeave={handleDragLeave}
+    <motion.div
+      layout
+      animate={{ 
+        scale: isDragging ? 0.95 : 1,
+        opacity: isDragging ? 0.8 : 1,
+        boxShadow: isDraggedOver ? '0 4px 12px rgba(0,0,0,0.1)' : '0 1px 3px rgba(0,0,0,0.05)'
+      }}
+      transition={{ duration: 0.2 }}
     >
-      <CardContent className="p-4">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            <div className="cursor-move text-gray-400 hover:text-gray-600">
-              <GripVertical size={20} />
-            </div>
+      <Card 
+        className={`border ${isDraggedOver ? 'border-blue-400 bg-blue-50' : ''}`}
+        draggable
+        onDragStart={() => handleDragStart(field.id)}
+        onDragOver={(e) => handleDragOver(e, field.id)}
+        onDragEnd={handleDragEnd}
+        onDragLeave={handleDragLeave}
+      >
+        <div className="p-4">
+          <div className="flex items-center justify-between">
             <div>
-              <p className="font-medium text-gray-800">{field.label}</p>
-              <p className="text-xs text-gray-500">
-                {field.type} {field.required ? '(required)' : '(optional)'}
-              </p>
+              <div className="flex items-center">
+                <span className="font-medium">{field.label}</span>
+                {field.required && <span className="text-red-500 ml-1">*</span>}
+              </div>
+              <div className="text-sm text-gray-500 flex items-center space-x-1">
+                {renderConditionalInfo()}
+                <span>{getFieldSummary()}</span>
+              </div>
+            </div>
+            
+            <div className="flex space-x-2">
+              <Button 
+                variant="outline" 
+                size="sm"
+                onClick={() => setEditingField(isEditing ? null : field.id)}
+              >
+                {isEditing ? 'Done' : 'Edit'}
+              </Button>
+              
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => handleDuplicateField(field.id)}
+              >
+                Duplicate
+              </Button>
+              
+              <Button
+                variant="outline"
+                size="sm"
+                className="text-red-600 hover:bg-red-50"
+                onClick={() => removeField(field.id)}
+              >
+                Remove
+              </Button>
             </div>
           </div>
-          <div className="flex items-center gap-2">
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={() => handleDuplicateField(field.id)}
-              className="text-gray-500 hover:text-indigo-700"
-            >
-              <Copy size={16} />
-              <span className="sr-only">Duplicate</span>
-            </Button>
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={toggleExpanded}
-              className="text-gray-500 hover:text-gray-700"
-            >
-              {expanded ? <ChevronUp size={16} /> : <ChevronDown size={16} />}
-              <span className="sr-only">{expanded ? 'Collapse' : 'Expand'}</span>
-            </Button>
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={() => setEditingField(editingField === field.id ? null : field.id)}
-              className="text-gray-500 hover:text-gray-700"
-            >
-              <Pencil size={16} />
-              <span className="sr-only">Edit</span>
-            </Button>
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={() => removeField(field.id)}
-              className="text-gray-500 hover:text-red-600"
-            >
-              <Trash2 size={16} />
-              <span className="sr-only">Delete</span>
-            </Button>
-          </div>
+          
+          {isEditing && (
+            <FieldEditor
+              field={field}
+              allFields={allFields}
+              updateField={updateField}
+              handleAddOption={handleAddOption}
+              handleUpdateOption={handleUpdateOption}
+              handleRemoveOption={handleRemoveOption}
+              closeEditor={() => setEditingField(null)}
+            />
+          )}
         </div>
-        
-        {editingField === field.id && (
-          <FieldEditor 
-            field={field}
-            updateField={updateField}
-            handleAddOption={handleAddOption}
-            handleUpdateOption={handleUpdateOption}
-            handleRemoveOption={handleRemoveOption}
-          />
-        )}
-      </CardContent>
-    </Card>
+      </Card>
+    </motion.div>
   );
 }

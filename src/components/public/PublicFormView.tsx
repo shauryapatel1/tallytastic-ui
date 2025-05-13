@@ -1,5 +1,5 @@
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { FormField } from "@/lib/types";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
@@ -59,6 +59,9 @@ export function PublicFormView({
     fields.forEach(field => {
       // Skip section fields (they're just visual dividers)
       if (field.type === 'section') return;
+      
+      // Skip validation for fields that are hidden by conditional logic
+      if (field.conditional && !isFieldVisible(field)) return;
       
       if (field.required && !formData[field.id]) {
         newErrors[field.id] = "This field is required";
@@ -141,6 +144,33 @@ export function PublicFormView({
     }
   };
 
+  // Check if a field should be visible based on conditional logic
+  const isFieldVisible = (field: FormField): boolean => {
+    // If no conditional logic, field is always visible
+    if (!field.conditional || !field.conditional.fieldId) return true;
+    
+    const { fieldId, operator, value } = field.conditional;
+    const sourceFieldValue = formData[fieldId];
+    
+    // If source field value hasn't been set yet, hide the conditional field
+    if (sourceFieldValue === undefined) return false;
+    
+    switch (operator) {
+      case 'equals':
+        return sourceFieldValue === value;
+      case 'notEquals':
+        return sourceFieldValue !== value;
+      case 'contains':
+        return String(sourceFieldValue).includes(String(value));
+      case 'greaterThan':
+        return Number(sourceFieldValue) > Number(value);
+      case 'lessThan':
+        return Number(sourceFieldValue) < Number(value);
+      default:
+        return true;
+    }
+  };
+
   if (isSubmitted) {
     return <FormSubmissionSuccess successMessage={successMessage} redirectUrl={redirectUrl} />;
   }
@@ -167,13 +197,16 @@ export function PublicFormView({
       
       <form onSubmit={handleSubmit} className="space-y-6">
         {fields.map((field) => (
-          <FormFieldRenderer
-            key={field.id}
-            field={field}
-            value={formData[field.id]}
-            onChange={(value) => handleFieldChange(field.id, value)}
-            error={errors[field.id]}
-          />
+          // Only render fields that should be visible based on conditional logic
+          isFieldVisible(field) && (
+            <FormFieldRenderer
+              key={field.id}
+              field={field}
+              value={formData[field.id]}
+              onChange={(value) => handleFieldChange(field.id, value)}
+              error={errors[field.id]}
+            />
+          )
         ))}
         
         <div className="pt-6">
