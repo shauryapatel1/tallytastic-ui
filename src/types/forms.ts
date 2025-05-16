@@ -105,6 +105,24 @@ export interface ConditionalLogicBlock {
   conditions: ConditionalLogicRule[];
 }
 
+// Style Options for Form Fields (NEW)
+export interface FormFieldStyleOptions {
+  // Label Styling
+  labelIsVisible?: boolean;          // default true
+  labelTextColor?: string;           // hex
+
+  // Field Container Styling
+  width?: 'full' | '1/2' | '1/3' | '2/3' | 'auto';
+  containerBackgroundColor?: string; // hex
+  containerBorderColor?: string;     // hex
+  containerPadding?: string;         // e.g., "4px" or "1rem"
+
+  // Input Element Styling
+  inputTextColor?: string;           // hex
+  inputBackgroundColor?: string;     // hex
+  inputBorderColor?: string;         // hex for the input itself
+}
+
 export interface FormFieldDefinition extends BaseFieldProps {
   id: string;                 // Unique ID for the field
   type: FormFieldType;
@@ -148,6 +166,7 @@ export interface FormFieldDefinition extends BaseFieldProps {
   conditionalLogic?: ConditionalLogicBlock[];
 
   advancedValidationRules?: ValidationRule[];
+  styleOptions?: FormFieldStyleOptions; // CORRECTED PLACEMENT
 
   // Advanced Validation Rules (beyond isRequired)
   // validationRules?: { type: 'regex', pattern: string, message: string }[]; // Example
@@ -178,10 +197,6 @@ export interface ValidationRule {
   customMessage: string;
 }
 
-// Update FormFieldDefinition to include advancedValidationRules
-// Need to find the existing FormFieldDefinition interface and add the new property.
-// The previous search showed FormFieldDefinition. I will find it and add the property.
-
 // Definition for a section within a form
 export interface FormSectionDefinition {
   id: string;
@@ -198,10 +213,16 @@ export interface FormDefinition {
   title: string;
   description?: string;
   sections: FormSectionDefinition[];
+
+  // New properties for consistency with reducer
+  customSuccessMessage?: string;
+  redirectUrl?: string;
+  version: number;
+
   // Meta-data
   userId?: string;
-  createdAt?: string;
-  lastModified?: string;
+  createdAt: string; // Was optional, now required
+  updatedAt: string; // Was lastModified?: string, now required and renamed
   status?: FormStatus;
   // themeId?: string;
   // customCSS?: string;

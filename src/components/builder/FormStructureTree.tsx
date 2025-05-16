@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import type { FormDefinition, FormFieldType, FormFieldDefinition, FormSectionDefinition } from '@/types/forms';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Button } from '@/components/ui/button';
@@ -14,6 +14,7 @@ import {
   // ... import other icons as needed for field types
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { useDroppable, useDraggable, DragEndEvent as DndDragEndEvent } from '@dnd-kit/core';
 
 // TODO: D&D - Import necessary D&D components from chosen library (e.g., @dnd-kit/core)
 
@@ -51,14 +52,26 @@ interface FieldItemRendererProps {
 
 const FieldItemRenderer: React.FC<FieldItemRendererProps> = ({
   field,
-  // sectionId, // available if needed for D&D data
+  sectionId, // Now needed for draggable data
   isSelected,
   onSelect,
   onDelete,
 }) => {
-  // TODO: D&D - Use D&D hooks here (e.g., useDraggable)
-  // const {attributes, listeners, setNodeRef, transform} = useDraggable(...);
-  // const style = transform ? { transform: `translate3d(${transform.x}px, ${transform.y}px, 0)` } : undefined;
+  const {attributes, listeners, setNodeRef, transform, isDragging} = useDraggable({
+    id: `field-${field.id}`, // Unique ID for the draggable item
+    data: {
+      type: 'field',
+      fieldId: field.id,
+      sourceSectionId: sectionId,
+      label: field.label, // Pass label for DragOverlay if needed
+    },
+  });
+
+  const style = transform ? {
+    transform: `translate3d(${transform.x}px, ${transform.y}px, 0)`,
+    zIndex: isDragging ? 100 : 'auto', // Ensure dragged item is on top
+    opacity: isDragging ? 0.75 : 1,
+  } : undefined;
 
   // Basic icon mapping - can be expanded
   const getFieldIcon = (type: FormFieldType) => {
@@ -73,23 +86,26 @@ const FieldItemRenderer: React.FC<FieldItemRendererProps> = ({
   };
 
   return (
-    // TODO: D&D - Apply setNodeRef, style, attributes, listeners to this div
     <div
+      ref={setNodeRef} // D&D ref
+      style={style}    // D&D style
       className={cn(
-        "flex items-center justify-between p-2 pl-8 rounded-md hover:bg-muted/50 cursor-pointer",
-        isSelected && "bg-primary/10 ring-1 ring-primary text-primary-foreground"
+        "flex items-center justify-between p-2 pl-4 rounded-md hover:bg-muted/50", // Adjusted padding for drag handle
+        isSelected && "bg-primary/10 ring-1 ring-primary", // Removed text-primary-foreground as it might not be desired always
+        isDragging && "shadow-lg bg-background" // Style for when dragging
       )}
-      onClick={onSelect}
-      // ref={setNodeRef} // D&D ref
-      // style={style}    // D&D style
+      // onClick={onSelect} // onClick might interfere with dragging, handle selection carefully
+      // It's often better to have a specific clickable area if the whole item is draggable
+      // For now, let's see how it behaves. If selection is an issue, we'll refine.
     >
-      <div className="flex items-center gap-2 truncate">
-        {/* TODO: D&D - Drag handle (optional, can drag whole item) */}
-        {/* <Button variant="ghost" size="icon" className="h-7 w-7 cursor-grab" {...attributes} {...listeners}> <GripVertical className="h-4 w-4" /> </Button> */}
+      <div className="flex items-center gap-1 truncate flex-grow" onClick={onSelect} style={{ cursor: 'pointer' }}> {/* Make this part clickable */}
+        <Button variant="ghost" size="icon" className="h-7 w-7 cursor-grab" {...attributes} {...listeners}>
+          <GripVertical className="h-4 w-4" />
+        </Button>
         {getFieldIcon(field.type)}
-        <span className="text-sm truncate" title={field.label}>{field.label || 'Untitled Field'}</span>
+        <span className="text-sm truncate" title={field.label || field.name}>{field.label || field.name || 'Untitled Field'}</span>
       </div>
-      <Button variant="ghost" size="icon" className="h-7 w-7" onClick={(e) => { e.stopPropagation(); onDelete(); }}>
+      <Button variant="ghost" size="icon" className="h-7 w-7 flex-shrink-0" onClick={(e) => { e.stopPropagation(); onDelete(); }}>
         <Trash2 className="h-4 w-4 text-muted-foreground hover:text-destructive" />
       </Button>
     </div>
@@ -112,6 +128,44 @@ interface SectionItemRendererProps {
   // TODO: D&D - Add D&D props for droppable area (e.g., setNodeRef from useDroppable for field drops)
 }
 
+// --- DropIndicator Component ---
+interface DropIndicatorProps {
+  id: string;
+  sectionId: string;    // For data payload
+  targetIndex: number;  // For data payload
+  // isVisible?: boolean; // Future: control visibility based on active draggable
+}
+
+const DropIndicator: React.FC<DropIndicatorProps> = ({ id, sectionId, targetIndex }) => {
+  const { setNodeRef, isOver, active } = useDroppable({
+    id,
+    data: {
+      type: 'dropIndicator',
+      sectionId,
+      targetIndex,
+    },
+  });
+
+  // Visual cue for when a draggable is over this drop target
+  const isActiveDropTarget =
+    isOver &&
+    (active?.data.current?.type === 'field' ||
+      active?.data.current?.type === 'newField'); // Added 'newField'
+
+  return (
+    <div
+      ref={setNodeRef}
+      className={cn(
+        "h-1 my-0.5 w-full bg-transparent transition-all duration-150 ease-in-out",
+        isActiveDropTarget ? "bg-primary h-2.5 rounded" : "h-1",
+        // Subtle visibility even when not active, for debugging or if desired
+        // !isActiveDropTarget && "bg-slate-100 dark:bg-slate-800 opacity-50"
+      )}
+      style={{ minHeight: isActiveDropTarget ? '0.625rem' : '0.25rem' }} // Ensure space for visual change
+    />
+  );
+};
+
 const SectionItemRenderer: React.FC<SectionItemRendererProps> = ({
   section,
   isSelected,
@@ -124,53 +178,107 @@ const SectionItemRenderer: React.FC<SectionItemRendererProps> = ({
   onSelectField,
   onDeleteField,
 }) => {
-  // TODO: D&D - Hook for draggable section: useDraggable({ id: section.id, data: { type: 'section' } })
-  // TODO: D&D - Hook for droppable area within section for fields: useDroppable({ id: section.id, data: { type: 'section-drop-area' } })
+  // Draggable hook for the section itself
+  const {
+    attributes: sectionDragAttributes,
+    listeners: sectionDragListeners,
+    setNodeRef: setSectionDraggableNodeRef,
+    transform: sectionTransform,
+    isDragging: isSectionDragging,
+  } = useDraggable({
+    id: `section-draggable-${section.id}`, // Unique ID for section dragging
+    data: {
+      type: 'section',
+      sectionId: section.id,
+      label: section.title,
+    },
+  });
+
+  const sectionDragStyle = sectionTransform ? {
+    transform: `translate3d(${sectionTransform.x}px, ${sectionTransform.y}px, 0)`,
+    zIndex: isSectionDragging ? 200 : 'auto', // Higher z-index for section dragging
+    opacity: isSectionDragging ? 0.75 : 1,
+  } : undefined;
+
+  // Droppable hook for the general area within the section (for new fields from palette)
+  const { setNodeRef: setFieldsDroppableNodeRef, isOver: isSectionAreaOver, active: activeOverSectionArea } = useDroppable({
+    id: `section-drop-area-${section.id}`, 
+    data: {
+      type: 'sectionDropArea', 
+      sectionId: section.id,
+    },
+  });
+  
+  const isNewFieldOverSectionArea = isSectionAreaOver && activeOverSectionArea?.data.current?.type === 'newField';
 
   const isSectionDirectlySelected = isSelected && selectedFieldId === null;
 
   return (
-    // TODO: D&D - Apply draggable props to this outer div if sections are draggable
-    <div className={cn("rounded-md border mb-2", isSectionDirectlySelected && "bg-primary/10 ring-1 ring-primary text-primary-foreground")}>
-      {/* TODO: D&D - Section Drop Zone (for new fields from palette) could be this header or area around it */}
+    <div 
+      ref={setSectionDraggableNodeRef} // Ref for making the whole section draggable
+      style={sectionDragStyle}        // Style for drag transform
+      className={cn("rounded-md border mb-2 bg-card", // bg-card for sections
+                      isSectionDirectlySelected && "bg-primary/10 ring-1 ring-primary",
+                      // isFieldsDropAreaOver && !isSectionDragging && "outline-2 outline-dashed outline-primary", // Visual cue for field drop, not when section itself is dragged
+                      isSectionDragging && "shadow-xl"
+                    )}>
       <div
         className={cn(
-          "flex items-center justify-between p-2 rounded-t-md hover:bg-muted/50 cursor-pointer",
+          "flex items-center justify-between p-2 rounded-t-md hover:bg-muted/50",
           isSectionDirectlySelected && "bg-primary/20",
         )}
-        onClick={onSelect}
+        // onClick={onSelect} // Section selection will be handled by clicking the title area for now
       >
-        <div className="flex items-center gap-2">
-          {/* TODO: D&D - Section drag handle */}
-          {/* <Button variant="ghost" size="icon" className="h-7 w-7 cursor-grab"> <GripVertical className="h-4 w-4" /> </Button> */}
+        <div className="flex items-center gap-1 flex-grow" onClick={onSelect} style={{ cursor: 'pointer' }}> {/* Clickable title area for selection */}
+          <Button variant="ghost" size="icon" className="h-7 w-7 cursor-grab" {...sectionDragAttributes} {...sectionDragListeners}>
+            <GripVertical className="h-4 w-4" />
+          </Button>
           <Button variant="ghost" size="icon" className="h-7 w-7" onClick={(e) => { e.stopPropagation(); onToggleExpand(); }}>
             {isExpanded ? <ChevronDown className="h-4 w-4" /> : <ChevronRight className="h-4 w-4" />}
           </Button>
           <span className="text-sm font-medium truncate" title={section.title}>{section.title || 'Untitled Section'}</span>
         </div>
-        <Button variant="ghost" size="icon" className="h-7 w-7" onClick={(e) => { e.stopPropagation(); onDelete(); }}>
+        <Button variant="ghost" size="icon" className="h-7 w-7 flex-shrink-0" onClick={(e) => { e.stopPropagation(); onDelete(); }}>
           <Trash2 className="h-4 w-4 text-muted-foreground hover:text-destructive" />
         </Button>
       </div>
       {isExpanded && (
-        // TODO: D&D - This div would be a primary droppable area for fields
-        // ref={setDroppableNodeRef} // D&D ref for section as a drop zone for fields
-        <div className="p-2 border-t">
-          {fields.length > 0 ? (
-            fields.map((field) => (
+        <div 
+          ref={setFieldsDroppableNodeRef} // Ref for the general section drop area (mainly for new fields)
+          className={cn(
+            "p-2 border-t min-h-[60px] relative", // Added relative for potential absolute positioning of indicators if needed
+            isNewFieldOverSectionArea && "bg-primary/5 outline-1 outline-dashed outline-primary-focus", 
+            fields.length === 0 && !isNewFieldOverSectionArea && "flex items-center justify-center" 
+          )}
+        >
+          {/* Render DropIndicators around and between fields */}
+          <DropIndicator 
+            id={`drop-indicator-${section.id}-index-0`}
+            sectionId={section.id} 
+            targetIndex={0} 
+          />
+          {fields.map((field, index) => (
+            <React.Fragment key={field.id}> {/* Use field.id for React key on Fragment if field is direct child, or on FieldItemRenderer */}
               <FieldItemRenderer
-                key={field.id}
+                key={field.id} // Ensure FieldItemRenderer also has its key
                 field={field}
                 sectionId={section.id}
                 isSelected={selectedFieldId === field.id}
                 onSelect={() => onSelectField(field.id, section.id)}
                 onDelete={() => onDeleteField(field.id, section.id)}
               />
-            ))
-          ) : (
-            // TODO: D&D - This empty state should also be a droppable target
-            <div className="text-center text-xs text-muted-foreground py-4 px-2 border border-dashed rounded-md">
-              Drag fields here or from the palette.
+              <DropIndicator 
+                id={`drop-indicator-${section.id}-index-${index + 1}`}
+                sectionId={section.id} 
+                targetIndex={index + 1} 
+              />
+            </React.Fragment>
+          ))}
+          
+          {/* Placeholder text if section is empty AND not being hovered by a new field */}
+          {fields.length === 0 && !isNewFieldOverSectionArea && (
+            <div className="text-center text-xs text-muted-foreground py-4 px-2">
+              Drag fields or drop existing ones here.
             </div>
           )}
         </div>
@@ -194,12 +302,14 @@ export function FormStructureTree({
 
   // Local state for expanded sections - can be moved to parent if needed for persistence
   const [expandedSections, setExpandedSections] = React.useState<Record<string, boolean>>({});
-  React.useEffect(() => {
+  useEffect(() => {
     // Expand all sections by default, or based on a prop
     const initialExpansion: Record<string, boolean> = {};
-    formDefinition.sections.forEach(sec => initialExpansion[sec.id] = true);
+    if (formDefinition && formDefinition.sections) {
+        formDefinition.sections.forEach(sec => initialExpansion[sec.id] = true);
+    }
     setExpandedSections(initialExpansion);
-  }, [formDefinition.sections]);
+  }, [formDefinition]);
 
   const toggleSectionExpand = (sectionId: string) => {
     setExpandedSections(prev => ({ ...prev, [sectionId]: !prev[sectionId] }));
@@ -208,41 +318,65 @@ export function FormStructureTree({
   // TODO: D&D - handleDragEnd function to process different drag types (new field, reorder field, move field, reorder section)
   // const handleDragEnd = (event: DragEndEvent) => { ... logic using event.active and event.over ... dispatch actions ... };
 
-  if (!formDefinition || formDefinition.sections.length === 0) {
+  if (!formDefinition || !formDefinition.sections || formDefinition.sections.length === 0) {
+    // TODO: This empty state itself needs to be a droppable target for new sections/fields.
+    // For now, focusing on dropping into existing sections.
+    const { setNodeRef: setEmptyStateDropRef, isOver: isEmptyStateOver } = useDroppable({ 
+      id: 'empty-form-structure-drop-area', // For adding first section or field to an empty form
+      data: { type: 'emptyFormArea' }
+    });
     return (
-      // TODO: D&D - This area should also be a droppable target for new sections / fields from palette
-      <div className="h-full flex flex-col items-center justify-center p-4 border-r bg-background">
+      <div 
+        ref={setEmptyStateDropRef} 
+        className={cn(
+          "h-full flex flex-col items-center justify-center p-4 border-r bg-background",
+          isEmptyStateOver && "outline-2 outline-dashed outline-primary bg-primary/5" // Visual cue
+        )}
+      >
         <p className="text-sm text-muted-foreground">No sections in this form yet.</p>
-        <p className="text-xs text-muted-foreground mt-1">Drag a field from the palette to start.</p>
-        {/* Or a button to add first section? */}
+        <p className="text-xs text-muted-foreground mt-1">Drag a field from the palette to start building your form, or add a section.</p>
       </div>
     );
   }
+
+  // Droppable for the list of sections (for reordering sections)
+  const { setNodeRef: setSectionsListDroppableNodeRef, isOver: isSectionsListOver } = useDroppable({
+    id: 'form-structure-sections-list-droppable',
+    data: {
+      type: 'sectionsListArea',
+    },
+  });
 
   return (
     <div className="h-full flex flex-col border-r bg-background">
       <div className="p-3 border-b">
         <h3 className="text-sm font-semibold text-foreground">Form Structure</h3>
-        {/* Add any toolbar items for structure tree here if needed */}
       </div>
-      <ScrollArea className="flex-grow p-2">
-        {/* TODO: D&D - If reordering sections, this area needs sensors and droppable logic for sections */}
-        {formDefinition.sections.map((section, index) => (
-          <SectionItemRenderer
-            key={section.id}
-            section={section}
-            isSelected={selectedSectionId === section.id}
-            isExpanded={!!expandedSections[section.id]}
-            onSelect={() => onSelectSection(section.id)}
-            onDelete={() => onDeleteSection(section.id)}
-            onToggleExpand={() => toggleSectionExpand(section.id)}
-            fields={section.fields}
-            selectedFieldId={selectedFieldId}
-            onSelectField={onSelectField}
-            onDeleteField={onDeleteField}
-            // TODO: D&D - Pass D&D related props and handlers
-          />
-        ))}
+      <ScrollArea className="flex-grow">
+        <div 
+          ref={setSectionsListDroppableNodeRef} // Make the scrollable area droppable for sections
+          className={cn(
+            "p-3 space-y-1",
+            isSectionsListOver && "bg-muted/30 outline-1 outline-dashed outline-accent" // Visual cue for section reorder
+          )}
+        >
+          {formDefinition.sections.map((section, index) => (
+            <SectionItemRenderer
+              key={section.id}
+              section={section}
+              // Pass index for reordering sections
+              isSelected={selectedSectionId === section.id || (selectedFieldId !== null && section.fields.some(f => f.id === selectedFieldId))}
+              isExpanded={expandedSections[section.id] || false}
+              onSelect={() => onSelectSection(section.id)}
+              onDelete={() => onDeleteSection(section.id)}
+              onToggleExpand={() => toggleSectionExpand(section.id)}
+              fields={section.fields}
+              selectedFieldId={selectedFieldId}
+              onSelectField={onSelectField}
+              onDeleteField={onDeleteField}
+            />
+          ))}
+        </div>
       </ScrollArea>
     </div>
   );

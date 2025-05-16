@@ -3,22 +3,25 @@ import { Button } from '@/components/ui/button';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import type { FormFieldType } from '@/types/forms';
 import {
+  useDraggable,
+} from '@dnd-kit/core';
+import {
   Type,
-  CaseSensitive, // Using for Textarea as 'Textarea' icon isn't standard
+  CaseSensitive,
   Mail,
   Hash,
   Phone,
-  Link as LinkIcon, // Alias to avoid conflict with React Router Link
+  Link as LinkIcon,
   CalendarDays,
   Clock,
   ChevronDownSquare,
-  ListChecks, // For Multiple Choice (Checkbox group)
-  CircleDot,  // For Single Choice (Radio group)
+  ListChecks,
+  CircleDot,
   Star,
   FileUp,
-  Minus,      // For Divider
+  Minus,
   Heading1,
-  Pilcrow,    // For Paragraph
+  Pilcrow,
 } from 'lucide-react';
 
 export interface FieldPaletteItemProps {
@@ -58,20 +61,36 @@ const PALETTE_ITEMS: FieldPaletteItemProps[] = [
   // TODO: Consider adding 'section' or 'page break' if those are added to FormFieldType
 ];
 
-// Placeholder for the actual item rendering logic which will integrate D&D
-const DraggablePaletteItem = ({ item, onAddFieldIntent }: { item: FieldPaletteItemProps, onAddFieldIntent?: (fieldType: FormFieldType) => void }) => {
-  // TODO: Implement actual D&D source logic here using @dnd-kit/core or similar.
-  // This is a simplified representation for click-to-add or basic display.
-  // For D&D, you'd use something like `useDraggable` from @dnd-kit/core here.
+// Component to render the item in the palette (draggable)
+const DraggablePaletteItem = ({ item }: { item: FieldPaletteItemProps }) => {
+  const { attributes, listeners, setNodeRef, transform, isDragging } = useDraggable({
+    id: `palette-item-${item.fieldType}`, // Ensure unique ID across all draggables if necessary
+    data: {
+      type: 'newField', // This identifies the drag source type for FormBuilder's onDragEnd
+      fieldType: item.fieldType,
+      label: item.label,
+      // icon: item.icon, // Keeping icon data, FormBuilder can decide to use it or not
+      // For DragOverlay in FormBuilder, it's easier if we pass primitive data or simple structures.
+      // Let's pass icon metadata if FormBuilder wants to reconstruct it, or just rely on label.
+      // For now, label is sufficient for FormBuilder's DragOverlay.
+    },
+  });
+
+  const style = transform ? {
+    transform: `translate3d(${transform.x}px, ${transform.y}px, 0)`,
+    zIndex: isDragging ? 1000 : undefined, // Higher zIndex during drag
+    opacity: isDragging ? 0.5 : undefined,
+  } : undefined;
+
   return (
     <Button
+      ref={setNodeRef}
+      style={style}
+      {...listeners}
+      {...attributes}
       variant="outline"
-      className="w-full justify-start text-sm h-auto py-2 px-3 mb-1.5 flex items-center"
-      onClick={() => onAddFieldIntent?.(item.fieldType)}
-      // TODO: Add D&D attributes (e.g., ref, listeners from useDraggable) here if not handled by a wrapper
-      // Consider adding aria-grabbed and role="button" for accessibility if it's purely a drag handle.
-      // If it's also clickable, ensure it's a proper button.
-      title={`Add ${item.label} field`}
+      className="w-full justify-start text-sm h-auto py-2 px-3 mb-1.5 flex items-center cursor-grab"
+      title={`Drag to add ${item.label} field`}
     >
       {item.icon}
       <span className="ml-2">{item.label}</span>
@@ -80,30 +99,23 @@ const DraggablePaletteItem = ({ item, onAddFieldIntent }: { item: FieldPaletteIt
 };
 
 export function FieldPalette({ onAddFieldIntent }: FieldPaletteProps) {
-  // TODO: Potentially group items by category if PALETTE_ITEMS becomes large.
-  // This could be done by structuring PALETTE_ITEMS into groups
-  // and rendering subheadings and lists for each group.
+  // Removed local DndContext, DragOverlay, and their state/handlers (activeItem, handleDragStart, handleDragEnd)
+  // The DndContext in FormBuilder.tsx will manage drag operations.
 
   return (
     <div className="h-full flex flex-col border-r bg-background">
       <div className="p-3 border-b">
         <h3 className="text-sm font-semibold text-foreground">Add Field</h3>
-        <p className="text-xs text-muted-foreground">Drag or click to add</p>
+        <p className="text-xs text-muted-foreground">Drag to add</p>
       </div>
-      <ScrollArea className="flex-grow p-1"> {/* Adjust padding/height as needed */}
-        <div className="space-y-1 p-2"> {/* Outer padding for scrollbar */}
+      <ScrollArea className="flex-grow p-1">
+        <div className="space-y-1 p-2">
           {PALETTE_ITEMS.map(item => (
-            <DraggablePaletteItem key={item.fieldType} item={item} onAddFieldIntent={onAddFieldIntent} />
+            <DraggablePaletteItem key={item.fieldType} item={item} />
           ))}
-          {/*
-            TODO: Implement drag-and-drop functionality for these items.
-            Each DraggablePaletteItem should be a draggable source.
-            The data transferred should identify the FormFieldType.
-            This will likely involve wrapping FieldPalette or DraggablePaletteItem
-            with DndContext and using useDraggable from @dnd-kit/core.
-          */}
         </div>
       </ScrollArea>
+      {/* Removed DragOverlay from here */}
     </div>
   );
 } 

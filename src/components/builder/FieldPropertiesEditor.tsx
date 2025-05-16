@@ -20,6 +20,7 @@ import { DividerOptionsEditor } from "./options_editors/DividerOptionsEditor";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { AdvancedValidationEditor } from "./options_editors/AdvancedValidationEditor";
 import { ConditionalLogicEditor } from "./options_editors/ConditionalLogicEditor";
+import { FieldStylingEditor } from './options_editors/FieldStylingEditor';
 
 export interface FieldPropertiesEditorProps {
   field: FormFieldDefinitionType; // Use the imported FormFieldDefinitionType directly
@@ -294,126 +295,164 @@ export function FieldPropertiesEditor({
   };
 
   return (
-    <div className="space-y-6">
-      <h3 className="text-lg font-semibold">Field: {label || field.type}</h3>
-      <Accordion type="multiple" defaultValue={["common-props", "type-specific-props"]} className="w-full">
-        <AccordionItem value="common-props">
-          <AccordionTrigger>General Properties</AccordionTrigger>
-          <AccordionContent className="space-y-4 pt-2">
+    <div className="w-full space-y-6">
+      <div className="space-y-2">
+        <Label htmlFor={`field-label-${field.id}`} className="text-sm font-medium">Label / Question</Label>
+        <Input
+          id={`field-label-${field.id}`}
+          value={label}
+          onChange={(e) => handleFieldChange('label', e.target.value)}
+          placeholder="Enter field label"
+          className="text-base" // Slightly larger for the main label input
+        />
+      </div>
+
+      <div className="space-y-2">
+        <Label htmlFor={`field-name-${field.id}`} className="text-sm font-medium">Field Name (Internal ID)</Label>
+        <Input
+          id={`field-name-${field.id}`}
+          value={name} // This is field.name
+          onChange={(e) => handleFieldChange('name', e.target.value.replace(/\s+/g, '_').toLowerCase())} // Basic sanitization
+          placeholder="e.g., user_email, first_name"
+          className="text-xs"
+          // Potentially add validation for uniqueness or format if needed here or on blur
+        />
+        <p className="text-xs text-muted-foreground">
+          Internal identifier for this field. Used in data exports and integrations. No spaces or special characters other than underscores.
+        </p>
+      </div>
+
+      <Accordion type="multiple" defaultValue={['basic']} className="w-full">
+        <AccordionItem value="basic">
+          <AccordionTrigger className="text-sm font-medium">Basic Properties</AccordionTrigger>
+          <AccordionContent className="pt-4 space-y-4">
             <div className="space-y-2">
-              <Label htmlFor={`field-label-${field.id}`}>Label / Question Text</Label>
-              <Input
-                id={`field-label-${field.id}`}
-                value={label} // Now directly from field (non-optional)
-                onChange={(e) => handleFieldChange('label', e.target.value)}
-                placeholder="E.g., Your Name"
-              />
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor={`field-name-${field.id}`}>Submission Key (Name)</Label>
-              <Input
-                id={`field-name-${field.id}`}
-                value={name} // Now directly from field (non-optional)
-                onChange={(e) => handleFieldChange('name', e.target.value)}
-                placeholder="e.g., user_name (unique, no spaces)"
-              />
-              {/* TODO: Add validation for the 'name' property (e.g., no spaces, uniqueness, required) */}
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor={`field-description-${field.id}`}>Helper Text / Description</Label>
+              <Label htmlFor={`field-helperText-${field.id}`} className="text-xs">Helper Text / Description</Label>
               <Textarea
-                id={`field-description-${field.id}`}
-                value={helperText} // field.description
-                onChange={(e) => handleFieldChange('description', e.target.value)}
-                placeholder="Optional helper text shown below the input."
+                id={`field-helperText-${field.id}`}
+                value={helperText}
+                onChange={(e) => handleFieldChange('description', e.target.value || undefined)}
+                placeholder="Provide additional guidance for this field"
                 rows={2}
+                className="text-xs"
               />
             </div>
-            <div className="space-y-2">
-              <Label htmlFor={`field-placeholder-${field.id}`}>Placeholder Text</Label>
-              <Input
-                id={`field-placeholder-${field.id}`}
-                value={placeholder}
-                onChange={(e) => handleFieldChange('placeholder', e.target.value)}
-                placeholder="Optional placeholder text for the input."
-              />
+
+            {field.type !== 'divider' && field.type !== 'heading' && field.type !== 'paragraph' && (
+              <div className="space-y-2">
+                <Label htmlFor={`field-placeholder-${field.id}`} className="text-xs">Placeholder Text</Label>
+                <Input
+                  id={`field-placeholder-${field.id}`}
+                  value={placeholder}
+                  onChange={(e) => handleFieldChange('placeholder', e.target.value || undefined)}
+                  placeholder="Enter placeholder text"
+                  className="text-xs"
+                />
+              </div>
+            )}
+
+            {field.type !== 'divider' && field.type !== 'heading' && (
+              <div className="space-y-2">
+                <Label htmlFor={`field-defaultValue-${field.id}`} className="text-xs">Default Value</Label>
+                {renderDefaultValueInput(field)}
+              </div>
+            )}
+            
+            <div className="flex items-center justify-between rounded-lg border p-3 shadow-sm">
+                <div className="space-y-0.5">
+                    <Label htmlFor={`field-isRequired-${field.id}`} className="text-xs font-medium">Required</Label>
+                    <p className="text-[11px] text-muted-foreground">
+                        User must fill this field.
+                    </p>
+                </div>
+                <Switch
+                    id={`field-isRequired-${field.id}`}
+                    checked={isRequired}
+                    onCheckedChange={(checked) => handleFieldChange('isRequired', checked)}
+                    aria-label="Toggle field required status"
+                />
             </div>
-             <div className="space-y-2">
-              <Label htmlFor={`field-defaultValue-${field.id}`}>Default Value</Label>
-              {renderDefaultValueInput(field)}
-              {/* TODO: defaultValue input type should vary based on field.type (e.g. number, boolean, etc. Currently always string) - This is now addressed by renderDefaultValueInput */}
-            </div>
-            <div className="flex items-center space-x-2 pt-2">
-              <Switch
-                id={`field-isRequired-${field.id}`}
-                checked={isRequired} // Now directly from field (non-optional)
-                onCheckedChange={(checked) => handleFieldChange('isRequired', checked)}
-              />
-              <Label htmlFor={`field-isRequired-${field.id}`}>Required Field</Label>
-            </div>
-            <div className="flex items-center space-x-2">
-              <Switch
-                id={`field-isHidden-${field.id}`}
-                checked={isHidden} 
-                onCheckedChange={(checked) => handleFieldChange('isHidden', checked)}
-              />
-              <Label htmlFor={`field-isHidden-${field.id}`}>Hidden Field</Label>
+
+            <div className="flex items-center justify-between rounded-lg border p-3 shadow-sm">
+                <div className="space-y-0.5">
+                    <Label htmlFor={`field-isHidden-${field.id}`} className="text-xs font-medium">Hidden</Label>
+                    <p className="text-[11px] text-muted-foreground">
+                        Hide this field by default (can be shown by conditional logic).
+                    </p>
+                </div>
+                <Switch
+                    id={`field-isHidden-${field.id}`}
+                    checked={isHidden}
+                    onCheckedChange={(checked) => handleFieldChange('isHidden', checked)}
+                    aria-label="Toggle field hidden status"
+                />
             </div>
           </AccordionContent>
         </AccordionItem>
 
-        <AccordionItem value="type-specific-props">
-          <AccordionTrigger>Type Specific Properties ({field.type})</AccordionTrigger>
-          <AccordionContent className="space-y-4 pt-2">
-            {renderTypeSpecificEditor()}
-          </AccordionContent>
-        </AccordionItem>
-        
-        <AccordionItem value="validation-rules">
-          <AccordionTrigger>Validation Rules</AccordionTrigger>
-          <AccordionContent className="space-y-4 pt-2">
-            <p className="text-sm text-muted-foreground">// TODO: UI for more complex validation rules.</p>
-          </AccordionContent>
-        </AccordionItem>
+        {/* Type Specific Options - Conditionally Rendered */}
+        {renderTypeSpecificEditor() && (
+          <AccordionItem value="typeSpecific">
+            <AccordionTrigger className="text-sm font-medium">Type Specific Options</AccordionTrigger>
+            <AccordionContent className="pt-4">
+              {renderTypeSpecificEditor()}
+            </AccordionContent>
+          </AccordionItem>
+        )}
 
-        <AccordionItem value="advanced-validation-rules">
-          <AccordionTrigger>Custom Validation Rules</AccordionTrigger>
-          <AccordionContent className="space-y-4 pt-2">
-            <AdvancedValidationEditor
-              rules={field.advancedValidationRules}
-              fieldDefinition={field}
-              onRulesChange={(newRules) => {
-                handleFieldChange('advancedValidationRules', newRules);
-              }}
-            />
-          </AccordionContent>
-        </AccordionItem>
+        {/* Advanced Validation Rules Editor - CORRECTED AS PER USER DIRECTIVE */}
+        {field.type !== 'divider' && field.type !== 'heading' && (
+          <AccordionItem value="advancedValidation" disabled={!field}>
+            <AccordionTrigger className="text-sm font-medium">Advanced Validation Rules</AccordionTrigger>
+            <AccordionContent className="pt-2 pb-4 px-1">
+              {field ? (
+                <AdvancedValidationEditor
+                  rules={field.advancedValidationRules || []}
+                  fieldDefinition={field}
+                  onRulesChange={(newRules) => {
+                    handleFieldChange('advancedValidationRules', newRules && newRules.length > 0 ? newRules : undefined);
+                  }}
+                />
+              ) : (
+                <p className="text-sm text-muted-foreground p-2">Select a field to set validation rules.</p>
+              )}
+            </AccordionContent>
+          </AccordionItem>
+        )}
 
-        <AccordionItem value="display-logic">
-          <AccordionTrigger>Display Logic</AccordionTrigger>
-          <AccordionContent className="space-y-4 pt-2">
-            <ConditionalLogicEditor
-              logicBlocks={field.conditionalLogic}
-              currentFieldDefinition={field}
-              formDefinition={formDefinition}
-              onLogicChange={(newLogicBlocks) => {
-                handleFieldChange('conditionalLogic', newLogicBlocks);
-              }}
-            />
-          </AccordionContent>
-        </AccordionItem>
-        
-        <AccordionItem value="styling-options">
-          <AccordionTrigger>Styling Options</AccordionTrigger>
-          <AccordionContent className="space-y-4 pt-2">
-            <p className="text-sm text-muted-foreground">// TODO: UI for styling options (Phase 1.G).</p>
-          </AccordionContent>
-        </AccordionItem>
+        {/* Conditional Logic Editor */}
+        {field.type !== 'divider' && field.type !== 'heading' && (
+            <AccordionItem value="conditionalLogic" disabled={!field}>
+                <AccordionTrigger className="text-sm font-medium">Conditional Logic</AccordionTrigger>
+                <AccordionContent className="pt-2 pb-4 px-1">
+                  {field ? (
+                    <ConditionalLogicEditor
+                        logicBlocks={field.conditionalLogic}
+                        currentFieldDefinition={field}
+                        formDefinition={formDefinition}
+                        onLogicChange={(newLogicBlocks) => handleFieldChange('conditionalLogic', newLogicBlocks && newLogicBlocks.length > 0 ? newLogicBlocks : undefined)}
+                    />
+                  ) : (
+                     <p className="text-sm text-muted-foreground p-2">Select a field to set conditional logic.</p>
+                  )}
+                </AccordionContent>
+            </AccordionItem>
+        )}
 
-        <AccordionItem value="ai-suggestions">
-          <AccordionTrigger>AI Assistance</AccordionTrigger>
-          <AccordionContent className="space-y-4 pt-2">
-            <p className="text-sm text-muted-foreground">// TODO: Placeholder for AI suggestions.</p>
+        {/* Field Styling Options - CORRECTED AS PER USER DIRECTIVE */}
+        <AccordionItem value="stylingOptions" disabled={!field}>
+          <AccordionTrigger className="text-sm font-medium">Styling Options</AccordionTrigger>
+          <AccordionContent className="pt-2 pb-4 px-1">
+            {field ? (
+              <FieldStylingEditor
+                styleOptions={field.styleOptions || { labelIsVisible: true }} // Ensure default for labelIsVisible
+                onStyleChange={(newStyles) => { // Changed from onStylesChange to onStyleChange
+                  handleFieldChange('styleOptions', newStyles);
+                }}
+              />
+            ) : (
+              <p className="text-sm text-muted-foreground p-2">Select a field to set styling options.</p>
+            )}
           </AccordionContent>
         </AccordionItem>
 

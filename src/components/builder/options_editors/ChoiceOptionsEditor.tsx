@@ -44,10 +44,21 @@ export function ChoiceOptionsEditor({
   const [currentAllowMultiple, setCurrentAllowMultiple] = useState(false);
   const [currentAllowOther, setCurrentAllowOther] = useState(false);
   const [duplicateValues, setDuplicateValues] = useState<Record<string, boolean>>({});
+  const [isValueManuallyEdited, setIsValueManuallyEdited] = useState<Record<string, boolean>>({}); // Track manual value edits
   const lastAddedOptionLabelInputRef = useRef<HTMLInputElement>(null); // Changed ref name for clarity
 
   useEffect(() => {
-    setCurrentOptions(initialOptions ? JSON.parse(JSON.stringify(initialOptions)) : []);
+    const newOptions = initialOptions ? JSON.parse(JSON.stringify(initialOptions)) : [];
+    setCurrentOptions(newOptions);
+    // Reset manual edit tracking when initial options change
+    const newIsValueManuallyEdited: Record<string, boolean> = {};
+    // If a value appears to be manually set (i.e., not matching a slug of its label), mark it as manually edited.
+    newOptions.forEach((opt: FieldOption) => {
+      if (opt.value !== suggestValueFromLabel(opt.label) && opt.value.trim() !== '') {
+        newIsValueManuallyEdited[opt.id] = true;
+      }
+    });
+    setIsValueManuallyEdited(newIsValueManuallyEdited);
   }, [initialOptions]);
 
   useEffect(() => {
@@ -62,7 +73,7 @@ export function ChoiceOptionsEditor({
     const getDuplicateValueFlags = (opts: FieldOption[]): Record<string, boolean> => {
       const valueCounts: Record<string, number> = {};
       opts.forEach(opt => {
-        if (opt.value && opt.value.trim() !== '') { // Only consider non-empty values
+        if (opt.value && opt.value.trim() !== '') {
           valueCounts[opt.value] = (valueCounts[opt.value] || 0) + 1;
         }
       });
@@ -80,18 +91,17 @@ export function ChoiceOptionsEditor({
   }, [currentOptions]);
 
   const handleOptionChange = (index: number, field: keyof FieldOption, newValue: string) => {
-    const oldOption = currentOptions[index];
-    let updatedOptions = [...currentOptions];
+    const updatedOptions = [...currentOptions];
+    const optionId = updatedOptions[index].id;
 
     if (field === 'label') {
-      const newSuggestedValue = suggestValueFromLabel(newValue);
-      if (oldOption.value.trim() === '' || oldOption.value === suggestValueFromLabel(oldOption.label)) {
-        updatedOptions[index] = { ...oldOption, label: newValue, value: newSuggestedValue };
-      } else {
-        updatedOptions[index] = { ...oldOption, label: newValue };
+      updatedOptions[index] = { ...updatedOptions[index], label: newValue };
+      if (!isValueManuallyEdited[optionId]) {
+        updatedOptions[index].value = suggestValueFromLabel(newValue);
       }
     } else { // field === 'value'
-      updatedOptions[index] = { ...oldOption, value: newValue };
+      updatedOptions[index] = { ...updatedOptions[index], value: newValue };
+      setIsValueManuallyEdited(prev => ({ ...prev, [optionId]: true }));
     }
     
     setCurrentOptions(updatedOptions);
@@ -104,6 +114,8 @@ export function ChoiceOptionsEditor({
     const newOption: FieldOption = { id: generateOptionId(), label: newLabel, value: newValue };
     const updatedOptions = [...currentOptions, newOption];
     setCurrentOptions(updatedOptions);
+    // Ensure new option is not marked as manually edited for its value
+    setIsValueManuallyEdited(prev => ({ ...prev, [newOption.id]: false })); 
     onConfigChange({ options: updatedOptions, allowMultipleSelection: currentAllowMultiple, allowOther: currentAllowOther });
     
     setTimeout(() => {
@@ -114,6 +126,12 @@ export function ChoiceOptionsEditor({
   const deleteOption = (idToDelete: string) => {
     const updatedOptions = currentOptions.filter(opt => opt.id !== idToDelete);
     setCurrentOptions(updatedOptions);
+    // Clean up manual edit tracking
+    setIsValueManuallyEdited(prev => {
+      const newState = { ...prev };
+      delete newState[idToDelete];
+      return newState;
+    });
     onConfigChange({ options: updatedOptions, allowMultipleSelection: currentAllowMultiple, allowOther: currentAllowOther });
   };
 
