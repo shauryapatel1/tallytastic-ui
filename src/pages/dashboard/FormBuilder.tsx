@@ -4,6 +4,7 @@ import { DashboardLayout } from "./Layout";
 import { FieldPalette } from "@/components/builder/FieldPalette";
 import { FormStructureTree } from "@/components/builder/FormStructureTree";
 import { PropertyEditorPane } from "@/components/builder/PropertyEditorPane";
+import { FormRenderer } from "@/components/builder/preview/FormRenderer";
 import type {
   // Form, // No longer directly used for main definition state, superseded by FormDefinition
   FormDefinition,
@@ -24,12 +25,14 @@ import {
   useSensor,
   useSensors,
   Active,
+  DropAnimation,
+  defaultDropAnimationSideEffects,
 } from '@dnd-kit/core';
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { useToast } from "@/hooks/use-toast";
 import { motion } from "framer-motion";
 import { Button } from "@/components/ui/button";
-import { ChevronLeft, Loader2, Save, GripVertical } from "lucide-react";
+import { ChevronLeft, Loader2, Save, GripVertical, Eye, Edit3 } from "lucide-react";
 import { Link } from "react-router-dom";
 import { getFormById } from "@/services/formService";
 
@@ -51,6 +54,33 @@ export default function FormBuilder() {
   const { toast } = useToast();
 
   const [state, dispatch] = useReducer(formBuilderReducer, initialFormBuilderState);
+
+  // State for Preview Mode
+  const [isPreviewMode, setIsPreviewMode] = useState<boolean>(false);
+  const [previewFormValues, setPreviewFormValues] = useState<Record<string, any>>({});
+
+  // Effect to initialize/synchronize previewFormValues
+  useEffect(() => {
+    if (isPreviewMode && state.formDefinition) {
+      const initialValues: Record<string, any> = {};
+      state.formDefinition.sections.forEach(section => {
+        section.fields.forEach(field => {
+          // Ensure defaultValue is not undefined, or handle as needed by FormRenderer
+          initialValues[field.id] = field.defaultValue === undefined ? null : field.defaultValue;
+        });
+      });
+      setPreviewFormValues(initialValues);
+    } 
+    // No explicit clearing when exiting preview, will re-initialize on next entry
+  }, [isPreviewMode, state.formDefinition]);
+
+  // Callback to update previewFormValues
+  const handlePreviewFormValueChange = (fieldId: string, newValue: any) => {
+    setPreviewFormValues(prevValues => ({
+      ...prevValues,
+      [fieldId]: newValue,
+    }));
+  };
 
   const queryFn: () => Promise<FormDefinition> = async () => {
     if (!formId) throw new Error("No form ID provided");
@@ -333,6 +363,16 @@ export default function FormBuilder() {
     console.warn('Unhandled drag and drop case:', { activeType, overType });
   };
 
+  const dropAnimation: DropAnimation = {
+    sideEffects: defaultDropAnimationSideEffects({
+      styles: {
+        active: {
+          opacity: '0.4',
+        },
+      },
+    }),
+  };
+
   if (isLoading) {
     return (
       <DashboardLayout>
@@ -369,6 +409,7 @@ export default function FormBuilder() {
       collisionDetection={closestCenter} 
       onDragStart={handleDragStart}
       onDragEnd={handleDragEnd}
+      onDragCancel={() => setActiveDragItem(null)}
     >
       <DashboardLayout>
         <motion.div
@@ -393,11 +434,20 @@ export default function FormBuilder() {
             </div>
             
             <div className="flex items-center gap-2">
-              <Button onClick={handleSaveForm} disabled={updateMutation.isPending}>
-                {updateMutation.isPending ? 
-                  <><Loader2 className="h-4 w-4 animate-spin mr-2" /> Saving...</> : 
-                  <><Save className="h-4 w-4 mr-2" /> Save Form</>
-                }
+              <Button variant="outline" onClick={() => setIsPreviewMode(prev => !prev)}>
+                {isPreviewMode ? (
+                  <><Edit3 className="mr-2 h-4 w-4" /> Back to Design</>
+                ) : (
+                  <><Eye className="mr-2 h-4 w-4" /> Preview Form</>
+                )}
+              </Button>
+              <Button onClick={handleSaveForm} disabled={updateMutation.isPending || !state.formDefinition}>
+                {updateMutation.isPending ? (
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                ) : (
+                  <Save className="mr-2 h-4 w-4" />
+                )}
+                Save Form
               </Button>
             </div>
           </div>
@@ -421,8 +471,8 @@ export default function FormBuilder() {
 
             <div className="w-[350px] flex-shrink-0">
               <PropertyEditorPane 
-                formDefinition={formDefinition}
-                selectedElement={selectedElement}
+                formDefinition={state.formDefinition}
+                selectedElement={state.selectedElement}
                 onUpdateField={(sectionId, fieldId, updates) => dispatch({ type: 'UPDATE_FIELD_PROPERTIES', payload: { sectionId, fieldId, updates }})}
                 onUpdateSectionProperties={(sectionId, updates) => dispatch({ type: 'UPDATE_SECTION_PROPERTIES', payload: { sectionId, updates }})}
               />
@@ -430,11 +480,9 @@ export default function FormBuilder() {
           </div>
         </motion.div>
       </DashboardLayout>
-      <DragOverlay dropAnimation={null}>
-        {activeDragItem && activeDragItem.data.current?.type === 'newField' ? (
-          <DraggedItemPreview label={activeDragItem.data.current.label as string} />
-        ) : activeDragItem ? (
-          <DraggedItemPreview label={activeDragItem.data.current?.label as string || "Dragging Item"} />
+      <DragOverlay dropAnimation={dropAnimation}>
+        {activeDragItem ? (
+          <DraggedItemPreview label={activeDragItem.data.current?.label as string || activeDragItem.data.current?.fieldType as string} />
         ) : null}
       </DragOverlay>
     </DndContext>

@@ -126,14 +126,14 @@ export function ChoiceFieldPresenter({ field, value: propValue, onValueChange }:
             )
           ) : (
             Array.isArray(defaultValue) && defaultValue.length > 0 && (
-              <div className="mt-1 text-sm text-muted-foreground">
-                Selected: {defaultValue
-                  .map(dv => {
-                    const opt = options.find(o => o.value === dv);
-                    return opt ? opt.label : dv;
-                  })
-                  .join(', ')}
-              </div>
+          <div className="mt-1 text-sm text-muted-foreground">
+            Selected: {defaultValue
+              .map(dv => {
+                const opt = options.find(o => o.value === dv);
+                return opt ? opt.label : dv;
+              })
+              .join(', ')}
+          </div>
             )
           )
         )}
@@ -146,7 +146,7 @@ export function ChoiceFieldPresenter({ field, value: propValue, onValueChange }:
     const currentRadioValue = isInteractive ? (typeof propValue === 'string' ? propValue : undefined) : radioDefaultValue;
 
     return (
-      <RadioGroup
+    <RadioGroup
         value={currentRadioValue}
         disabled={!isInteractive}
         onValueChange={(newValue) => {
@@ -154,38 +154,38 @@ export function ChoiceFieldPresenter({ field, value: propValue, onValueChange }:
             onValueChange(newValue);
           }
         }}
-        className="mt-1 space-y-2"
-      >
-        {options.map(option => (
-          <div key={option.id || option.value} className="flex items-center space-x-2">
-            <RadioGroupItem
-              value={option.value}
-              id={`${id}-${option.id || option.value}`}
+      className="mt-1 space-y-2"
+    >
+      {options.map(option => (
+        <div key={option.id || option.value} className="flex items-center space-x-2">
+          <RadioGroupItem 
+            value={option.value} 
+            id={`${id}-${option.id || option.value}`} 
               disabled={!isInteractive}
-              style={{borderColor: styleOptions?.inputBorderColor}}
-            />
-            <Label htmlFor={`${id}-${option.id || option.value}`} style={labelStyling} className="font-normal">
-              {option.label}
-            </Label>
-          </div>
-        ))}
-      </RadioGroup>
-    );
+            style={{borderColor: styleOptions?.inputBorderColor}}
+          />
+          <Label htmlFor={`${id}-${option.id || option.value}`} style={labelStyling} className="font-normal">
+            {option.label}
+          </Label>
+        </div>
+      ))}
+    </RadioGroup>
+  );
   };
 
   const renderCheckboxGroup = () => {
     const currentCheckboxValues = isInteractive ? (Array.isArray(propValue) ? propValue : (typeof propValue === 'string' ? [propValue] : [])) : (Array.isArray(defaultValue) ? defaultValue : (typeof defaultValue === 'string' ? [defaultValue] : []));
 
     return (
-      <div className="mt-1 space-y-2">
-        {options.map(option => {
+    <div className="mt-1 space-y-2">
+      {options.map(option => {
           const isChecked = currentCheckboxValues.includes(option.value);
 
-          return (
-            <div key={option.id || option.value} className="flex items-center space-x-2">
-              <Checkbox
-                id={`${id}-${option.id || option.value}`}
-                checked={isChecked}
+        return (
+          <div key={option.id || option.value} className="flex items-center space-x-2">
+            <Checkbox
+              id={`${id}-${option.id || option.value}`}
+              checked={isChecked}
                 disabled={!isInteractive}
                 onCheckedChange={(checkedState) => {
                   if (isInteractive && onValueChange) {
@@ -202,16 +202,16 @@ export function ChoiceFieldPresenter({ field, value: propValue, onValueChange }:
                     onValueChange(newValues);
                   }
                 }}
-                style={{borderColor: styleOptions?.inputBorderColor}}
-              />
-              <Label htmlFor={`${id}-${option.id || option.value}`} style={labelStyling} className="font-normal">
-                {option.label}
-              </Label>
-            </div>
-          );
-        })}
-      </div>
-    );
+              style={{borderColor: styleOptions?.inputBorderColor}}
+            />
+            <Label htmlFor={`${id}-${option.id || option.value}`} style={labelStyling} className="font-normal">
+              {option.label}
+            </Label>
+          </div>
+        );
+      })}
+    </div>
+  );
   };
 
   let fieldElement: JSX.Element | null = null;
