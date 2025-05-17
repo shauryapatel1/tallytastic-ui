@@ -174,27 +174,39 @@ export interface FormFieldDefinition extends BaseFieldProps {
 
 // Validation Rules (NEW)
 export type ValidationRuleType =
+  | 'required' // Added to allow custom message for required rule via advanced validation
   | 'minLength'
   | 'maxLength'
+  | 'exactLength' // Added
   | 'pattern'   // Regex
-  | 'isEmail'
-  | 'isURL'
+  | 'isEmail' // Already exists, but good to confirm
+  | 'isURL'   // Already exists, but good to confirm
   | 'minValue'  // For number/date/rating
   | 'maxValue'  // For number/date/rating
-  // | 'required' // Could be added here for custom message, or rely on BaseFieldProps.isRequired
+  | 'numberInteger' // Added
+  | 'stringContains' // Added
+  | 'stringNotContains' // Added
+  // Add more specific types as needed, e.g.:
+  // | 'dateIsBefore'
+  // | 'dateIsAfter'
+  // | 'selectionMinCount'
+  // | 'selectionMaxCount'
   ;
 
 export interface ValidationRuleParams {
-  length?: number;       // For minLength, maxLength
+  length?: number;       // For minLength, maxLength, exactLength
   value?: number | string; // For minValue, maxValue (string if comparing dates for minValue/maxValue)
-  regex?: string;        // For pattern
+  pattern?: string;        // For pattern (renamed from regex for clarity with type)
+  substring?: string;    // For stringContains, stringNotContains
+  // Add other specific params as needed
 }
 
 export interface ValidationRule {
   id: string; // Unique ID for this specific rule instance (e.g., UUID)
   type: ValidationRuleType;
   params?: ValidationRuleParams;
-  customMessage: string;
+  customMessage: string; // User-defined error message for this rule
+  isActive?: boolean; // Added: Defaults to true if not present
 }
 
 // Definition for a section within a form
@@ -232,6 +244,9 @@ export interface FormDefinition {
   // emailNotifications?: string[];
 }
 
+// Types for managing form state during data entry and validation
+export type FormValues = Record<string, any>;
+export type FormErrors = Record<string, string[] | undefined>;
 
 // The existing 'Form' interface might need to be reconciled or deprecated
 // if FormDefinition becomes the canonical structure for a loaded form.
@@ -245,4 +260,16 @@ export interface Form {
   createdAt: string;
   updatedAt: string;
   // ... other Form properties
+}
+
+// Represents a single submitted response for a form
+export interface FormResponse {
+  id: string; // Unique ID of the response submission
+  formId: string; // ID of the form this response belongs to
+  submittedAt: string; // ISO date string of when the response was submitted
+  data: FormValues; // The actual key-value pairs (fieldId: value) of the submission
+  // Optional respondent details for future enhancements:
+  // respondentUserId?: string; // If submitted by a logged-in user
+  // respondentIpAddress?: string;
+  // respondentUserAgent?: string;
 } 

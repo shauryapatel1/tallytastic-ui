@@ -3,18 +3,21 @@ import { cn } from "@/lib/utils";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { format, parseISO } from 'date-fns';
+import React from 'react';
 
 export interface DateFieldPresenterProps {
   field: FormFieldDefinition & {
     type: Extract<FormFieldType, 'date' | 'time'>;
-    // minDate, maxDate, dateFormat are already optional in FormFieldDefinition
+    minDate?: string;
+    maxDate?: string;
   };
-  value?: string; // Value for interactive mode (e.g., "YYYY-MM-DD" or "HH:mm")
-  onValueChange?: (newValue: string | undefined) => void; // Handler for value changes in interactive mode
+  value?: string | undefined; // ISO string or specific format for date/time
+  onValueChange?: (newValue: string | undefined) => void;
+  error?: string; // Added error prop
 }
 
 // Helper to get Tailwind width class from styleOptions
-const getWidthClass = (width: FormFieldStyleOptions['width']) => {
+const getWidthClass = (width?: FormFieldStyleOptions['width']) => {
   switch (width) {
     case '1/2': return 'w-1/2';
     case '1/3': return 'w-1/3';
@@ -45,47 +48,60 @@ const formatDateForInput = (isoString: string | undefined, type: 'date' | 'time'
   return ''; // Should not be reached if logic above is complete
 };
 
-export function DateFieldPresenter({ field, value: propValue, onValueChange }: DateFieldPresenterProps) {
+export function DateFieldPresenter({ field, value, onValueChange, error }: DateFieldPresenterProps) {
   const {
     id,
     label,
     description,
     placeholder,
     isRequired,
-    defaultValue, // Expected to be an ISO string, or could be pre-formatted
-    minDate,      // ISO string
-    maxDate,      // ISO string
-    styleOptions = { labelIsVisible: true },
     type,
+    minDate,
+    maxDate,
+    styleOptions = { labelIsVisible: true },
   } = field;
 
-  const isInteractive = !!onValueChange;
   const widthClass = getWidthClass(styleOptions.width);
+  const isInteractive = !!onValueChange;
 
-  const displayedValue = isInteractive 
-    ? propValue ?? '' 
-    : formatDateForInput(defaultValue as string, type);
-
-  const inputElementProps = {
-    id: id,
-    placeholder: placeholder,
-    value: displayedValue,
-    disabled: !isInteractive, // Disabled if not interactive
-    type: type, // 'date' or 'time'
-    min: formatDateForInput(minDate, type) || undefined, // Ensure undefined if formatting fails or no date
-    max: formatDateForInput(maxDate, type) || undefined, // Ensure undefined if formatting fails or no date
-    onChange: isInteractive && onValueChange 
-      ? (e: React.ChangeEvent<HTMLInputElement>) => onValueChange(e.target.value || undefined)
-      : undefined,
-    style: {
-      color: styleOptions.inputTextColor,
-      backgroundColor: styleOptions.inputBackgroundColor,
-      borderColor: styleOptions.inputBorderColor,
-      borderWidth: styleOptions.inputBorderColor ? '1px' : undefined,
-      borderStyle: styleOptions.inputBorderColor ? 'solid' : undefined,
-    },
-    className: "mt-1",
+  const handleChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    if (onValueChange) {
+      onValueChange(event.target.value || undefined); // Send undefined if empty
+    }
   };
+  
+  // For date/time fields, HTML input expects 'yyyy-mm-dd' or 'HH:MM' respectively.
+  // The 'value' prop might be an ISO string or another format. We need to ensure it matches input requirements.
+  // For simplicity in V1, we assume the value passed is already in the correct format or will be handled by the browser.
+  // For date type, value should be in "YYYY-MM-DD" format for the input element.
+  // For time type, value should be in "HH:MM" or "HH:MM:SS" format.
+  let displayValue = '';
+  const formValue = isInteractive ? value : field.defaultValue;
+
+  if (formValue) {
+    if (type === 'date') {
+      // Assuming formValue (if string) is ISO-like (e.g., "2023-10-26T10:00:00.000Z") or "YYYY-MM-DD"
+      // We need to extract YYYY-MM-DD part.
+      try {
+        displayValue = new Date(formValue).toISOString().split('T')[0];
+      } catch (e) { /* ignore parse error, displayValue remains empty */ }
+    } else if (type === 'time') {
+      // Assuming formValue (if string) is ISO-like or just time string "HH:MM" or "HH:MM:SS"
+      // We need to extract HH:MM part.
+      try {
+        const dateObj = new Date(formValue);
+        // Check if it's a valid date object before trying to get hours/minutes
+        if (!isNaN(dateObj.getTime())) {
+          const hours = dateObj.getHours().toString().padStart(2, '0');
+          const minutes = dateObj.getMinutes().toString().padStart(2, '0');
+          displayValue = `${hours}:${minutes}`;
+        } else if (typeof formValue === 'string' && /^\d{2}:\d{2}(:\d{2})?$/.test(formValue)) {
+          // If it's already in HH:MM or HH:MM:SS format
+          displayValue = formValue.substring(0,5); // take HH:MM
+        }
+      } catch (e) { /* ignore parse error */ }
+    }
+  }
 
   return (
     <div
@@ -99,22 +115,36 @@ export function DateFieldPresenter({ field, value: propValue, onValueChange }: D
       }}
     >
       {styleOptions.labelIsVisible !== false && (
-        <Label
-          htmlFor={id}
-          style={{ color: styleOptions.labelTextColor }}
-          className="text-sm font-medium mb-0.5"
-        >
+        <Label htmlFor={id} style={{ color: styleOptions.labelTextColor }} className="text-sm font-medium mb-0.5">
           {label} {isRequired && <span className="text-destructive font-normal">*</span>}
         </Label>
       )}
       {description && (
-        <p 
-          className="text-xs text-muted-foreground mb-1"
-        >
+        <p className="text-xs text-muted-foreground mb-1">
           {description}
         </p>
       )}
-      <Input {...inputElementProps} />
+      <Input
+        type={type} // 'date' or 'time'
+        id={id}
+        placeholder={placeholder} // Usually not very relevant for date/time pickers but can be set
+        value={displayValue}
+        disabled={!isInteractive}
+        onChange={handleChange}
+        min={type === 'date' ? minDate : undefined} // HTML min/max for date input
+        max={type === 'date' ? maxDate : undefined} // HTML min/max for date input
+        style={{
+          color: styleOptions.inputTextColor,
+          backgroundColor: styleOptions.inputBackgroundColor,
+          borderColor: error ? 'hsl(var(--destructive))' : styleOptions.inputBorderColor,
+          borderWidth: styleOptions.inputBorderColor || error ? '1px' : undefined,
+          borderStyle: styleOptions.inputBorderColor || error ? 'solid' : undefined,
+        }}
+        className={cn("mt-1", error ? "border-destructive focus-visible:ring-destructive" : "")}
+      />
+      {error && (
+        <p className="text-sm text-destructive mt-1">{error}</p>
+      )}
     </div>
   );
 } 

@@ -1,5 +1,5 @@
 import { useReducer, useEffect, useState } from "react";
-import { useParams } from "react-router-dom";
+import { useParams, useNavigate } from "react-router-dom";
 import { DashboardLayout } from "./Layout";
 import { FieldPalette } from "@/components/builder/FieldPalette";
 import { FormStructureTree } from "@/components/builder/FormStructureTree";
@@ -14,6 +14,7 @@ import type {
   FormStatus
 } from "@/types/forms";
 import { initialFormBuilderState, formBuilderReducer } from "@/lib/formBuilderReducer";
+import { validateField } from '@/lib/ValidationEngine';
 import {
   DndContext,
   DragOverlay,
@@ -34,7 +35,7 @@ import { motion } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import { ChevronLeft, Loader2, Save, GripVertical, Eye, Edit3 } from "lucide-react";
 import { Link } from "react-router-dom";
-import { getFormById } from "@/services/formService";
+import { getFormById, createNewBlankForm, updateFormDefinitionInService } from "@/services/formService";
 
 // Simple component to render the dragged item in the overlay
 const DraggedItemPreview = ({ label }: { label?: string }) => {
@@ -50,82 +51,132 @@ const DraggedItemPreview = ({ label }: { label?: string }) => {
 };
 
 export default function FormBuilder() {
-  const { id: formId } = useParams<{ id: string }>();
+  const { id: formIdFromParams } = useParams<{ id: string }>();
+  const navigate = useNavigate();
   const { toast } = useToast();
 
   const [state, dispatch] = useReducer(formBuilderReducer, initialFormBuilderState);
+  const [currentFormId, setCurrentFormId] = useState<string | undefined>(formIdFromParams);
+  const [isCreatingNew, setIsCreatingNew] = useState(false);
 
   // State for Preview Mode
   const [isPreviewMode, setIsPreviewMode] = useState<boolean>(false);
   const [previewFormValues, setPreviewFormValues] = useState<Record<string, any>>({});
+  const [previewFormErrors, setPreviewFormErrors] = useState<Record<string, string[]>>({});
 
-  // Effect to initialize/synchronize previewFormValues
+  // Effect to initialize/synchronize previewFormValues and initial errors
   useEffect(() => {
     if (isPreviewMode && state.formDefinition) {
       const initialValues: Record<string, any> = {};
-      state.formDefinition.sections.forEach(section => {
-        section.fields.forEach(field => {
-          // Ensure defaultValue is not undefined, or handle as needed by FormRenderer
-          initialValues[field.id] = field.defaultValue === undefined ? null : field.defaultValue;
-        });
+      const initialErrors: Record<string, string[]> = {};
+      const allFields: FormFieldDefinition[] = state.formDefinition.sections.flatMap(s => s.fields);
+
+      allFields.forEach(field => {
+        const value = field.defaultValue === undefined ? null : field.defaultValue;
+        initialValues[field.id] = value;
+        const validationResult = validateField(field, value);
+        if (!validationResult.isValid) {
+          initialErrors[field.id] = validationResult.errorMessages;
+        }
       });
       setPreviewFormValues(initialValues);
-    } 
-    // No explicit clearing when exiting preview, will re-initialize on next entry
+      setPreviewFormErrors(initialErrors);
+    } else if (!isPreviewMode) {
+      // Optionally clear errors when exiting preview mode
+      setPreviewFormErrors({});
+    }
   }, [isPreviewMode, state.formDefinition]);
 
-  // Callback to update previewFormValues
+  // Callback to update previewFormValues and validate
   const handlePreviewFormValueChange = (fieldId: string, newValue: any) => {
-    setPreviewFormValues(prevValues => ({
-      ...prevValues,
-      [fieldId]: newValue,
-    }));
+    setPreviewFormValues(currentValues => {
+      const updatedValues = { ...currentValues, [fieldId]: newValue };
+      
+      // Perform validation after value update
+      const fieldDef = state.formDefinition?.sections.flatMap(s => s.fields).find(f => f.id === fieldId);
+      
+      if (fieldDef && state.formDefinition) {
+        const validationResult = validateField(
+          fieldDef, 
+          newValue
+        );
+        setPreviewFormErrors(currentErrors => ({
+          ...currentErrors,
+          [fieldId]: validationResult.errorMessages // errorMessages will be empty if valid
+        }));
+      }
+      return updatedValues;
+    });
   };
+
+  // Effect to handle 'new' form creation
+  useEffect(() => {
+    if (formIdFromParams === 'new') {
+      setIsCreatingNew(true);
+      toast({ title: "Creating New Form...", description: "Please wait while we set things up." });
+      createNewBlankForm()
+        .then(newFormDefinition => {
+          toast({ title: "New Form Created!", description: `"${newFormDefinition.title}" is ready to build.` });
+          navigate(`/builder/${newFormDefinition.id}`, { replace: true });
+          setCurrentFormId(newFormDefinition.id);
+        })
+        .catch(err => {
+          console.error("Error creating new form:", err);
+          const errorMessage = err instanceof Error ? err.message : "Could not create new form.";
+          toast({
+            variant: "destructive",
+            title: "Creation Failed",
+            description: errorMessage,
+          });
+          navigate("/dashboard", { replace: true });
+        })
+        .finally(() => {
+          setIsCreatingNew(false);
+        });
+    } else {
+      setCurrentFormId(formIdFromParams);
+    }
+  }, [formIdFromParams, navigate, toast]);
 
   const queryFn: () => Promise<FormDefinition> = async () => {
-    if (!formId) throw new Error("No form ID provided");
-    return getFormById(formId);
+    if (!currentFormId || currentFormId === 'new') throw new Error("No valid form ID provided for fetching.");
+    return getFormById(currentFormId);
   };
 
-  const { data: fetchedFormDef, isLoading, error: queryError } = useQuery<FormDefinition, Error, FormDefinition, string[]>({
-    queryKey: ["formDefinition", formId!],
+  const { data: fetchedFormDef, isLoading: isLoadingForm, error: queryError } = useQuery<FormDefinition, Error, FormDefinition, (string | undefined)[]>({
+    queryKey: ["formDefinition", currentFormId],
     queryFn,
-    enabled: !!formId,
+    enabled: !!currentFormId && currentFormId !== 'new',
   });
 
+  // Effect to load fetched form into reducer state
   useEffect(() => {
     if (fetchedFormDef) {
       dispatch({ type: 'LOAD_FORM', payload: fetchedFormDef });
     }
   }, [fetchedFormDef]);
 
-  const updateMutation = useMutation<FormDefinition, Error, FormDefinition>({
-    mutationFn: async (currentFormDefinition: FormDefinition) => {
-      if (!formId) throw new Error("No form ID provided for update");
-      const { updateFormDefinitionInService } = await import("@/services/formService");
-      return updateFormDefinitionInService(formId, currentFormDefinition);
+  // Loading and error states combined for rendering
+  const isLoading = isLoadingForm || isCreatingNew;
+
+  const updateMutation = useMutation<void, Error, FormDefinition>({
+    mutationFn: async (currentFormDefinitionToSave: FormDefinition) => {
+      if (!currentFormId || currentFormId === 'new') throw new Error("No valid form ID provided for update");
+      await updateFormDefinitionInService(currentFormId, currentFormDefinitionToSave);
     },
-    onSuccess: (data) => {
+    onSuccess: () => {
       toast({
         title: "Form saved",
         description: "Your form has been saved successfully",
       });
     },
-    onError: (error) => {
-      console.error("Error saving form:", error);
-      toast({
-        title: "Save failed",
-        description: error.message || "There was a problem saving your form",
-        variant: "destructive",
-      });
-    }
   });
 
   const handleSaveForm = () => {
-    if (state.formDefinition) {
+    if (state.formDefinition && currentFormId && currentFormId !== 'new') {
       updateMutation.mutate(state.formDefinition);
     } else {
-      toast({ title: "Cannot save", description: "Form data is not available.", variant: "destructive" });
+      toast({ title: "Cannot save", description: "Form data is not available or form ID is invalid.", variant: "destructive" });
     }
   };
 
@@ -331,11 +382,7 @@ export default function FormBuilder() {
           if (targetSectionId && targetSectionId !== draggedSectionId) {
             const foundTargetIndex = sections.findIndex(s => s.id === targetSectionId);
             if (foundTargetIndex !== -1) {
-              if (sourceIndex < foundTargetIndex) {
-                targetIndex = foundTargetIndex;
-              } else {
-                targetIndex = foundTargetIndex;
-              }
+              targetIndex = foundTargetIndex;
             }
           }
         } else if (overType === 'sectionsListArea') {
@@ -347,13 +394,31 @@ export default function FormBuilder() {
             }
         }
         
-        if (sourceIndex !== targetIndex) {
-           const adjustedTargetIndex = sourceIndex < targetIndex && targetIndex > 0 ? targetIndex : targetIndex;
-          dispatch({
-            type: 'REORDER_SECTIONS',
-            payload: { startIndex: sourceIndex, endIndex: adjustedTargetIndex },
-          });
+        // If sourceIndex and targetIndex are the same, it's a no-op (dropped on itself or its current position)
+        if (sourceIndex === targetIndex) {
+          console.log("Section reorder: source and visual target index are identical.");
+          return;
         }
+
+        let endIndexForReducer = targetIndex;
+        // If dragging an item downwards, and the targetIndex is after the original position,
+        // the targetIndex for splice needs to be adjusted because the splice(startIndex,1) will shorten the array.
+        if (sourceIndex < targetIndex) {
+          endIndexForReducer = targetIndex - 1;
+        }
+        // If sourceIndex > targetIndex, the visual targetIndex is already the correct
+        // insertion point for the splice operation after removal.
+        
+        // Prevent dispatch if effective start and end indices are the same
+        if (sourceIndex === endIndexForReducer) {
+          console.log("Section reorder: Effective start and end index are the same after adjustment. No change.");
+          return;
+        }
+
+        dispatch({
+          type: 'REORDER_SECTIONS',
+          payload: { startIndex: sourceIndex, endIndex: endIndexForReducer },
+        });
         return;
       }
       return;
@@ -376,23 +441,38 @@ export default function FormBuilder() {
   if (isLoading) {
     return (
       <DashboardLayout>
-        <div className="h-96 flex items-center justify-center">
-          <Loader2 className="h-8 w-8 animate-spin text-primary" />
+        <div className="flex items-center justify-center h-full">
+          <Loader2 className="h-12 w-12 animate-spin text-primary" />
+          <p className="ml-4 text-lg">
+            {isCreatingNew ? "Creating your new form..." : "Loading form builder..."}
+          </p>
         </div>
       </DashboardLayout>
     );
   }
 
-  if (queryError || !state.formDefinition?.id) {
+  if (queryError) {
     return (
       <DashboardLayout>
-        <div className="h-96 flex flex-col items-center justify-center">
-          <h2 className="text-2xl font-bold text-destructive mb-2">
-            {queryError ? queryError.message : "Error loading form data"}
-          </h2>
-          <p className="text-muted-foreground mb-4">Please try again or go back to the dashboard.</p>
+        <div className="flex flex-col items-center justify-center h-full p-8 text-center">
+          <h2 className="text-2xl font-semibold text-destructive mb-4">Error Loading Form</h2>
+          <p className="mb-6">{queryError.message}</p>
           <Button asChild>
-            <Link to="/dashboard">Back to Dashboard</Link>
+            <Link to="/dashboard">Go to Dashboard</Link>
+          </Button>
+        </div>
+      </DashboardLayout>
+    );
+  }
+
+  if (!state.formDefinition && !isCreatingNew) { // Added !isCreatingNew to prevent flash of "not found"
+    return (
+      <DashboardLayout>
+        <div className="flex flex-col items-center justify-center h-full p-8 text-center">
+          <h2 className="text-2xl font-semibold mb-4">Form Not Found</h2>
+          <p className="mb-6">The form you are looking for could not be found or loaded.</p>
+          <Button asChild>
+            <Link to="/dashboard">Go to Dashboard</Link>
           </Button>
         </div>
       </DashboardLayout>
@@ -453,30 +533,64 @@ export default function FormBuilder() {
           </div>
 
           <div className="flex flex-grow gap-4 overflow-hidden">
-            <div className="w-[280px] flex-shrink-0">
-              <FieldPalette />
-            </div>
+            {isPreviewMode ? (
+              <div className="flex-grow min-w-0 p-4 md:p-6 lg:p-8 bg-muted/10 rounded-lg overflow-auto">
+                {formDefinition ? (
+                  <FormRenderer
+                    formDefinition={formDefinition}
+                    formValues={previewFormValues}
+                    onFormValueChange={handlePreviewFormValueChange}
+                    formErrors={previewFormErrors}
+                  />
+                ) : (
+                  <div className="flex items-center justify-center h-full">
+                    <Loader2 className="h-8 w-8 animate-spin text-primary" />
+                    <p className="ml-2">Loading form preview...</p>
+                  </div>
+                )}
+              </div>
+            ) : (
+              <>
+                <div className="w-[280px] flex-shrink-0">
+                  <FieldPalette />
+                </div>
 
-            <div className="flex-grow min-w-0">
-              <FormStructureTree 
-                formDefinition={formDefinition} 
-                selectedFieldId={selectedFieldId}
-                selectedSectionId={selectedSectionId}
-                onSelectField={(fieldId, sectionId) => dispatch({ type: 'SELECT_ELEMENT', payload: { fieldId, sectionId } })}
-                onSelectSection={(sectionId) => dispatch({ type: 'SELECT_ELEMENT', payload: { sectionId, fieldId: null } })}
-                onDeleteField={(fieldId, sectionId) => dispatch({ type: 'DELETE_FIELD', payload: { fieldId, sectionId } })}
-                onDeleteSection={(sectionId) => dispatch({ type: 'DELETE_SECTION', payload: { sectionId } })}
-              />
-            </div>
+                <div className="flex-grow min-w-0">
+                  {formDefinition ? (
+                    <FormStructureTree 
+                      formDefinition={formDefinition} 
+                      selectedFieldId={selectedFieldId}
+                      selectedSectionId={selectedSectionId}
+                      onSelectField={(fieldId, sectionId) => dispatch({ type: 'SELECT_ELEMENT', payload: { fieldId, sectionId } })}
+                      onSelectSection={(sectionId) => dispatch({ type: 'SELECT_ELEMENT', payload: { sectionId, fieldId: null } })}
+                      onDeleteField={(fieldId, sectionId) => dispatch({ type: 'DELETE_FIELD', payload: { fieldId, sectionId } })}
+                      onDeleteSection={(sectionId) => dispatch({ type: 'DELETE_SECTION', payload: { sectionId } })}
+                    />
+                  ) : (
+                    <div className="flex items-center justify-center h-full">
+                      <Loader2 className="h-8 w-8 animate-spin text-primary" />
+                      <p className="ml-2">Loading form structure...</p>
+                    </div>
+                  )}
+                </div>
 
-            <div className="w-[350px] flex-shrink-0">
-              <PropertyEditorPane 
-                formDefinition={state.formDefinition}
-                selectedElement={state.selectedElement}
-                onUpdateField={(sectionId, fieldId, updates) => dispatch({ type: 'UPDATE_FIELD_PROPERTIES', payload: { sectionId, fieldId, updates }})}
-                onUpdateSectionProperties={(sectionId, updates) => dispatch({ type: 'UPDATE_SECTION_PROPERTIES', payload: { sectionId, updates }})}
-              />
-            </div>
+                <div className="w-[350px] flex-shrink-0">
+                  {formDefinition ? (
+                    <PropertyEditorPane 
+                      formDefinition={formDefinition}
+                      selectedElement={selectedElement}
+                      onUpdateField={(sectionId, fieldId, updates) => dispatch({ type: 'UPDATE_FIELD_PROPERTIES', payload: { sectionId, fieldId, updates }})}
+                      onUpdateSectionProperties={(sectionId, updates) => dispatch({ type: 'UPDATE_SECTION_PROPERTIES', payload: { sectionId, updates }})}
+                    />
+                  ) : (
+                     <div className="flex items-center justify-center h-full">
+                      <Loader2 className="h-8 w-8 animate-spin text-primary" />
+                      <p className="ml-2">Loading properties...</p>
+                    </div>
+                  )}
+                </div>
+              </>
+            )}
           </div>
         </motion.div>
       </DashboardLayout>

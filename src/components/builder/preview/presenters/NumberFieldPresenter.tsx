@@ -6,16 +6,18 @@ import React from 'react'; // Import React for ChangeEvent
 
 export interface NumberFieldPresenterProps {
   field: FormFieldDefinition & { 
-    type: Extract<FormFieldType, 'number'>; 
+    type: 'number';
     min?: number; 
     max?: number;
+    // Error prop should not be in field type
   };
-  value?: any; // Current value from form state (can be string or number)
-  onValueChange?: (newValue: string) => void; // Callback to update form state, passes string value
+  value?: number | undefined; // Current value from form state, should be number or undefined
+  onValueChange?: (newValue: number | undefined) => void; // Callback to update form state
+  error?: string; // Error prop correctly defined at this level
 }
 
 // Helper to get Tailwind width class from styleOptions (can be shared if moved to a utils file)
-const getWidthClass = (width: FormFieldStyleOptions['width']) => {
+const getWidthClass = (width?: FormFieldStyleOptions['width']) => { // Added optional chaining for safety
   switch (width) {
     case '1/2': return 'w-1/2';
     case '1/3': return 'w-1/3';
@@ -26,7 +28,7 @@ const getWidthClass = (width: FormFieldStyleOptions['width']) => {
   }
 };
 
-export function NumberFieldPresenter({ field, value, onValueChange }: NumberFieldPresenterProps) {
+export function NumberFieldPresenter({ field, value, onValueChange, error }: NumberFieldPresenterProps) {
   const {
     id,
     label,
@@ -44,7 +46,13 @@ export function NumberFieldPresenter({ field, value, onValueChange }: NumberFiel
 
   const handleChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     if (onValueChange) {
-      onValueChange(event.target.value); // Pass the string value from input
+      const stringValue = event.target.value;
+      if (stringValue === '') {
+        onValueChange(undefined); // Treat empty string as undefined for numbers
+      } else {
+        const num = parseFloat(stringValue);
+        onValueChange(isNaN(num) ? undefined : num); // Send undefined if parse fails, else the number
+      }
     }
   };
   
@@ -52,10 +60,10 @@ export function NumberFieldPresenter({ field, value, onValueChange }: NumberFiel
   let displayValue: string;
   if (isInteractive) {
     // If value is null or undefined, use empty string, otherwise convert to string
-    displayValue = value == null ? '' : String(value);
+    displayValue = typeof value === 'number' && !isNaN(value) ? String(value) : '';
   } else {
     // For non-interactive, use defaultValue, convert to string or use empty string
-    displayValue = field.defaultValue == null ? '' : String(field.defaultValue);
+    displayValue = typeof field.defaultValue === 'number' && !isNaN(field.defaultValue) ? String(field.defaultValue) : '';
   }
 
   const inputElementProps = {
@@ -70,11 +78,11 @@ export function NumberFieldPresenter({ field, value, onValueChange }: NumberFiel
     style: {
       color: styleOptions.inputTextColor,
       backgroundColor: styleOptions.inputBackgroundColor,
-      borderColor: styleOptions.inputBorderColor,
-      borderWidth: styleOptions.inputBorderColor ? '1px' : undefined,
-      borderStyle: styleOptions.inputBorderColor ? 'solid' : undefined,
+      borderColor: error ? 'hsl(var(--destructive))' : styleOptions.inputBorderColor,
+      borderWidth: styleOptions.inputBorderColor || error ? '1px' : undefined,
+      borderStyle: styleOptions.inputBorderColor || error ? 'solid' : undefined,
     },
-    className: "mt-1", // Standard spacing from label/description
+    className: cn("mt-1", error ? "border-destructive focus-visible:ring-destructive" : ""),
   };
 
   return (
@@ -105,6 +113,9 @@ export function NumberFieldPresenter({ field, value, onValueChange }: NumberFiel
         </p>
       )}
       <Input {...inputElementProps} />
+      {error && (
+        <p className="text-sm text-destructive mt-1">{error}</p>
+      )}
     </div>
   );
 } 

@@ -1,11 +1,11 @@
 import React from 'react';
 import { Label } from "@/components/ui/label";
-import { Star } from "lucide-react"; // For star ratings
-import type { FormFieldDefinition, FormFieldType } from "@/types/forms";
+import { Star, Circle } from "lucide-react"; // Using Circle for number scale
+import type { FormFieldDefinition, FormFieldType, FormFieldStyleOptions } from "@/types/forms";
 import { cn } from "@/lib/utils";
 
 // Helper to determine width class (can be shared or defined locally)
-const getWidthClass = (widthOption?: string): string => {
+const getWidthClass = (width?: FormFieldStyleOptions['width']): string => {
   const widthMap: Record<string, string> = {
     'full': 'w-full',
     '1/2': 'w-1/2',
@@ -13,118 +13,116 @@ const getWidthClass = (widthOption?: string): string => {
     '2/3': 'w-2/3',
     'auto': 'w-auto',
   };
-  return widthMap[widthOption || 'full'] || 'w-full';
+  return widthMap[width] || 'w-full';
 };
 
 export interface RatingFieldPresenterProps {
   field: FormFieldDefinition & {
     type: Extract<FormFieldType, 'rating'>;
-    // maxRating and ratingType are optional on FormFieldDefinition, defaults handled in component
+    maxRating?: number;
+    ratingType?: 'star' | 'number_scale';
   };
-  value?: number; // Current rating value for interactive mode
-  onValueChange?: (newValue: number | undefined) => void; // Handler for value changes
+  value?: number | undefined;
+  onValueChange?: (newValue: number | undefined) => void;
+  error?: string;
 }
 
-export function RatingFieldPresenter({ field, value: propValue, onValueChange }: RatingFieldPresenterProps) {
+export function RatingFieldPresenter({ field, value, onValueChange, error }: RatingFieldPresenterProps) {
   const {
     id,
     label,
     description,
     isRequired,
-    defaultValue, // Should be a number for rating type
+    maxRating = 5,
+    ratingType = 'star',
     styleOptions = { labelIsVisible: true },
-    maxRating = 5, // Default to 5 if not specified
-    ratingType = 'star', // Default to 'star' if not specified
   } = field;
 
+  const widthClass = getWidthClass(styleOptions.width);
   const isInteractive = !!onValueChange;
-  const widthClass = getWidthClass(styleOptions?.width);
-  const currentRating = isInteractive ? (propValue ?? 0) : (typeof defaultValue === 'number' ? defaultValue : 0);
 
-  const containerStyles: React.CSSProperties = {
-    backgroundColor: styleOptions?.containerBackgroundColor,
-    borderColor: styleOptions?.containerBorderColor,
-    padding: styleOptions?.containerPadding ? `${styleOptions.containerPadding}px` : undefined,
-    borderWidth: styleOptions?.containerBorderColor ? '1px' : '0px',
-    borderStyle: styleOptions?.containerBorderColor ? 'solid' : 'none',
-  };
-  const labelStyling: React.CSSProperties = { color: styleOptions?.labelTextColor };
+  const currentRating = isInteractive ? value : (field.defaultValue as number | undefined);
 
-  const renderStars = () => {
-    return (
-      <div className="flex space-x-1 mt-1" aria-label={`Rating: ${currentRating} out of ${maxRating} stars`}>
-        {[...Array(maxRating)].map((_, i) => {
-          const ratingValue = i + 1;
-          return (
-            <Star
-              key={`${id}-star-${i}`}
-              className={cn(
-                "h-5 w-5",
-                isInteractive ? "cursor-pointer" : "cursor-default",
-                ratingValue <= currentRating
-                  ? (styleOptions?.inputTextColor ? '' : "text-yellow-400 fill-yellow-400")
-                  : (styleOptions?.inputTextColor ? "text-muted-foreground/50 fill-muted-foreground/20" : "text-muted-foreground/50 fill-muted-foreground/20")
-              )}
-              style={ratingValue <= currentRating && styleOptions?.inputTextColor ? { color: styleOptions.inputTextColor, fill: styleOptions.inputTextColor } : {}}
-              onClick={isInteractive && onValueChange ? () => onValueChange(ratingValue) : undefined}
-              aria-hidden="true" // Individual stars are decorative
-            />
-          );
-        })}
-      </div>
-    );
+  const handleRatingClick = (rating: number) => {
+    if (isInteractive && onValueChange) {
+      // If clicking the same rating, deselect it (treat as undefined)
+      onValueChange(currentRating === rating ? undefined : rating);
+    }
   };
 
-  const renderNumberScale = () => {
-    return (
-      <div className="flex space-x-2 mt-1" role="group" aria-label={`Rating: ${currentRating} out of ${maxRating}`}>
-        {[...Array(maxRating)].map((_, i) => {
-          const ratingValue = i + 1;
-          const isSelected = ratingValue === currentRating;
-          return (
-            <div
-              key={`${id}-num-${i}`}
-              className={cn(
-                "h-7 w-7 flex items-center justify-center rounded border text-xs font-medium",
-                isInteractive ? "cursor-pointer" : "cursor-default",
-                !isSelected && "bg-muted text-muted-foreground border-border"
-              )}
-              style={isSelected ? {
-                backgroundColor: styleOptions?.inputBackgroundColor || 'var(--primary)',
-                borderColor: styleOptions?.inputBorderColor || 'var(--primary)',
-                color: styleOptions?.inputTextColor || 'var(--primary-foreground)',
-              } : {
-                borderColor: styleOptions?.inputBorderColor || undefined,
-              }}
-              onClick={isInteractive && onValueChange ? () => onValueChange(ratingValue) : undefined}
-              aria-label={`${ratingValue} out of ${maxRating}${isSelected ? ", selected" : ""}`}
-            >
-              {ratingValue}
-            </div>
-          );
-        })}
-      </div>
-    );
-  };
+  const ratingElements = Array.from({ length: maxRating }, (_, i) => {
+    const ratingValue = i + 1;
+    const isFilled = currentRating !== undefined && ratingValue <= currentRating;
+    const isHovered = false; // Hover state could be added for more interactivity if needed
+
+    const iconProps = {
+      key: ratingValue,
+      size: 28, // Consistent size
+      className: cn(
+        isInteractive ? "cursor-pointer" : "cursor-default",
+        isFilled ? (error ? "text-destructive" : "text-yellow-400 dark:text-yellow-500") : "text-muted-foreground/70",
+        error && !isFilled ? "text-destructive/50" : "", // Lighter error color for unfilled icons if error exists
+        isHovered && isInteractive ? (error ? "text-destructive/80" : "text-yellow-300 dark:text-yellow-400") : ""
+      ),
+      onClick: () => handleRatingClick(ratingValue),
+      fill: isFilled ? (error ? "hsl(var(--destructive))" : "currentColor") : "none",
+    };
+
+    if (ratingType === 'number_scale') {
+      return (
+        <div
+          key={ratingValue}
+          onClick={() => handleRatingClick(ratingValue)}
+          className={cn(
+            "w-8 h-8 rounded-full border flex items-center justify-center text-sm font-medium",
+            isInteractive ? "cursor-pointer" : "cursor-default",
+            isFilled 
+              ? (error ? "bg-destructive text-destructive-foreground border-destructive" : "bg-primary text-primary-foreground border-primary") 
+              : (error ? "border-destructive text-destructive" : "border-muted-foreground/50 text-muted-foreground"),
+            styleOptions.inputBorderColor && !error ? `border-[${styleOptions.inputBorderColor}]` : '' // Custom border if no error
+          )}
+          style={{
+             // Apply custom text/bg color if NOT filled and error (for the number itself)
+            color: isFilled ? (error ? undefined : styleOptions.inputTextColor) : (error ? 'hsl(var(--destructive))' : styleOptions.inputTextColor),
+            backgroundColor: isFilled ? (error ? undefined : styleOptions.inputBackgroundColor) : styleOptions.inputBackgroundColor,
+            borderColor: error ? 'hsl(var(--destructive))' : styleOptions.inputBorderColor,
+          }}
+        >
+          {ratingValue}
+        </div>
+      );
+    }
+    // Default to star
+    return <Star {...iconProps} />;
+  });
 
   return (
     <div
-      className={cn("mb-4 flex flex-col", widthClass)}
-      style={containerStyles}
-      role="group"
-      aria-labelledby={id && styleOptions.labelIsVisible !== false ? `${id}-label` : undefined}
+      className={cn("flex flex-col", widthClass)}
+      style={{
+        backgroundColor: styleOptions.containerBackgroundColor,
+        borderColor: styleOptions.containerBorderColor,
+        padding: styleOptions.containerPadding,
+        borderWidth: styleOptions.containerBorderColor ? '1px' : '0',
+        borderStyle: styleOptions.containerBorderColor ? 'solid' : 'none',
+      }}
     >
-      {styleOptions?.labelIsVisible !== false && (
-        <Label id={`${id}-label`} style={labelStyling} className="text-sm font-medium mb-0.5" htmlFor={id}>
+      {styleOptions.labelIsVisible !== false && (
+        <Label htmlFor={id} style={{ color: styleOptions.labelTextColor }} className="text-sm font-medium mb-0.5">
           {label} {isRequired && <span className="text-destructive font-normal">*</span>}
         </Label>
       )}
       {description && (
-        <p className="text-xs text-muted-foreground mb-1" id={`${id}-desc`}>
+        <p className="text-xs text-muted-foreground mb-1">
           {description}
         </p>
       )}
-      {ratingType === 'star' ? renderStars() : renderNumberScale()}
+      <div className={cn("flex items-center gap-1.5 mt-1", error && ratingType === 'star' ? "ring-1 ring-destructive rounded-md p-1 w-min" : "", error && ratingType === 'number_scale' ? "ring-1 ring-destructive rounded-lg p-1 w-min" : "")}>
+        {ratingElements}
+      </div>
+      {error && (
+        <p className="text-sm text-destructive mt-1">{error}</p>
+      )}
     </div>
   );
 } 

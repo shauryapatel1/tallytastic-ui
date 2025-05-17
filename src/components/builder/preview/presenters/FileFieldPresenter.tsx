@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button"; // Used for visual representati
 import { FileUp } from "lucide-react";
 import type { FormFieldDefinition, FormFieldType } from "@/types/forms";
 import { cn } from "@/lib/utils";
+import { Input } from "@/components/ui/input";
 
 // Helper to determine width class
 const getWidthClass = (widthOption?: string): string => {
@@ -23,11 +24,12 @@ export interface FileFieldPresenterProps {
     maxFileSizeMB?: number;
     allowedFileTypes?: string[];
   };
-  value?: string | undefined; // Mock filename for interactive preview
-  onValueChange?: (newValue: string | undefined) => void; // Handler for simulated file selection/deselection
+  value?: FileList | string | undefined; // string could be a filename if already uploaded/persisted
+  onValueChange?: (newValue: FileList | undefined) => void; // FileList from input event
+  error?: string; // Added error prop
 }
 
-export function FileFieldPresenter({ field, value: propValue, onValueChange }: FileFieldPresenterProps) {
+export function FileFieldPresenter({ field, value, onValueChange, error }: FileFieldPresenterProps) {
   const {
     id,
     label,
@@ -53,10 +55,35 @@ export function FileFieldPresenter({ field, value: propValue, onValueChange }: F
   const inputRepresentationStyling: React.CSSProperties = {
     color: styleOptions?.inputTextColor, // For placeholder text/icon
     backgroundColor: styleOptions?.inputBackgroundColor,
-    borderColor: styleOptions?.inputBorderColor,
-    borderWidth: styleOptions?.inputBorderColor ? '1px' : undefined,
-    borderStyle: styleOptions?.inputBorderColor ? 'solid' : undefined,
+    borderColor: error ? 'hsl(var(--destructive))' : styleOptions?.inputBorderColor,
+    borderWidth: styleOptions?.inputBorderColor || error ? '1px' : undefined,
+    borderStyle: styleOptions?.inputBorderColor || error ? 'solid' : undefined,
   };
+
+  const handleChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    if (onValueChange) {
+      onValueChange(event.target.files || undefined);
+    }
+  };
+
+  // Displaying current file info for interactive mode if `value` provides it.
+  // For a FileList, we might show the name of the first file.
+  // If `value` is a string, assume it's a previously uploaded filename.
+  let fileInfo: string | null = null;
+  if (isInteractive && value) {
+    if (typeof value === 'string') {
+      fileInfo = value;
+    } else if (value instanceof FileList && value.length > 0) {
+      fileInfo = value[0].name;
+      if (value.length > 1) {
+        fileInfo += ` (+${value.length - 1} more)`;
+      }
+    }
+  }
+  // Non-interactive mode doesn't typically show a value for file inputs unless defaultValue is a filename string
+  else if (!isInteractive && typeof field.defaultValue === 'string') {
+    fileInfo = field.defaultValue;
+  }
 
   return (
     <div
@@ -74,33 +101,26 @@ export function FileFieldPresenter({ field, value: propValue, onValueChange }: F
           {description}
         </p>
       )}
-      <Button
-        variant="outline"
-        disabled={!isInteractive} // Disabled if not interactive
-        className={cn(
-          "mt-1 justify-start text-muted-foreground h-10",
-          isInteractive ? "cursor-pointer" : "cursor-not-allowed",
-          propValue && isInteractive && "text-foreground" // Change text color if a mock file is "selected"
-        )}
+      <Input
+        type="file"
+        id={id}
+        placeholder={placeholder} // Browser usually shows "No file chosen" or similar
+        disabled={!isInteractive}
+        onChange={handleChange}
+        accept={allowedFileTypes?.join(',')}
+        // The Input component itself might need specific styling for error states or to use the style prop effectively for file inputs
+        // Standard border styling might be overridden by browser default file input styling.
         style={inputRepresentationStyling}
-        aria-label={label || 'File upload input'}
-        onClick={() => {
-          if (isInteractive && onValueChange) {
-            if (propValue) {
-              onValueChange(undefined); // Simulate clearing the file
-            } else {
-              onValueChange("sample-file.pdf"); // Simulate selecting a mock file
-            }
-          }
-        }}
-      >
-        <FileUp className="mr-2 h-4 w-4 flex-shrink-0" />
-        <span className="truncate">
-          {isInteractive && propValue 
-            ? propValue 
-            : (placeholder || (isInteractive ? "Choose File (Preview)" : "No file chosen"))}
-        </span>
-      </Button>
+        className={cn("mt-1 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-primary/10 file:text-primary hover:file:bg-primary/20", error ? "ring-1 ring-destructive focus-visible:ring-destructive" : "")}
+      />
+      {fileInfo && !error && (
+        <p className="text-xs text-muted-foreground mt-1">
+          Current file: {fileInfo}
+        </p>
+      )}
+      {error && (
+        <p className="text-sm text-destructive mt-1">{error}</p>
+      )}
 
       <div className="mt-1.5 space-y-0.5"> {/* Increased top margin slightly */}
         {maxFileSizeMB && (

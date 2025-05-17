@@ -6,8 +6,8 @@ import { PageHeader } from '@/components/dashboard/PageHeader';
 import { SearchAndFilterBar } from '@/components/dashboard/SearchAndFilterBar';
 import { FormList } from '@/components/dashboard/FormList';
 import { CreateFormButton } from '@/components/dashboard/CreateFormButton';
-import type { FormSummary, FormFilterCriteria } from '@/types/forms';
-import { fetchUserFormSummaries, duplicateFormAPI, deleteFormAPI } from '@/services/formService'; 
+import type { FormSummary, FormFilterCriteria, FormStatus } from '@/types/forms';
+import { WorkspaceUserFormSummaries, duplicateFormAPI, deleteFormAPI } from '@/services/formService'; 
 import { useToast } from "@/components/ui/use-toast"; 
 import {
   AlertDialog,
@@ -20,7 +20,10 @@ import {
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog"; 
 
-const AVAILABLE_STATUSES = [
+// Define a more specific type for status values used in filters
+type SelectableStatus = 'all' | FormStatus;
+
+const AVAILABLE_STATUSES: { value: SelectableStatus; label: string }[] = [
   { value: 'all', label: 'All Statuses' },
   { value: 'draft', label: 'Draft' },
   { value: 'published', label: 'Published' },
@@ -46,7 +49,7 @@ export default function DashboardPage() {
     setIsLoadingInitial(true);
     setError(null);
     try {
-      const fetchedForms = await fetchUserFormSummaries();
+      const fetchedForms = await WorkspaceUserFormSummaries();
       setForms(fetchedForms);
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : "An unknown error occurred.";

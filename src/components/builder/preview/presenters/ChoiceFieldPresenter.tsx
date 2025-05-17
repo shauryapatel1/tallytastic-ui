@@ -9,15 +9,15 @@ import type { FormFieldDefinition, FormFieldType, FieldOption, FormFieldStyleOpt
 import { cn } from "@/lib/utils";
 
 // Helper to determine width class
-const getWidthClass = (widthOption?: string): string => {
-  const widthMap: Record<string, string> = {
-    'full': 'w-full',
-    '1/2': 'w-1/2',
-    '1/3': 'w-1/3',
-    '2/3': 'w-2/3',
-    'auto': 'w-auto',
-  };
-  return widthMap[widthOption || 'full'] || 'w-full';
+const getWidthClass = (width?: FormFieldStyleOptions['width']) => {
+  switch (width) {
+    case '1/2': return 'w-1/2';
+    case '1/3': return 'w-1/3';
+    case '2/3': return 'w-2/3';
+    case 'auto': return 'w-auto';
+    case 'full':
+    default: return 'w-full';
+  }
 };
 
 export interface ChoiceFieldPresenterProps {
@@ -27,12 +27,13 @@ export interface ChoiceFieldPresenterProps {
     allowMultipleSelection?: boolean; // Primarily for 'select', implied for 'checkbox' groups
     allowOther?: boolean; // V1: Not fully implemented in preview, only options are rendered
     // defaultValue is part of FormFieldDefinition (any type)
+    error?: string; // Added error prop
   };
   value?: string | string[] | undefined;
   onValueChange?: (newValue: string | string[] | undefined) => void;
 }
 
-export function ChoiceFieldPresenter({ field, value: propValue, onValueChange }: ChoiceFieldPresenterProps) {
+export function ChoiceFieldPresenter({ field, value: propValue, onValueChange, error }: ChoiceFieldPresenterProps) {
   const {
     id,
     label,
@@ -53,28 +54,51 @@ export function ChoiceFieldPresenter({ field, value: propValue, onValueChange }:
   const inputStyling: React.CSSProperties = {
     color: styleOptions?.inputTextColor,
     backgroundColor: styleOptions?.inputBackgroundColor,
-    borderColor: styleOptions?.inputBorderColor,
-    borderWidth: styleOptions?.inputBorderColor ? '1px' : undefined,
-    borderStyle: styleOptions?.inputBorderColor ? 'solid' : undefined,
+    borderColor: error ? 'hsl(var(--destructive))' : styleOptions?.inputBorderColor,
+    borderWidth: styleOptions?.inputBorderColor || error ? '1px' : undefined,
+    borderStyle: styleOptions?.inputBorderColor || error ? 'solid' : undefined,
   };
   const labelStyling: React.CSSProperties = { color: styleOptions?.labelTextColor };
 
   const renderSelect = () => {
-    const singleSelectDefaultValue = (!allowMultipleSelection && typeof defaultValue === 'string' ? defaultValue : undefined);
+    // For multi-select 'select' fields, render as disabled checkboxes
+    if (allowMultipleSelection) {
+      const currentSelectedValues = isInteractive ? 
+        (Array.isArray(propValue) ? propValue : (propValue ? [propValue] : [])) : 
+        (Array.isArray(defaultValue) ? defaultValue : (defaultValue ? [String(defaultValue)] : []));
+
+      return (
+        <div className="mt-1 space-y-2">
+          {options.map(option => {
+            const isChecked = currentSelectedValues.includes(option.value);
+            return (
+              <div key={option.id || option.value} className="flex items-center space-x-2">
+                <Checkbox
+                  id={`${id}-ms-${option.id || option.value}`} // Unique ID for multi-select checkbox
+                  checked={isChecked}
+                  disabled // Always disabled in preview for multi-select dropdown
+                  className={error ? "border-destructive" : ""}
+                />
+                <Label htmlFor={`${id}-ms-${option.id || option.value}`} style={labelStyling} className="font-normal">
+                  {option.label}
+                </Label>
+              </div>
+            );
+          })}
+          {options.length === 0 && <p className="text-sm text-muted-foreground">No options defined.</p>}
+        </div>
+      );
+    }
+
+    // Original logic for single-select dropdown
+    const singleSelectDefaultValue = typeof defaultValue === 'string' ? defaultValue : undefined;
     const currentSingleSelectValue = isInteractive ? (typeof propValue === 'string' ? propValue : undefined) : singleSelectDefaultValue;
 
     let triggerPlaceholder = placeholder || "Select...";
-    if (allowMultipleSelection && Array.isArray(propValue) && propValue.length > 0 && isInteractive) {
-        const firstSelectedOption = options.find(opt => opt.value === propValue[0]);
-        if (firstSelectedOption) {
-            triggerPlaceholder = firstSelectedOption.label;
-        }
-    } else if (allowMultipleSelection && Array.isArray(defaultValue) && defaultValue.length > 0 && !isInteractive) {
-        const firstSelectedOption = options.find(opt => opt.value === defaultValue[0]);
-        if (firstSelectedOption) {
-            triggerPlaceholder = firstSelectedOption.label;
-        }
-    }
+    // The following block for triggerPlaceholder modification is no longer needed here
+    // as multi-select is handled above and single-select doesn't need this complex logic.
+    // if (allowMultipleSelection && Array.isArray(propValue) && propValue.length > 0 && isInteractive) { ... }
+    // else if (allowMultipleSelection && Array.isArray(defaultValue) && defaultValue.length > 0 && !isInteractive) { ... }
 
     return (
       <>
@@ -83,19 +107,16 @@ export function ChoiceFieldPresenter({ field, value: propValue, onValueChange }:
           disabled={!isInteractive}
           onValueChange={(newValue) => {
             if (isInteractive && onValueChange) {
-              if (allowMultipleSelection) {
-                // For multi-select, this is tricky as shadcn/ui Select doesn't support it directly.
-                // This simple implementation assumes single select for now when interactive.
-                // For a true multi-select, a different component or strategy would be needed.
-                // We'll handle the array value for propValue but onValueChange will only send single string.
-                onValueChange(newValue);
-              } else {
-                onValueChange(newValue);
-              }
+              // For single-select, onValueChange is straightforward
+              onValueChange(newValue);
             }
           }}
         >
-          <SelectTrigger id={id} style={inputStyling} className="mt-1">
+          <SelectTrigger 
+            id={id} 
+            style={inputStyling} 
+            className={cn("mt-1", error ? "border-destructive focus-visible:ring-destructive" : "")}
+          >
             <SelectValue placeholder={triggerPlaceholder} />
           </SelectTrigger>
           <SelectContent>
@@ -112,6 +133,8 @@ export function ChoiceFieldPresenter({ field, value: propValue, onValueChange }:
             </SelectGroup>
           </SelectContent>
         </Select>
+        {/* The block below for displaying selected values for multi-select is no longer needed,
+            as the checkboxes above now handle the visual representation.
         {allowMultipleSelection && (
           isInteractive ? (
             Array.isArray(propValue) && propValue.length > 0 && (
@@ -137,6 +160,7 @@ export function ChoiceFieldPresenter({ field, value: propValue, onValueChange }:
             )
           )
         )}
+        */}
       </>
     );
   };
@@ -154,7 +178,7 @@ export function ChoiceFieldPresenter({ field, value: propValue, onValueChange }:
             onValueChange(newValue);
           }
         }}
-      className="mt-1 space-y-2"
+      className={cn("mt-1 space-y-2", error ? "ring-1 ring-destructive rounded-md p-2" : "")}
     >
       {options.map(option => (
         <div key={option.id || option.value} className="flex items-center space-x-2">
@@ -162,7 +186,7 @@ export function ChoiceFieldPresenter({ field, value: propValue, onValueChange }:
             value={option.value} 
             id={`${id}-${option.id || option.value}`} 
               disabled={!isInteractive}
-            style={{borderColor: styleOptions?.inputBorderColor}}
+            style={{borderColor: error? 'hsl(var(--destructive))' : styleOptions?.inputBorderColor}}
           />
           <Label htmlFor={`${id}-${option.id || option.value}`} style={labelStyling} className="font-normal">
             {option.label}
@@ -177,7 +201,7 @@ export function ChoiceFieldPresenter({ field, value: propValue, onValueChange }:
     const currentCheckboxValues = isInteractive ? (Array.isArray(propValue) ? propValue : (typeof propValue === 'string' ? [propValue] : [])) : (Array.isArray(defaultValue) ? defaultValue : (typeof defaultValue === 'string' ? [defaultValue] : []));
 
     return (
-    <div className="mt-1 space-y-2">
+    <div className={cn("mt-1 space-y-2", error ? "ring-1 ring-destructive rounded-md p-2" : "")}>
       {options.map(option => {
           const isChecked = currentCheckboxValues.includes(option.value);
 
@@ -202,7 +226,7 @@ export function ChoiceFieldPresenter({ field, value: propValue, onValueChange }:
                     onValueChange(newValues);
                   }
                 }}
-              style={{borderColor: styleOptions?.inputBorderColor}}
+              style={{borderColor: error? 'hsl(var(--destructive))' : styleOptions?.inputBorderColor}}
             />
             <Label htmlFor={`${id}-${option.id || option.value}`} style={labelStyling} className="font-normal">
               {option.label}
@@ -250,6 +274,9 @@ export function ChoiceFieldPresenter({ field, value: propValue, onValueChange }:
         </p>
       )}
       {fieldElement}
+      {error && (
+        <p className="text-sm text-destructive mt-1">{error}</p>
+      )}
     </div>
   );
 } 

@@ -10,6 +10,7 @@ interface TextFieldPresenterProps {
   field: FormFieldDefinition & { type: Extract<FormFieldType, 'text' | 'textarea' | 'email' | 'tel' | 'url'> }; 
   value?: any; // Current value from form state
   onValueChange?: (newValue: string) => void; // Callback to update form state
+  error?: string; // Added error prop
 }
 
 // Helper to get Tailwind width class from styleOptions
@@ -24,7 +25,7 @@ const getWidthClass = (width: FormFieldStyleOptions['width']) => {
   }
 };
 
-export function TextFieldPresenter({ field, value, onValueChange }: TextFieldPresenterProps) {
+export function TextFieldPresenter({ field, value, onValueChange, error }: TextFieldPresenterProps) {
   const {
     id,
     label,
@@ -55,12 +56,12 @@ export function TextFieldPresenter({ field, value, onValueChange }: TextFieldPre
     style: {
       color: styleOptions.inputTextColor,
       backgroundColor: styleOptions.inputBackgroundColor,
-      borderColor: styleOptions.inputBorderColor,
+      borderColor: error ? 'hsl(var(--destructive))' : styleOptions.inputBorderColor, // Use destructive border color on error
       // Ensure border is visible if color is set
-      borderWidth: styleOptions.inputBorderColor ? '1px' : undefined,
-      borderStyle: styleOptions.inputBorderColor ? 'solid' : undefined,
+      borderWidth: styleOptions.inputBorderColor || error ? '1px' : undefined,
+      borderStyle: styleOptions.inputBorderColor || error ? 'solid' : undefined,
     },
-    className: "mt-1", // Standard spacing from label/description
+    className: cn("mt-1", error ? "border-destructive focus-visible:ring-destructive" : ""),
   };
 
   return (
@@ -102,6 +103,9 @@ export function TextFieldPresenter({ field, value, onValueChange }: TextFieldPre
           {...commonInputProps}
           type={type === 'text' ? 'text' : type} // Handles email, tel, url directly
         />
+      )}
+      {error && (
+        <p className="text-sm text-destructive mt-1">{error}</p>
       )}
     </div>
   );
