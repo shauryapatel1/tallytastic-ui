@@ -4,6 +4,7 @@ import type {
   FormSectionDefinition,
   FormFieldType,
   BaseFieldProps,
+  FormSettings,
 } from '@/types/forms';
 import { produce } from 'immer';
 
@@ -77,6 +78,7 @@ export type FormBuilderAction =
   | { type: 'LOAD_FORM'; payload: FormDefinition }
   | { type: 'INIT_NEW_FORM'; payload?: Partial<Pick<FormDefinition, 'title' | 'description'>> }
   | { type: 'UPDATE_FORM_META'; payload: Partial<Pick<FormDefinition, 'title' | 'description' | 'customSuccessMessage' | 'redirectUrl'>> }
+  | { type: 'UPDATE_FORM_SETTINGS'; payload: Partial<FormSettings> }
   | { 
       type: 'ADD_SECTION'; 
       payload: { 
@@ -117,6 +119,9 @@ export const formBuilderReducer = produce((draft: FormBuilderState, action: Form
       draft.selectedFieldId = null;
       draft.selectedSectionId = draft.formDefinition.sections[0].id;
       draft.selectedElement = draft.formDefinition.sections[0];
+      if (!draft.formDefinition.settings) {
+        draft.formDefinition.settings = { submitButtonText: 'Submit' };
+      }
       break;
       
     case 'UPDATE_FORM_META':
@@ -124,6 +129,16 @@ export const formBuilderReducer = produce((draft: FormBuilderState, action: Form
             draft.formDefinition = { ...draft.formDefinition, ...action.payload };
         }
         break;
+
+    case 'UPDATE_FORM_SETTINGS': {
+      if (draft.formDefinition) {
+        draft.formDefinition.settings = {
+          ...(draft.formDefinition.settings || {}),
+          ...action.payload,
+        };
+      }
+      break;
+    }
 
     case 'ADD_SECTION': {
         if (!draft.formDefinition) break;

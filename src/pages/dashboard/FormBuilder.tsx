@@ -11,7 +11,8 @@ import type {
   FormFieldType,
   FormFieldDefinition,
   FormSectionDefinition,
-  FormStatus
+  FormStatus,
+  FormSettings
 } from "@/types/forms";
 import { initialFormBuilderState, formBuilderReducer } from "@/lib/formBuilderReducer";
 import { validateField } from '@/lib/ValidationEngine';
@@ -171,6 +172,11 @@ export default function FormBuilder() {
       });
     },
   });
+
+  // Callback for updating form settings from PropertyEditorPane
+  const handleUpdateFormSettings = (updates: Partial<FormSettings>) => {
+    dispatch({ type: 'UPDATE_FORM_SETTINGS', payload: updates });
+  };
 
   const handleSaveForm = () => {
     if (state.formDefinition && currentFormId && currentFormId !== 'new') {
@@ -581,6 +587,7 @@ export default function FormBuilder() {
                       selectedElement={selectedElement}
                       onUpdateField={(sectionId, fieldId, updates) => dispatch({ type: 'UPDATE_FIELD_PROPERTIES', payload: { sectionId, fieldId, updates }})}
                       onUpdateSectionProperties={(sectionId, updates) => dispatch({ type: 'UPDATE_SECTION_PROPERTIES', payload: { sectionId, updates }})}
+                      onUpdateFormSettings={handleUpdateFormSettings}
                     />
                   ) : (
                      <div className="flex items-center justify-center h-full">

@@ -219,6 +219,13 @@ export interface FormSectionDefinition {
   // layoutColumns?: 1 | 2 | 3 | 4; // Default layout for fields in this section
 }
 
+// New: Interface for Form-level settings
+export interface FormSettings {
+  submitButtonText?: string;
+  // Future: customSuccessMessage?: string;
+  // Future: redirectUrl?: string;
+}
+
 // The complete definition of a form structure for the builder
 export interface FormDefinition {
   id: string;
@@ -236,6 +243,7 @@ export interface FormDefinition {
   createdAt: string; // Was optional, now required
   updatedAt: string; // Was lastModified?: string, now required and renamed
   status?: FormStatus;
+  settings?: FormSettings; // Added for form-level settings
   // themeId?: string;
   // customCSS?: string;
   // allowMultipleSubmissions?: boolean;

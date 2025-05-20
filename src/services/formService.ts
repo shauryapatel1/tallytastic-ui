@@ -47,7 +47,7 @@ export const getFormById = async (id: string): Promise<FormDefinition> => {
     const { data, error } = await supabase
       .from("forms")
       .select(
-        "id, title, description, user_id, created_at, updated_at, status, version, custom_success_message, redirect_url, definition_sections"
+        "id, title, description, user_id, created_at, updated_at, status, version, custom_success_message, redirect_url, definition_sections, submit_button_text"
       )
       .eq("id", id)
       .single<FormRow>();
@@ -133,6 +133,9 @@ export const getFormById = async (id: string): Promise<FormDefinition> => {
       sections: mappedSections,
       customSuccessMessage: data.custom_success_message || undefined,
       redirectUrl: data.redirect_url || undefined,
+      settings: {
+        submitButtonText: data.submit_button_text || 'Submit',
+      },
       version: data.version || 1,
       userId: data.user_id,
       createdAt: data.created_at,
@@ -164,6 +167,7 @@ export const updateFormDefinitionInService = async (
     version: formDefinition.version,
     custom_success_message: formDefinition.customSuccessMessage,
     redirect_url: formDefinition.redirectUrl,
+    submit_button_text: formDefinition.settings?.submitButtonText,
     updated_at: new Date().toISOString(),
     // user_id, created_at are typically not updated here.
     // id is used in .eq() and not in payload.
@@ -394,6 +398,7 @@ export const duplicateFormAPI = async (formIdToDuplicate: string, newTitle?: str
       definition_sections: newFormDefinitionData.sections as unknown as Json, // Cast sections to Json
       custom_success_message: newFormDefinitionData.customSuccessMessage,
       redirect_url: newFormDefinitionData.redirectUrl,
+      submit_button_text: newFormDefinitionData.settings?.submitButtonText,
       created_at: currentTime, // Set explicitly for the new record
       updated_at: currentTime, // Set explicitly for the new record
     };
@@ -560,6 +565,9 @@ export const createNewBlankForm = async (defaultTitle: string = "Untitled Form")
       createdAt: currentTime,
       updatedAt: currentTime,
       status: 'draft',
+      settings: {
+        submitButtonText: 'Submit',
+      },
     };
 
     // Prepare the payload for Supabase insertion
@@ -575,6 +583,7 @@ export const createNewBlankForm = async (defaultTitle: string = "Untitled Form")
       definition_sections: newFormDefinition.sections as unknown as Json, // Cast sections to Json
       custom_success_message: newFormDefinition.customSuccessMessage,
       redirect_url: newFormDefinition.redirectUrl,
+      submit_button_text: newFormDefinition.settings?.submitButtonText,
     };
 
     const { error: insertError } = await supabase
@@ -606,45 +615,104 @@ export const createNewBlankForm = async (defaultTitle: string = "Untitled Form")
 // Function to submit form responses
 export const submitFormResponse = async (
   formId: string,
-  responseData: FormValues // This is our internal type for form submission data
+  responseData: FormValues // FormValues is Record<string, any>
 ): Promise<void> => {
-  console.log(`[formService] Attempting to submit response for formId: ${formId}`, responseData);
+  // Log the submission attempt with only essential, non-sensitive info
+  console.log(
+    `[formService] Attempting to submit response for formId: ${formId}. Response data keys: ${Object.keys(
+      responseData
+    ).join(", ")}`
+  );
 
+  // Validate formId (basic check)
+  if (!formId || typeof formId !== "string") {
+    console.error(
+      "[formService] Invalid formId provided for submission:",
+      formId
+    );
+    throw new Error("Invalid form ID provided for submission.");
+  }
+
+  // Validate responseData (basic check that it's an object and not an array)
+  if (!responseData || typeof responseData !== "object" || Array.isArray(responseData)) {
+    console.error(
+      "[formService] Invalid responseData provided for submission (must be a non-array object):",
+      responseData
+    );
+    throw new Error("Invalid response data provided for submission (must be a non-array object).");
+  }
+
+  // The insertPayload is typed with FormResponseInsertPayload.
+  // FormResponseInsertPayload expects 'data' to be of type 'Json | null | undefined'.
+  // 'responseData' is of type 'FormValues' (Record<string, any>).
+  // The 'as Json' cast asserts that 'responseData' conforms to the 'Json' type.
+  // This is appropriate and type-safe if FormValues is ensured (e.g., by validation or sanitization)
+  // to contain only JSON-serializable values prior to calling this service.
+  // It is more specific than 'as any' and avoids 'as unknown as Json' when the structural
+  // compatibility is reasonably assumed.
   const insertPayload: FormResponseInsertPayload = {
     form_id: formId,
-    data: responseData as Json, // Ensure this is 'as Json' and not 'as unknown as X'
-    // created_at and submitted_at will be set by default by Supabase or here if needed
-    // id will be auto-generated by Supabase
+    data: responseData as Json,
+    // 'submitted_at' and 'id' are typically handled by database defaults or triggers.
   };
 
   try {
-    // The following line should no longer have a linter error if Supabase client is correctly typed with full Database schema
-    const { data, error } = await supabase
-      .from('form_responses') // Ensure this is your actual table name
+    // With the Supabase client now fully typed (as per user confirmation),
+    // this call to supabase.from('form_responses').insert(...) is type-checked.
+    // The 'form_responses' table name should be recognized by TypeScript, and
+    // 'insertPayload' must conform to Database["public"]["Tables"]["form_responses"]["Insert"].
+    // The previous linter error regarding table recognition should be resolved.
+    const { error, data: insertedData } = await supabase // insertedData can be used for logging or confirmation
+      .from("form_responses")
       .insert(insertPayload)
-      .select(); // Optionally select to confirm insert or get generated values
+      .select(); // Optionally .select() to get the inserted row(s) back.
 
     if (error) {
-      console.error('Error submitting form response to Supabase:', error);
-      // More specific error based on Supabase error codes could be useful
-      // e.g., if (error.code === '23503') { /* foreign key violation */ }
-      throw new Error(`Supabase error submitting response for form (ID: ${formId}): ${error.message} (Code: ${error.code})`);
+      console.error(
+        `[formService] Supabase error submitting form response for formId ${formId}:`,
+        error
+      );
+      // Specific error handling (e.g., for constraint violations like duplicate submissions based on a unique key) could be added here.
+      throw new Error(
+        `Failed to submit form response for form ${formId}: ${error.message} (Code: ${error.code})`
+      );
     }
 
-    console.log(`Form response for form ${formId} submitted successfully. Response data:`, data);
-    // Potentially return some part of 'data' if needed, e.g., the new response ID
+    // For debugging or confirmation, you could log details from insertedData:
+    // if (insertedData && insertedData.length > 0) {
+    //   console.log(`[formService] Form response successfully submitted. Inserted ID: ${insertedData[0].id}, Full data:`, insertedData[0]);
+    // } else if (insertedData) { // If insertedData is an empty array (e.g. if RLS prevented select)
+    //   console.log(`[formService] Form response successfully submitted for formId: ${formId}, but no data returned from select (possibly RLS).`);
+    // } else { // If insertedData is null (should not happen with .select() unless error, but defensive)
+    //   console.log(`[formService] Form response successfully submitted for formId: ${formId}. Null data returned from select().`);
+    // }
+     console.log(
+      `[formService] Form response successfully submitted for formId: ${formId}`
+    );
 
   } catch (error) {
-    console.error(`Unexpected error in submitFormResponse for form ID ${formId}:`, error);
-    if (error instanceof Error && error.message.startsWith('Supabase error')) {
-        throw error; // Re-throw Supabase-specific errors directly
+    console.error(
+      `[formService] Unexpected error in submitFormResponse for formId ${formId}:`,
+      error
+    );
+    // Re-throw the error, preserving specific Supabase error details if available.
+    if (error instanceof Error) {
+      // If it's the specific error we threw from the Supabase error block, re-throw it directly.
+      if (error.message.startsWith(`Failed to submit form response for form ${formId}:`)) {
+          throw error;
+      }
+      // Otherwise, wrap it if it's a more generic error caught during the try block.
+      throw new Error(`An unexpected error occurred while submitting the form response for form ${formId}: ${error.message}`);
     }
-    // Ensure a generic error is thrown if it's not already an Error instance
-    throw new Error(`Failed to submit form response (ID: ${formId}): ${error instanceof Error ? error.message : 'Unknown error'}`);
+    // Fallback for non-Error objects being thrown (less common in modern TypeScript but good for robustness).
+    throw new Error(`An unknown and unexpected error occurred while submitting the form response for form ${formId}.`);
   }
 };
 
-// Type guard for FormValues (must be a non-null object, not an array)
+// Type guard to check if the value is a valid FormResponseDataSupabase object
+// This is a basic structural check; more specific validation might be needed
+// depending on the expected structure of individual field responses within 'data'.
+// Note: FormResponseDataSupabase is an alias for Json, so this primarily checks if it's an object.
 function isFormValuesObject(value: Json): value is FormResponseDataSupabase { 
   return typeof value === 'object' && value !== null && !Array.isArray(value);
 }
@@ -653,40 +721,48 @@ function isFormValuesObject(value: Json): value is FormResponseDataSupabase {
 export const getFormResponsesByFormId = async (formId: string): Promise<FormResponse[]> => {
   console.log(`[formService] Fetching responses for formId: ${formId}`);
   try {
-    // The following line should no longer have a linter error if Supabase client is correctly typed
+    // With the Supabase client now fully typed, this call is type-checked.
+    // The 'form_responses' table name should be recognized by TypeScript.
     const { data: responseRows, error } = await supabase 
       .from('form_responses')
-      .select('id, form_id, created_at, submitted_at, data')
+      .select('id, form_id, submitted_at, data') // Removed created_at as it's not used in FormResponse
       .eq('form_id', formId)
       .order('submitted_at', { ascending: false })
-      .returns<FormResponseRow[]>();
+      .returns<FormResponseRow[]>(); // Ensures responseRows is typed as FormResponseRow[]
 
     if (error) {
-      console.error(`Error fetching responses for form ${formId} from Supabase:`, error);
-      throw new Error(`Failed to fetch responses: ${error.message}`);
+      console.error(`[formService] Error fetching responses for form ${formId} from Supabase:`, error);
+      throw new Error(`Failed to fetch responses for form ${formId}: ${error.message} (Code: ${error.code})`);
     }
 
     if (!responseRows) {
-      console.warn(`No responses found for form ${formId}, or data is null.`);
+      console.warn(`[formService] No responses found for form ${formId}, or Supabase returned null data.`);
       return [];
     }
 
     const mappedResponses: FormResponse[] = responseRows.map((row: FormResponseRow) => {
-      let processedData: FormResponseDataSupabase = {}; // Default to empty object
-      if (isFormValuesObject(row.data)) {
-        // Type predicate 'isFormValuesObject' narrows row.data.
-        // If FormResponseDataSupabase is e.g. Record<string, any> (aliased as FormValues),
-        // this direct assignment is type-safe.
-        processedData = row.data; 
-      } else {
-        // Log a warning if data is not in the expected object format
-        console.warn(`[formService] Malformed data encountered for response ID ${row.id} in form ${formId}. Expected object, got:`, typeof row.data);
+      // Initialize processedData as an empty object, conforming to FormValues (Record<string, any>).
+      // FormResponseDataSupabase is an alias for Json. The type guard ensures row.data is an object if true.
+      let processedData: FormValues = {}; 
+
+      if (row.data && isFormValuesObject(row.data)) {
+        // The type guard confirms row.data is a Json object. 
+        // A Json object is assignable to FormValues (Record<string, any>).
+        processedData = row.data;
+      } else if (row.data !== null) {
+        // Log a warning if data is present but not in the expected object format (e.g., it's a string, number, or array at the root).
+        console.warn(
+          `[formService] Malformed data encountered for response ID ${row.id} in form ${formId}. Expected a JSON object, got: ${typeof row.data}. Response data will be empty.`, 
+          row.data
+        );
       }
+      // If row.data is null, processedData remains {}, which is the desired default.
+
       return {
         id: row.id,
         formId: row.form_id,
-        submittedAt: row.submitted_at, // Assuming submitted_at exists and is correctly typed
-        data: processedData,
+        submittedAt: row.submitted_at, // row.submitted_at is string | null, matches FormResponse.submittedAt
+        data: processedData, // processedData is FormValues (Record<string, any>)
       };
     });
 
@@ -694,10 +770,81 @@ export const getFormResponsesByFormId = async (formId: string): Promise<FormResp
     return mappedResponses;
 
   } catch (error) {
-    console.error(`Error in getFormResponsesByFormId for form ${formId}:`, error);
+    console.error(`[formService] Unexpected error in getFormResponsesByFormId for form ${formId}:`, error);
     if (error instanceof Error) {
-      throw error;
+      // If it's the specific error we threw from the Supabase error block, re-throw it directly.
+      if (error.message.startsWith(`Failed to fetch responses for form ${formId}:`)) {
+        throw error;
+      }
+      // Otherwise, wrap it if it's a more generic error caught during the try block.
+      throw new Error(`An unexpected error occurred while fetching responses for form ${formId}: ${error.message}`);
     }
-    throw new Error(`An unexpected error occurred while fetching responses for form ${formId}.`);
+    // Fallback for non-Error objects being thrown.
+    throw new Error(`An unknown and unexpected error occurred while fetching responses for form ${formId}.`);
+  }
+};
+
+// --- User Account Management ---
+
+/**
+ * Initiates the process of deleting a user's account.
+ * This involves signing the user out locally and then invoking a Supabase Edge Function
+ * to securely delete their authentication record and all associated data from the backend.
+ *
+ * @returns {Promise<{ error?: Error | null }>} An object indicating success (error is null) or failure (error is an Error object).
+ */
+export const deleteUserAccount = async (): Promise<{ error?: Error | null }> => {
+  console.log("[formService] Attempting to delete user account.");
+
+  // 1. Sign out locally first
+  // We proceed with backend deletion even if local sign-out fails,
+  // as data removal is the primary goal.
+  const { error: signOutError } = await supabase.auth.signOut();
+  if (signOutError) {
+    console.warn("[formService] Error during local sign-out while deleting account:", signOutError);
+    // Do not return here; proceed to attempt backend deletion.
+  } else {
+    console.log("[formService] User signed out locally as part of account deletion.");
+  }
+
+  // 2. Invoke Supabase Edge Function to perform secure backend deletion
+  try {
+    console.log("[formService] Invoking 'delete-user-account' Edge Function.");
+    // Type parameters for invoke: <FunctionName extends string, FunctionArgs, FunctionReturnData>
+    // We expect the Edge Function to return a JSON object, possibly with an 'error' field if it fails.
+    const { data: functionResponseData, error: functionInvokeError } = await supabase.functions.invoke<{ message?: string; error?: string } | null>(
+      'delete-user-account', 
+      {} // No body needed as the Edge Function derives user ID from its auth context
+    );
+
+    if (functionInvokeError) {
+      console.error("[formService] Error invoking 'delete-user-account' Edge Function:", functionInvokeError);
+      return { error: new Error(functionInvokeError.message || "Failed to invoke account deletion function.") };
+    }
+
+    // Check if the function itself returned an error in its response body
+    // (e.g. if the Edge Function returns a 200 OK but with an error message in the JSON payload)
+    if (functionResponseData && functionResponseData.error) {
+      console.error("[formService] 'delete-user-account' Edge Function returned an error in its response:", functionResponseData.error);
+      return { error: new Error(functionResponseData.error) };
+    }
+    
+    // Type guard to ensure functionResponseData has a message property if no error.
+    const hasMessage = (response: any): response is { message: string } => {
+      return response && typeof response.message === 'string';
+    };
+
+    if (hasMessage(functionResponseData)) {
+        console.log(`[formService] 'delete-user-account' Edge Function successful: ${functionResponseData.message}`);
+    } else {
+        console.log("[formService] 'delete-user-account' Edge Function completed (no specific message returned).");
+    }
+    
+    return { error: null }; // Success
+
+  } catch (e) {
+    console.error("[formService] Unexpected error during 'delete-user-account' Edge Function invocation or processing:", e);
+    const errorMessage = e instanceof Error ? e.message : "An unexpected error occurred during account deletion.";
+    return { error: new Error(errorMessage) };
   }
 };
