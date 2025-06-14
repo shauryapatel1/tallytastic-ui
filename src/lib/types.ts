@@ -1,3 +1,4 @@
+import type { FormFieldDefinition, FormSectionDefinition, FormTheme, FormSettings } from '@/types/forms';
 
 export interface FormResponse {
   id: string;
@@ -36,80 +37,23 @@ export interface ResponseAnalysis {
   anomalyScore?: number;
 }
 
+// The main Form interface, aligned with FormDefinition
 export interface Form {
   id: string;
   title: string;
   description?: string;
-  fields: FormField[];
+  sections: FormSectionDefinition[]; // Aligned with FormDefinition
   user_id: string;
   created_at: string;
   updated_at: string;
-  published: boolean;
+  status: 'draft' | 'published' | 'archived'; // Aligned with FormDefinition
+  version: number;
   theme?: FormTheme;
   settings?: FormSettings;
 }
 
-export interface FormSettings {
-  redirectUrl?: string;
-  successMessage?: string;
-  allowMultipleSubmissions?: boolean;
-  captchaEnabled?: boolean;
-  notificationEmails?: string[];
-}
-
-export interface FormTheme {
-  primaryColor?: string;
-  backgroundColor?: string;
-  fontFamily?: string;
-  borderRadius?: number;
-  logo?: string;
-  customCss?: string;
-}
-
-export type FieldType = 
-  | 'text' 
-  | 'email' 
-  | 'textarea' 
-  | 'checkbox' 
-  | 'select'
-  | 'number'
-  | 'date'
-  | 'phone'
-  | 'file'
-  | 'rating'
-  | 'radio'
-  | 'section';
-
-export interface FormField {
-  id: string;
-  type: FieldType;
-  label: string;
-  placeholder?: string;
-  required: boolean;
-  options?: string[];
-  description?: string;
-  defaultValue?: string | string[] | boolean | number;
-  validation?: {
-    pattern?: string;
-    minLength?: number;
-    maxLength?: number;
-    min?: number;
-    max?: number;
-  };
-  style?: {
-    width?: string;
-    height?: string;
-    fontSize?: string;
-    fontWeight?: string;
-    color?: string;
-    backgroundColor?: string;
-  };
-  conditional?: {
-    fieldId?: string;
-    operator?: 'equals' | 'notEquals' | 'contains' | 'greaterThan' | 'lessThan';
-    value?: string | number | boolean;
-  };
-}
+// Note: The original 'Form' interface had 'fields' and 'published', which are now replaced by 'sections' and 'status'.
+// The original 'FormField' and 'FieldType' are removed to avoid duplication with 'src/types/forms.ts'.
 
 export interface AIFormPrompt {
   industry: string;

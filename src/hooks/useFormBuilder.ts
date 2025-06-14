@@ -1,29 +1,32 @@
 
 import { useState } from 'react';
-import { FormField } from "@/lib/types";
+import { FormFieldDefinition, FieldOption } from "@/types/forms";
 import { useToast } from "@/hooks/use-toast";
 
 interface UseFormBuilderProps {
-  initialFields: FormField[];
-  onSave?: (fields: FormField[]) => void;
+  initialFields: FormFieldDefinition[];
+  onSave?: (fields: FormFieldDefinition[]) => void;
 }
 
 export function useFormBuilder({ initialFields, onSave }: UseFormBuilderProps) {
-  const [fields, setFields] = useState<FormField[]>(initialFields);
+  const [fields, setFields] = useState<FormFieldDefinition[]>(initialFields);
   const [editingField, setEditingField] = useState<string | null>(null);
   const [draggingField, setDraggingField] = useState<string | null>(null);
   const [dragOver, setDragOver] = useState<string | null>(null);
   const [activeTab, setActiveTab] = useState<"build" | "preview">("build");
   const { toast } = useToast();
 
-  const addField = (type: FormField['type']) => {
-    const newField: FormField = {
+  const addField = (type: FormFieldDefinition['type']) => {
+    const newField: FormFieldDefinition = {
       id: crypto.randomUUID(),
       type,
+      name: `${type.toLowerCase()}_${crypto.randomUUID().substring(0, 4)}`,
       label: `New ${type} field`,
+      isRequired: false,
       placeholder: type !== 'checkbox' && type !== 'file' && type !== 'rating' ? 'Enter value...' : undefined,
-      required: false,
-      options: (type === 'select' || type === 'radio') ? ['Option 1', 'Option 2', 'Option 3'] : undefined,
+      options: (type === 'select' || type === 'radio') 
+        ? [{id: crypto.randomUUID(), label: 'Option 1', value: 'option_1'}, {id: crypto.randomUUID(), label: 'Option 2', value: 'option_2'}] satisfies FieldOption[]
+        : undefined,
       description: '',
       defaultValue: type === 'rating' ? 0 : undefined
     };
@@ -37,7 +40,7 @@ export function useFormBuilder({ initialFields, onSave }: UseFormBuilderProps) {
     });
   };
 
-  const updateField = (id: string, updates: Partial<FormField>) => {
+  const updateField = (id: string, updates: Partial<FormFieldDefinition>) => {
     setFields(fields.map(field => 
       field.id === id ? { ...field, ...updates } : field
     ));
@@ -59,6 +62,7 @@ export function useFormBuilder({ initialFields, onSave }: UseFormBuilderProps) {
       const duplicatedField = {
         ...fieldToDuplicate,
         id: crypto.randomUUID(),
+        name: `${fieldToDuplicate.name}_copy`,
         label: `${fieldToDuplicate.label} (Copy)`
       };
       
@@ -112,16 +116,21 @@ export function useFormBuilder({ initialFields, onSave }: UseFormBuilderProps) {
   const handleAddOption = (fieldId: string) => {
     const field = fields.find(f => f.id === fieldId);
     if (field && (field.type === 'select' || field.type === 'radio')) {
-      const options = [...(field.options || []), `Option ${(field.options?.length || 0) + 1}`];
+      const newOption: FieldOption = {
+        id: crypto.randomUUID(),
+        label: `Option ${(field.options?.length || 0) + 1}`,
+        value: `option_${(field.options?.length || 0) + 1}`
+      };
+      const options = [...(field.options || []), newOption];
       updateField(fieldId, { options });
     }
   };
 
-  const handleUpdateOption = (fieldId: string, index: number, value: string) => {
+  const handleUpdateOption = (fieldId: string, index: number, newLabel: string) => {
     const field = fields.find(f => f.id === fieldId);
     if (field && field.options) {
       const options = [...field.options];
-      options[index] = value;
+      options[index] = { ...options[index], label: newLabel, value: newLabel.toLowerCase().replace(/\s+/g, '_') };
       updateField(fieldId, { options });
     }
   };

@@ -7,8 +7,9 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { FormFieldsContainer } from "./form-builder/FormFieldsContainer";
 import { useFormBuilder } from "@/hooks/useFormBuilder";
 import { useSupabaseUser } from "@/hooks/useSupabaseUser";
-import { saveFormDefinition, updateFormDefinition } from "@/services/formDefinitionService";
+import { saveFormDefinition } from "@/services/formDefinitionService";
 import { toast } from "@/hooks/use-toast";
+import type { FormDefinition } from "@/types/forms";
 
 export function DragDropFormBuilder({ initialFields = [], onSave }: DragDropFormBuilderProps) {
   const {
@@ -43,10 +44,11 @@ export function DragDropFormBuilder({ initialFields = [], onSave }: DragDropForm
       });
       return;
     }
-    const formDef = {
+    const formDef: FormDefinition = {
       id: crypto.randomUUID(),
       userId: user.id,
       title: "Untitled Form",
+      description: "This is a new form created with the builder.",
       sections: [
         {
           id: crypto.randomUUID(),

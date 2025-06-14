@@ -1,78 +1,15 @@
 
-export type FieldType = 
-  | 'text' 
-  | 'email' 
-  | 'textarea' 
-  | 'checkbox' 
-  | 'select'
-  | 'number'
-  | 'date'
-  | 'phone'
-  | 'file'
-  | 'rating'
-  | 'radio'
-  | 'section';
+import type { FormFieldDefinition } from '@/types/forms';
 
-export interface FormField {
-  id: string;
-  type: FieldType;
-  label: string;
-  placeholder?: string;
-  required: boolean;
-  options?: string[];
-  // New properties for advanced customization
-  description?: string;
-  defaultValue?: string | string[] | boolean | number;
-  validation?: {
-    pattern?: string;
-    minLength?: number;
-    maxLength?: number;
-    min?: number;
-    max?: number;
-  };
-  style?: {
-    width?: string;
-    height?: string;
-    fontSize?: string;
-    fontWeight?: string;
-    color?: string;
-    backgroundColor?: string;
-  };
-  // For conditional logic
-  conditional?: {
-    fieldId?: string;
-    operator?: 'equals' | 'notEquals' | 'contains' | 'greaterThan' | 'lessThan';
-    value?: string | number | boolean;
-  };
-}
+// All types are now derived from the canonical definitions in `src/types/forms.ts`
+// to ensure consistency across the application.
 
-export interface FormSection {
-  id: string;
-  title: string;
-  fields: FormField[];
-}
+export type FieldType = FormFieldDefinition['type'];
 
-export interface FormData {
-  id: string;
-  title: string;
-  description?: string;
-  sections: FormSection[];
-  theme?: {
-    primaryColor?: string;
-    backgroundColor?: string;
-    fontFamily?: string;
-    borderRadius?: number;
-    logo?: string;
-  };
-  settings?: {
-    redirectUrl?: string;
-    successMessage?: string;
-    allowMultipleSubmissions?: boolean;
-    captchaEnabled?: boolean;
-  };
-}
+// This is now an alias to the canonical FormFieldDefinition
+export type FormField = FormFieldDefinition;
 
 export interface DragDropFormBuilderProps {
-  initialFields?: FormField[];
-  onSave: (fields: FormField[]) => void;
+  initialFields?: FormFieldDefinition[];
+  onSave: (fields: FormFieldDefinition[]) => void;
 }

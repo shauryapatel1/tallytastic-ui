@@ -1,11 +1,11 @@
 
-import { FormField } from "@/lib/types";
+import { FormFieldDefinition } from "@/types/forms";
 import { FormFieldCard } from "./FormFieldCard";
 import { EmptyFormState } from "./EmptyFormState";
 import { motion } from "framer-motion";
 
 interface FormFieldsContainerProps {
-  fields: FormField[];
+  fields: FormFieldDefinition[];
   editingField: string | null;
   draggingField: string | null;
   dragOver: string | null;
@@ -15,7 +15,7 @@ interface FormFieldsContainerProps {
   handleDragEnd: () => void;
   handleDragLeave: () => void;
   removeField: (id: string) => void;
-  updateField: (id: string, updates: Partial<FormField>) => void;
+  updateField: (id: string, updates: Partial<FormFieldDefinition>) => void;
   handleAddOption: (fieldId: string) => void;
   handleUpdateOption: (fieldId: string, index: number, value: string) => void;
   handleRemoveOption: (fieldId: string, index: number) => void;

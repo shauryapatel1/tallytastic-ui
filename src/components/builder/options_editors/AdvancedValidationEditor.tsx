@@ -82,7 +82,7 @@ export function AdvancedValidationEditor({
         if (name === 'length') {
           const lengthVal = parseInt(rawValue, 10);
           processedValue = !isNaN(lengthVal) && lengthVal >= 0 ? lengthVal : undefined;
-        } else if (name === 'regex') {
+        } else if (name === 'pattern') {
           processedValue = rawValue || undefined;
         } else if (name === 'value' && (rule.type === 'minValue' || rule.type === 'maxValue')) {
           if (fieldDefinition.type === 'number' || fieldDefinition.type === 'rating') {
@@ -113,7 +113,7 @@ export function AdvancedValidationEditor({
           />
         );
       case 'pattern':
-        return <Input {...commonInputProps} type="text" name="regex" placeholder="Enter regex pattern" value={params.regex || ''} />;
+        return <Input {...commonInputProps} type="text" name="pattern" placeholder="Enter regex pattern" value={params.pattern || ''} />;
       case 'minValue':
       case 'maxValue':
         let inputType: 'text' | 'number' | 'date' | 'time' = 'text';
@@ -204,4 +204,4 @@ export function AdvancedValidationEditor({
       </Button>
     </div>
   );
-} 
+}
