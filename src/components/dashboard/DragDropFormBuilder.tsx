@@ -1,3 +1,4 @@
+
 import { Button } from "@/components/ui/button";
 import { DragDropFormBuilderProps } from "./form-builder/types";
 import { FieldTypeButtons } from "./form-builder/FieldTypeButtons";
@@ -29,11 +30,11 @@ export function DragDropFormBuilder({ initialFields = [], onSave }: DragDropForm
     handleAddOption,
     handleUpdateOption,
     handleRemoveOption,
-    handleSave
+    handleSave // still available if needed
   } = useFormBuilder({ initialFields, onSave });
   const { user } = useSupabaseUser();
 
-  const handleSave = async () => {
+  const handleSaveToSupabase = async () => {
     if (!user) {
       toast({
         title: "Error",
@@ -124,7 +125,7 @@ export function DragDropFormBuilder({ initialFields = [], onSave }: DragDropForm
 
       <div className="flex justify-end">
         <Button 
-          onClick={handleSave} 
+          onClick={handleSaveToSupabase} 
           disabled={fields.length === 0}
           className="px-6"
         >
