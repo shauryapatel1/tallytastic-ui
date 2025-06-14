@@ -1,4 +1,3 @@
-
 import { Button } from "@/components/ui/button";
 import { DragDropFormBuilderProps } from "./form-builder/types";
 import { FieldTypeButtons } from "./form-builder/FieldTypeButtons";
@@ -6,6 +5,9 @@ import { FormPreview } from "./form-builder/FormPreview";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { FormFieldsContainer } from "./form-builder/FormFieldsContainer";
 import { useFormBuilder } from "@/hooks/useFormBuilder";
+import { useSupabaseUser } from "@/hooks/useSupabaseUser";
+import { saveFormDefinition, updateFormDefinition } from "@/services/formDefinitionService";
+import { toast } from "@/hooks/use-toast";
 
 export function DragDropFormBuilder({ initialFields = [], onSave }: DragDropFormBuilderProps) {
   const {
@@ -29,6 +31,49 @@ export function DragDropFormBuilder({ initialFields = [], onSave }: DragDropForm
     handleRemoveOption,
     handleSave
   } = useFormBuilder({ initialFields, onSave });
+  const { user } = useSupabaseUser();
+
+  const handleSave = async () => {
+    if (!user) {
+      toast({
+        title: "Error",
+        description: "You must be logged in to save forms.",
+        variant: "destructive"
+      });
+      return;
+    }
+    const formDef = {
+      id: crypto.randomUUID(),
+      userId: user.id,
+      title: "Untitled Form",
+      sections: [
+        {
+          id: crypto.randomUUID(),
+          title: "Section 1",
+          description: "",
+          fields: fields
+        }
+      ],
+      version: 1,
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
+      status: "draft"
+    };
+    try {
+      await saveFormDefinition(formDef, user.id);
+      toast({
+        title: "Form saved successfully!",
+        description: "Your form has been saved to your account."
+      });
+      if (onSave) onSave(fields);
+    } catch (err: any) {
+      toast({
+        title: "Save failed",
+        description: err.message || "Could not save form. Please try again.",
+        variant: "destructive"
+      });
+    }
+  };
 
   return (
     <div className="space-y-6 w-full mx-auto">
