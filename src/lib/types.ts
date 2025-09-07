@@ -1,4 +1,4 @@
-import type { FormFieldDefinition, FormSectionDefinition, FormTheme, FormSettings } from '@/types/forms';
+import type { FormFieldDefinition, FormSectionDefinition, FormSettings, FormFieldType } from '@/types/forms';
 
 export interface FormResponse {
   id: string;
@@ -35,6 +35,17 @@ export interface ResponseAnalysis {
   tags: string[];
   isAnomaly: boolean;
   anomalyScore?: number;
+}
+
+// Export FormField and FormTheme for backward compatibility
+export type FormField = FormFieldDefinition;
+export type FieldType = FormFieldType;
+
+export interface FormTheme {
+  primaryColor?: string;
+  backgroundColor?: string;
+  fontFamily?: string;
+  borderRadius?: string;
 }
 
 // The main Form interface, aligned with FormDefinition

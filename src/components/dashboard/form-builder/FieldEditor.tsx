@@ -87,8 +87,8 @@ export function FieldEditor({
         <div className="flex items-center space-x-2">
           <Switch 
             id={`field-${field.id}-required`}
-            checked={field.required}
-            onCheckedChange={(checked) => updateField(field.id, { required: checked })}
+            checked={field.isRequired}
+            onCheckedChange={(checked) => updateField(field.id, { isRequired: checked })}
           />
           <Label htmlFor={`field-${field.id}-required`}>Required field</Label>
         </div>

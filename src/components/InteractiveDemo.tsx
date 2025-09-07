@@ -23,10 +23,11 @@ export const InteractiveDemo = () => {
   const [demoFormFields, setDemoFormFields] = useState<FormField[]>([
     {
       id: "name",
+      name: "name",
       type: "text",
       label: "Full Name",
       placeholder: "Enter your name",
-      required: true,
+      isRequired: true,
     }
   ]);
 
@@ -35,10 +36,11 @@ export const InteractiveDemo = () => {
     
     const newField: FormField = {
       id: `field-${Date.now()}`,
+      name: `field-${Date.now()}`,
       type: type as any,
       label: type === "email" ? "Email Address" : type === "textarea" ? "Message" : "New Field",
       placeholder: type === "email" ? "your@email.com" : type === "textarea" ? "Type your message here..." : "Enter value",
-      required: false
+      isRequired: false
     };
     
     setDemoFormFields([...demoFormFields, newField]);
@@ -247,7 +249,7 @@ export const InteractiveDemo = () => {
                     >
                       <label className="block text-sm font-medium text-gray-700">
                         {field.label}
-                        {field.required && <span className="text-red-500">*</span>}
+                        {field.isRequired && <span className="text-red-500">*</span>}
                       </label>
                       
                       {field.type === 'text' && (

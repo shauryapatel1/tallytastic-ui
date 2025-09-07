@@ -69,8 +69,8 @@ export const FormCard = ({ form }: FormCardProps) => {
       <CardHeader className="pb-2 pt-4 bg-gradient-to-r from-indigo-50/50 to-purple-50/50">
         <div className="flex items-start justify-between">
           <div className="flex items-center space-x-2">
-            <Badge variant={form.published ? "default" : "outline"} className="px-2 py-0 h-5">
-              {form.published ? 'Published' : 'Draft'}
+            <Badge variant={form.status === 'published' ? "default" : "outline"} className="px-2 py-0 h-5">
+              {form.status === 'published' ? 'Published' : 'Draft'}
             </Badge>
             <CardTitle className="line-clamp-1 text-xl">{form.title}</CardTitle>
           </div>

@@ -36,14 +36,14 @@ export function AIFormPreviewStep({
           <div key={field.id} className="space-y-1">
             <div className="flex items-center gap-2">
               <label className="text-sm font-medium">
-                {field.label} {field.required && <span className="text-red-500">*</span>}
+                {field.label} {field.isRequired && <span className="text-red-500">*</span>}
               </label>
               <Badge variant="outline" className="text-xs">
                 {field.type}
               </Badge>
             </div>
             
-            {field.type === "text" || field.type === "email" || field.type === "phone" && (
+            {field.type === "text" || field.type === "email" || field.type === "tel" && (
               <Input placeholder={field.placeholder} disabled />
             )}
             
@@ -69,8 +69,8 @@ export function AIFormPreviewStep({
                 </SelectTrigger>
                 <SelectContent>
                   {field.options.map((option, i) => (
-                    <SelectItem key={i} value={option.toLowerCase().replace(/\s+/g, '-')}>
-                      {option}
+                    <SelectItem key={i} value={option.value}>
+                      {option.label}
                     </SelectItem>
                   ))}
                 </SelectContent>
@@ -82,7 +82,7 @@ export function AIFormPreviewStep({
                 {field.options.map((option, i) => (
                   <div key={i} className="flex items-center gap-2">
                     <input type="radio" name={field.id} disabled />
-                    <span className="text-sm text-gray-600">{option}</span>
+                    <span className="text-sm text-gray-600">{option.label}</span>
                   </div>
                 ))}
               </div>

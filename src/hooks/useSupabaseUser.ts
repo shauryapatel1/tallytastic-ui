@@ -6,6 +6,6 @@ import { useAuth } from '@/lib/auth';
  * This is a wrapper around the core `useAuth` hook to provide a consistent interface for accessing the user.
  */
 export const useSupabaseUser = () => {
-  const { user, loading } = useAuth();
-  return { user, loading };
+  const { user } = useAuth();
+  return { user };
 };

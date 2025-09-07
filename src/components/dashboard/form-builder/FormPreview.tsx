@@ -40,7 +40,7 @@ export function FormPreview({ fields }: FormPreviewProps) {
             <div className="flex justify-between items-center">
               <Label htmlFor={field.id} className="block text-sm font-medium">
                 {field.label}
-                {field.required && <span className="text-red-500 ml-1">*</span>}
+                {field.isRequired && <span className="text-red-500 ml-1">*</span>}
               </Label>
               
               {field.description && (
@@ -74,12 +74,12 @@ export function FormPreview({ fields }: FormPreviewProps) {
                 placeholder={field.placeholder}
                 defaultValue={field.defaultValue as string}
                 className="w-full"
-                min={field.validation?.min}
-                max={field.validation?.max}
+                min={field.min}
+                max={field.max}
               />
             )}
             
-            {field.type === 'phone' && (
+            {field.type === 'tel' && (
               <Input 
                 id={field.id} 
                 type="tel"
@@ -127,7 +127,7 @@ export function FormPreview({ fields }: FormPreviewProps) {
                 </SelectTrigger>
                 <SelectContent>
                   {field.options.map((option, i) => (
-                    <SelectItem key={i} value={option}>{option}</SelectItem>
+                    <SelectItem key={i} value={option.value}>{option.label}</SelectItem>
                   ))}
                 </SelectContent>
               </Select>
@@ -172,7 +172,7 @@ export function FormPreview({ fields }: FormPreviewProps) {
               </div>
             )}
             
-            {field.type === 'section' && (
+            {field.type === 'divider' && (
               <div className="border-t border-gray-200 pt-3 mt-3">
                 <h3 className="font-medium">{field.label}</h3>
                 {field.description && (

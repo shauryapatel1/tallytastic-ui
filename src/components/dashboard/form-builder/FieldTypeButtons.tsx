@@ -18,13 +18,13 @@ export function FieldTypeButtons({ onAddField }: FieldTypeButtonsProps) {
     { type: 'textarea', icon: <MessageSquare size={16} />, label: 'Textarea' },
     { type: 'number', icon: <Hash size={16} />, label: 'Number' },
     { type: 'date', icon: <Calendar size={16} />, label: 'Date' },
-    { type: 'phone', icon: <Phone size={16} />, label: 'Phone' },
+    { type: 'tel', icon: <Phone size={16} />, label: 'Phone' },
     { type: 'checkbox', icon: <Check size={16} />, label: 'Checkbox' },
     { type: 'radio', icon: <Radio size={16} />, label: 'Radio' },
     { type: 'select', icon: <List size={16} />, label: 'Dropdown' },
     { type: 'file', icon: <Upload size={16} />, label: 'File Upload' },
     { type: 'rating', icon: <Star size={16} />, label: 'Rating' },
-    { type: 'section', icon: <SplitSquareVertical size={16} />, label: 'Section' }
+    { type: 'divider', icon: <SplitSquareVertical size={16} />, label: 'Divider' }
   ];
 
   return (

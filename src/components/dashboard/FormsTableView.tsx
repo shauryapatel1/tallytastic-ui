@@ -45,8 +45,8 @@ export const FormsTableView = ({ forms }: FormsTableViewProps) => {
                 </div>
               </td>
               <td className="px-6 py-4 whitespace-nowrap">
-                <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${form.published ? 'bg-green-100 text-green-800' : 'bg-amber-100 text-amber-800'}`}>
-                  {form.published ? 'Published' : 'Draft'}
+                <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${form.status === 'published' ? 'bg-green-100 text-green-800' : 'bg-amber-100 text-amber-800'}`}>
+                  {form.status === 'published' ? 'Published' : 'Draft'}
                 </span>
               </td>
               <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">

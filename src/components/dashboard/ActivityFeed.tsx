@@ -38,7 +38,7 @@ export function ActivityFeed({ forms = [], responses = [], isLoading = false }: 
     
     // Form publications (filter for published forms and assume they were published at update time)
     ...forms
-      .filter(form => form.published)
+      .filter(form => form.status === 'published')
       .map(form => ({
         id: `form-published-${form.id}`,
         type: 'form_published' as const,

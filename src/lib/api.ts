@@ -36,7 +36,7 @@ export async function getForms(): Promise<FormDefinition[]> {
       createdAt: form.created_at,
       updatedAt: form.updated_at,
       status: form.status,
-      settings: form.settings
+      settings: undefined // form.settings not available in current schema
     })) as FormDefinition[];
   } catch (error) {
     console.error("Error fetching forms:", error);
