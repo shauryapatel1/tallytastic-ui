@@ -14,7 +14,80 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      form_responses: {
+        Row: {
+          created_at: string
+          data: Json
+          form_id: string
+          id: string
+          submitted_at: string
+        }
+        Insert: {
+          created_at?: string
+          data?: Json
+          form_id: string
+          id?: string
+          submitted_at?: string
+        }
+        Update: {
+          created_at?: string
+          data?: Json
+          form_id?: string
+          id?: string
+          submitted_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "form_responses_form_id_fkey"
+            columns: ["form_id"]
+            isOneToOne: false
+            referencedRelation: "forms"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      forms: {
+        Row: {
+          created_at: string
+          custom_success_message: string | null
+          definition_sections: Json
+          description: string | null
+          id: string
+          redirect_url: string | null
+          status: string
+          title: string
+          updated_at: string
+          user_id: string
+          version: number
+        }
+        Insert: {
+          created_at?: string
+          custom_success_message?: string | null
+          definition_sections?: Json
+          description?: string | null
+          id?: string
+          redirect_url?: string | null
+          status?: string
+          title: string
+          updated_at?: string
+          user_id: string
+          version?: number
+        }
+        Update: {
+          created_at?: string
+          custom_success_message?: string | null
+          definition_sections?: Json
+          description?: string | null
+          id?: string
+          redirect_url?: string | null
+          status?: string
+          title?: string
+          updated_at?: string
+          user_id?: string
+          version?: number
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
