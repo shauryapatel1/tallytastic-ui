@@ -31,8 +31,8 @@ export function RadioGroupField({ field, value, onChange, error }: RadioGroupFie
       >
         {field.options?.map((option, i) => (
           <div key={i} className="flex items-center space-x-2">
-            <RadioGroupItem value={option} id={`${field.id}-${i}`} />
-            <Label htmlFor={`${field.id}-${i}`}>{option}</Label>
+            <RadioGroupItem value={option.value} id={`${field.id}-${i}`} />
+            <Label htmlFor={`${field.id}-${i}`}>{option.label}</Label>
           </div>
         ))}
       </RadioGroup>

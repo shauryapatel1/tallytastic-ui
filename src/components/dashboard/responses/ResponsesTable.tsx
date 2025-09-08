@@ -82,10 +82,10 @@ export function ResponsesTable({ responses, form }: ResponsesTableProps) {
   };
 
   // Extract field information from the form
-  const fields = form.fields.map(field => ({
+  const fields = form.sections?.flatMap(section => section.fields).map(field => ({
     id: field.id,
     label: field.label
-  }));
+  })) || [];
 
   return (
     <div className="space-y-4">

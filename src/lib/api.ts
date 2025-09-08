@@ -276,8 +276,8 @@ export async function submitFormResponse(formId: string, responseData: Record<st
     const responseArray = data as any[];
     const transformedData = responseArray.map(item => ({
       id: item.id,
-      form_id: item.form_id,
-      submitted_at: item.submitted_at,
+      formId: item.form_id,
+      submittedAt: item.submitted_at,
       data: item.response_data,
       metadata: item.metadata
     })) as FormResponse[];
@@ -562,7 +562,7 @@ function getTemplateFields(templateId: string): FormFieldDefinition[] {
         },
         {
           id: crypto.randomUUID(),
-          type: "phone",
+          type: "tel",
           name: "phone_number",
           label: "Phone Number",
           isRequired: false,

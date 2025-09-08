@@ -30,17 +30,13 @@ export function ThemeCustomizer({ initialTheme, onThemeChange }: ThemeCustomizer
   };
   
   const handleBorderRadiusChange = (values: number[]) => {
-    const borderRadius = values[0];
+    const borderRadius = `${values[0]}px`;
     const updatedTheme = { ...theme, borderRadius };
     setTheme(updatedTheme);
     onThemeChange(updatedTheme);
   };
   
-  const handleLogoChange = (logoUrl: string) => {
-    const updatedTheme = { ...theme, logo: logoUrl };
-    setTheme(updatedTheme);
-    onThemeChange(updatedTheme);
-  };
+  // Removed logo handling as it's not in FormTheme type
   
   const fontFamilies = [
     { name: "Inter", value: "Inter, sans-serif" },

@@ -16,7 +16,7 @@ export async function saveFormDefinition(form: FormDefinition, userId: string) {
         description: form.description ?? "",
         status: form.status ?? "draft",
         version: form.version,
-        definition_sections: form.sections,
+        definition_sections: JSON.stringify(form.sections),
         custom_success_message: form.customSuccessMessage ?? null,
         redirect_url: form.redirectUrl ?? null
       }
@@ -35,7 +35,7 @@ export async function updateFormDefinition(form: FormDefinition) {
       description: form.description ?? "",
       status: form.status ?? "draft",
       version: form.version,
-      definition_sections: form.sections,
+      definition_sections: JSON.stringify(form.sections),
       custom_success_message: form.customSuccessMessage ?? null,
       redirect_url: form.redirectUrl ?? null
     })

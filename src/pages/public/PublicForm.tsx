@@ -18,28 +18,28 @@ const getPublicFormById = async (id: string) => {
       type: "text",
       label: "Full Name",
       placeholder: "Enter your full name",
-      required: true,
+      isRequired: true,
     },
     {
       id: "email",
       type: "email",
       label: "Email Address",
       placeholder: "you@example.com",
-      required: true,
+      isRequired: true,
     },
     {
       id: "message",
       type: "textarea",
       label: "Message",
       placeholder: "What would you like to tell us?",
-      required: false,
+      isRequired: false,
     },
     {
       id: "consent",
       type: "checkbox",
       label: "Consent",
       placeholder: "I agree to the terms and conditions",
-      required: true,
+      isRequired: true,
     }
   ];
   

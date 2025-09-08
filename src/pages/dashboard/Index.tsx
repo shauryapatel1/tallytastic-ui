@@ -66,7 +66,7 @@ export default function Dashboard() {
 
   const sortedForms = filteredForms?.sort((a, b) => {
     if (sortBy === "updated_at") {
-      return new Date(b.updated_at).getTime() - new Date(a.updated_at).getTime();
+      return new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime();
     }
     if (sortBy === "title") {
       return a.title.localeCompare(b.title);

@@ -26,7 +26,8 @@ export function FormSubmitHandler({
     setIsSubmitting(true);
     
     try {
-      const requiredFields = form.fields.filter(field => field.required);
+      const fields = form.sections?.flatMap(section => section.fields) || [];
+      const requiredFields = fields.filter(field => field.isRequired);
       const missingFields = requiredFields.filter(field => {
         // Handle different field types differently
         if (field.type === 'checkbox') {

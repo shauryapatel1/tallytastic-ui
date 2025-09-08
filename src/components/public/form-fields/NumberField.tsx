@@ -37,8 +37,8 @@ export function NumberField({ field, value, onChange, error }: NumberFieldProps)
           }
         }}
         className={`w-full ${error ? 'border-red-500' : ''}`}
-        min={field.validation?.min}
-        max={field.validation?.max}
+      min={field.min}
+      max={field.max}
       />
       
       {error && (

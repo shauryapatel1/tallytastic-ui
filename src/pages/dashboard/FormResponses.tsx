@@ -179,7 +179,7 @@ export default function FormResponses() {
           
           <TabsContent value="responses" className="space-y-4">
             {responses && responses.length > 0 ? (
-              <ResponsesTable responses={responses} form={form as Form} />
+              <ResponsesTable responses={responses} form={{...form, sections: form.sections} as Form} />
             ) : (
               <div className="text-center p-12 border rounded-lg bg-background">
                 <h3 className="text-lg font-medium mb-2">No responses yet</h3>

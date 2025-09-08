@@ -34,7 +34,7 @@ export function SelectField({ field, value, onChange, error }: SelectFieldProps)
         </SelectTrigger>
         <SelectContent>
           {field.options?.map((option, i) => (
-            <SelectItem key={i} value={option}>{option}</SelectItem>
+            <SelectItem key={i} value={option.value}>{option.label}</SelectItem>
           ))}
         </SelectContent>
       </Select>
