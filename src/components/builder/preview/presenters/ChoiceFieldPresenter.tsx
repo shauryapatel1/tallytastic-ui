@@ -27,10 +27,10 @@ export interface ChoiceFieldPresenterProps {
     allowMultipleSelection?: boolean; // Primarily for 'select', implied for 'checkbox' groups
     allowOther?: boolean; // V1: Not fully implemented in preview, only options are rendered
     // defaultValue is part of FormFieldDefinition (any type)
-    error?: string; // Added error prop
   };
   value?: string | string[] | undefined;
   onValueChange?: (newValue: string | string[] | undefined) => void;
+  error?: string; // Moved error to top level props
 }
 
 export function ChoiceFieldPresenter({ field, value: propValue, onValueChange, error }: ChoiceFieldPresenterProps) {

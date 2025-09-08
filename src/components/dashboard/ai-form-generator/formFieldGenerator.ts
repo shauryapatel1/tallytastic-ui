@@ -1,7 +1,13 @@
 
-import { FormField } from "@/lib/types";
+import { FormFieldDefinition } from "@/types/forms";
 
-export const generateFormFieldsBasedOnType = (formType: string, industry: string): FormField[] => {
+const createFieldOption = (label: string) => ({
+  id: crypto.randomUUID(),
+  label,
+  value: label.toLowerCase().replace(/\s+/g, '_')
+});
+
+export const generateFormFieldsBasedOnType = (formType: string, industry: string): FormFieldDefinition[] => {
   // This would ideally be replaced with an actual AI API call
   // For now, we'll use predefined templates based on the form type
   
@@ -11,36 +17,41 @@ export const generateFormFieldsBasedOnType = (formType: string, industry: string
         {
           id: crypto.randomUUID(),
           type: "text",
+          name: "full_name",
           label: "Full Name",
-          required: true,
+          isRequired: true,
           placeholder: "Enter your full name",
         },
         {
           id: crypto.randomUUID(),
           type: "email",
+          name: "email",
           label: "Email Address",
-          required: true,
+          isRequired: true,
           placeholder: "your@email.com",
         },
         {
           id: crypto.randomUUID(),
-          type: industry === "healthcare" ? "phone" : "text",
+          type: industry === "healthcare" ? "tel" : "text",
+          name: "phone",
           label: "Phone Number",
-          required: industry === "healthcare",
+          isRequired: industry === "healthcare",
           placeholder: "Your phone number",
         },
         {
           id: crypto.randomUUID(),
           type: "textarea",
+          name: "message",
           label: "Message",
-          required: true,
+          isRequired: true,
           placeholder: "How can we help you?",
         },
         {
           id: crypto.randomUUID(),
           type: "checkbox",
+          name: "agree_contact",
           label: "I agree to be contacted about my inquiry",
-          required: true,
+          isRequired: true,
         }
       ];
     
@@ -49,36 +60,41 @@ export const generateFormFieldsBasedOnType = (formType: string, industry: string
         {
           id: crypto.randomUUID(),
           type: "text",
+          name: "name",
           label: "Name",
-          required: false,
+          isRequired: false,
           placeholder: "Your name (optional)",
         },
         {
           id: crypto.randomUUID(),
           type: "email",
+          name: "email",
           label: "Email",
-          required: false,
+          isRequired: false,
           placeholder: "Your email (optional)",
         },
         {
           id: crypto.randomUUID(),
           type: "radio",
+          name: "experience_rating",
           label: "How would you rate your experience?",
-          required: true,
-          options: ["Excellent", "Good", "Average", "Poor", "Very Poor"],
+          isRequired: true,
+          options: ["Excellent", "Good", "Average", "Poor", "Very Poor"].map(createFieldOption),
         },
         {
           id: crypto.randomUUID(),
           type: "textarea",
+          name: "liked_most",
           label: "What did you like most?",
-          required: false,
+          isRequired: false,
           placeholder: "Tell us what you enjoyed",
         },
         {
           id: crypto.randomUUID(),
           type: "textarea",
+          name: "improvements",
           label: "What could we improve?",
-          required: true,
+          isRequired: true,
           placeholder: "Please share your suggestions",
         }
       ];
@@ -88,40 +104,47 @@ export const generateFormFieldsBasedOnType = (formType: string, industry: string
         {
           id: crypto.randomUUID(),
           type: "text",
+          name: "name",
           label: "Name",
-          required: false,
+          isRequired: false,
           placeholder: "Your name",
         },
         {
           id: crypto.randomUUID(),
           type: "email",
+          name: "email",
           label: "Email",
-          required: industry !== "general",
+          isRequired: industry !== "general",
           placeholder: "Your email address",
         },
         {
           id: crypto.randomUUID(),
           type: "radio",
+          name: "role_or_source",
           label: industry === "education" ? "What's your role?" : "How did you hear about us?",
-          required: true,
-          options: industry === "education" 
+          isRequired: true,
+          options: (industry === "education" 
             ? ["Student", "Teacher", "Parent", "Administrator", "Other"]
-            : ["Social Media", "Search Engine", "Word of Mouth", "Advertisement", "Other"],
+            : ["Social Media", "Search Engine", "Word of Mouth", "Advertisement", "Other"]
+          ).map(createFieldOption),
         },
         {
           id: crypto.randomUUID(),
           type: "checkbox",
+          name: "applies_to_you",
           label: "Which of the following apply to you?",
-          required: false,
-          options: industry === "technology" 
+          isRequired: false,
+          options: (industry === "technology" 
             ? ["I use technology daily", "I work in tech", "I'm interested in new products", "I follow tech news"]
-            : ["I'm a regular customer", "I'm a new customer", "I'm researching options", "I'm making a purchase soon"],
+            : ["I'm a regular customer", "I'm a new customer", "I'm researching options", "I'm making a purchase soon"]
+          ).map(createFieldOption),
         },
         {
           id: crypto.randomUUID(),
           type: "textarea",
+          name: "additional_comments",
           label: "Any additional comments?",
-          required: false,
+          isRequired: false,
           placeholder: "Share your thoughts",
         }
       ];
@@ -131,38 +154,44 @@ export const generateFormFieldsBasedOnType = (formType: string, industry: string
         {
           id: crypto.randomUUID(),
           type: "text",
+          name: "full_name",
           label: "Full Name",
-          required: true,
+          isRequired: true,
           placeholder: "Enter your full name",
         },
         {
           id: crypto.randomUUID(),
           type: "email",
+          name: "email",
           label: "Email Address",
-          required: true,
+          isRequired: true,
           placeholder: "your@email.com",
         },
         {
           id: crypto.randomUUID(),
-          type: "phone",
+          type: "tel",
+          name: "phone",
           label: "Phone Number",
-          required: true,
+          isRequired: true,
           placeholder: "Your phone number",
         },
         {
           id: crypto.randomUUID(),
           type: "select",
+          name: "selection",
           label: industry === "education" ? "Course Selection" : "Event Selection",
-          required: true,
-          options: industry === "education" 
+          isRequired: true,
+          options: (industry === "education" 
             ? ["Introduction to Programming", "Advanced Mathematics", "Data Science Basics", "Web Development"]
-            : ["Morning Session", "Afternoon Session", "Full Day", "VIP Experience"],
+            : ["Morning Session", "Afternoon Session", "Full Day", "VIP Experience"]
+          ).map(createFieldOption),
         },
         {
           id: crypto.randomUUID(),
           type: "checkbox",
+          name: "agree_terms",
           label: "I agree to the terms and conditions",
-          required: true,
+          isRequired: true,
         }
       ];
     
@@ -171,49 +200,56 @@ export const generateFormFieldsBasedOnType = (formType: string, industry: string
         {
           id: crypto.randomUUID(),
           type: "text",
+          name: "full_name",
           label: "Full Name",
-          required: true,
+          isRequired: true,
           placeholder: "Enter your full name",
         },
         {
           id: crypto.randomUUID(),
           type: "email",
+          name: "email",
           label: "Email Address",
-          required: true,
+          isRequired: true,
           placeholder: "your@email.com",
         },
         {
           id: crypto.randomUUID(),
-          type: "phone",
+          type: "tel",
+          name: "phone",
           label: "Phone Number",
-          required: true,
+          isRequired: true,
           placeholder: "Your phone number",
         },
         {
           id: crypto.randomUUID(),
           type: "textarea",
+          name: "experience",
           label: "Professional Experience",
-          required: true,
+          isRequired: true,
           placeholder: "Briefly describe your relevant experience",
         },
         {
           id: crypto.randomUUID(),
           type: "file",
+          name: "resume",
           label: "Resume/CV",
-          required: true,
+          isRequired: true,
         },
         {
           id: crypto.randomUUID(),
           type: "textarea",
+          name: "cover_letter",
           label: "Cover Letter",
-          required: false,
+          isRequired: false,
           placeholder: "Why are you interested in this position?",
         },
         {
           id: crypto.randomUUID(),
           type: "checkbox",
+          name: "certify_accurate",
           label: "I certify that all information provided is accurate",
-          required: true,
+          isRequired: true,
         }
       ];
     
@@ -222,43 +258,49 @@ export const generateFormFieldsBasedOnType = (formType: string, industry: string
         {
           id: crypto.randomUUID(),
           type: "text",
+          name: "full_name",
           label: "Full Name",
-          required: true,
+          isRequired: true,
           placeholder: "Enter your full name",
         },
         {
           id: crypto.randomUUID(),
           type: "email",
+          name: "email",
           label: "Email Address",
-          required: true,
+          isRequired: true,
           placeholder: "your@email.com",
         },
         {
           id: crypto.randomUUID(),
           type: "text",
+          name: "shipping_address",
           label: "Shipping Address",
-          required: true,
+          isRequired: true,
           placeholder: "Enter your shipping address",
         },
         {
           id: crypto.randomUUID(),
           type: industry === "hospitality" ? "date" : "select",
+          name: industry === "hospitality" ? "delivery_date" : "product_selection",
           label: industry === "hospitality" ? "Preferred Delivery Date" : "Product Selection",
-          required: true,
-          options: industry !== "hospitality" ? ["Basic Package", "Standard Package", "Premium Package", "Custom Order"] : undefined,
+          isRequired: true,
+          options: industry !== "hospitality" ? ["Basic Package", "Standard Package", "Premium Package", "Custom Order"].map(createFieldOption) : undefined,
         },
         {
           id: crypto.randomUUID(),
           type: "number",
+          name: "quantity",
           label: "Quantity",
-          required: true,
+          isRequired: true,
           placeholder: "1",
         },
         {
           id: crypto.randomUUID(),
           type: "textarea",
+          name: "special_instructions",
           label: "Special Instructions",
-          required: false,
+          isRequired: false,
           placeholder: "Any special requirements for your order",
         }
       ];
@@ -268,22 +310,25 @@ export const generateFormFieldsBasedOnType = (formType: string, industry: string
         {
           id: crypto.randomUUID(),
           type: "text",
+          name: "name",
           label: "Name",
-          required: true,
+          isRequired: true,
           placeholder: "Enter your name",
         },
         {
           id: crypto.randomUUID(),
           type: "email",
+          name: "email",
           label: "Email",
-          required: true,
+          isRequired: true,
           placeholder: "Enter your email",
         },
         {
           id: crypto.randomUUID(),
           type: "textarea",
+          name: "message",
           label: "Message",
-          required: false,
+          isRequired: false,
           placeholder: "Enter your message",
         }
       ];

@@ -1,5 +1,4 @@
-
-import { FormField } from "@/lib/types";
+import { FormFieldDefinition } from "@/types/forms";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
@@ -9,9 +8,9 @@ import { X, Plus, Check } from "lucide-react";
 import { ConditionalLogicBuilder } from "./ConditionalLogicBuilder";
 
 interface FieldEditorProps {
-  field: FormField;
-  allFields: FormField[];
-  updateField: (id: string, updates: Partial<FormField>) => void;
+  field: FormFieldDefinition;
+  allFields: FormFieldDefinition[];
+  updateField: (id: string, updates: Partial<FormFieldDefinition>) => void;
   handleAddOption: (fieldId: string) => void;
   handleUpdateOption: (fieldId: string, index: number, value: string) => void;
   handleRemoveOption: (fieldId: string, index: number) => void;
@@ -99,7 +98,7 @@ export function FieldEditor({
             {field.options.map((option, index) => (
               <div key={index} className="flex items-center space-x-2">
                 <Input
-                  value={option}
+                  value={option.label}
                   onChange={(e) => handleUpdateOption(field.id, index, e.target.value)}
                   placeholder={`Option ${index + 1}`}
                 />
@@ -130,7 +129,7 @@ export function FieldEditor({
         <ConditionalLogicBuilder 
           field={field} 
           allFields={allFields} 
-          onChange={(conditional) => updateField(field.id, { conditional })} 
+          onChange={(conditionalLogic) => updateField(field.id, { conditionalLogic })} 
         />
       </div>
     </div>
