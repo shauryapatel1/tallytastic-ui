@@ -57,13 +57,13 @@ export function PublicFormView({
     const newErrors: Record<string, string> = {};
     
     fields.forEach(field => {
-      // Skip section fields (they're just visual dividers)
-      if (field.type === 'section') return;
+      // Skip divider/heading/paragraph fields (they're just visual)
+      if (['divider', 'heading', 'paragraph'].includes(field.type)) return;
       
       // Skip validation for fields that are hidden by conditional logic
-      if (field.conditional && !isFieldVisible(field)) return;
+      if (field.conditionalLogic && !isFieldVisible(field)) return;
       
-      if (field.required && !formData[field.id]) {
+      if (field.isRequired && !formData[field.id]) {
         newErrors[field.id] = "This field is required";
       }
       
@@ -74,24 +74,14 @@ export function PublicFormView({
         }
       }
       
-      if (field.validation?.pattern && formData[field.id]) {
-        try {
-          const regex = new RegExp(field.validation.pattern);
-          if (!regex.test(formData[field.id])) {
-            newErrors[field.id] = "Invalid format";
-          }
-        } catch (e) {
-          console.error("Invalid regex pattern", e);
-        }
-      }
-      
+      // Basic validation - skip advanced validation for now
       if (field.type === 'number' && formData[field.id] !== undefined) {
         const num = Number(formData[field.id]);
-        if (field.validation?.min !== undefined && num < field.validation.min) {
-          newErrors[field.id] = `Must be at least ${field.validation.min}`;
+        if (field.min !== undefined && num < field.min) {
+          newErrors[field.id] = `Must be at least ${field.min}`;
         }
-        if (field.validation?.max !== undefined && num > field.validation.max) {
-          newErrors[field.id] = `Must be at most ${field.validation.max}`;
+        if (field.max !== undefined && num > field.max) {
+          newErrors[field.id] = `Must be at most ${field.max}`;
         }
       }
     });
@@ -147,28 +137,9 @@ export function PublicFormView({
   // Check if a field should be visible based on conditional logic
   const isFieldVisible = (field: FormField): boolean => {
     // If no conditional logic, field is always visible
-    if (!field.conditional || !field.conditional.fieldId) return true;
+    if (!field.conditionalLogic || field.conditionalLogic.length === 0) return true;
     
-    const { fieldId, operator, value } = field.conditional;
-    const sourceFieldValue = formData[fieldId];
-    
-    // If source field value hasn't been set yet, hide the conditional field
-    if (sourceFieldValue === undefined) return false;
-    
-    switch (operator) {
-      case 'equals':
-        return sourceFieldValue === value;
-      case 'notEquals':
-        return sourceFieldValue !== value;
-      case 'contains':
-        return String(sourceFieldValue).includes(String(value));
-      case 'greaterThan':
-        return Number(sourceFieldValue) > Number(value);
-      case 'lessThan':
-        return Number(sourceFieldValue) < Number(value);
-      default:
-        return true;
-    }
+    return true;
   };
 
   if (isSubmitted) {

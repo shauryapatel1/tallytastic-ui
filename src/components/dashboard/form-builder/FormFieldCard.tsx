@@ -67,12 +67,10 @@ export function FormFieldCard({
         return 'Date picker field';
       case 'file':
         return 'File upload field';
-      case 'phone':
+      case 'tel':
         return 'Phone number field';
       case 'rating':
         return 'Rating selection field';
-      case 'section':
-        return 'Section divider';
       default:
         return field.type;
     }
@@ -80,10 +78,7 @@ export function FormFieldCard({
 
   // Render conditional logic info if present
   const renderConditionalInfo = () => {
-    if (!field.conditional?.fieldId) return null;
-    
-    const conditionField = allFields.find(f => f.id === field.conditional?.fieldId);
-    if (!conditionField) return null;
+    if (!field.conditionalLogic || field.conditionalLogic.length === 0) return null;
     
     return (
       <div className="bg-blue-50 text-xs p-1 rounded text-blue-600 inline-flex items-center mr-2">
@@ -115,7 +110,7 @@ export function FormFieldCard({
             <div>
               <div className="flex items-center">
                 <span className="font-medium">{field.label}</span>
-                {field.required && <span className="text-red-500 ml-1">*</span>}
+                {field.isRequired && <span className="text-red-500 ml-1">*</span>}
               </div>
               <div className="text-sm text-gray-500 flex items-center space-x-1">
                 {renderConditionalInfo()}

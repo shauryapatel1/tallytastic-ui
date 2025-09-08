@@ -135,12 +135,12 @@ export function FormPreview({ fields }: FormPreviewProps) {
             
             {field.type === 'radio' && field.options && (
               <RadioGroup defaultValue={field.defaultValue as string}>
-                {field.options.map((option, i) => (
-                  <div key={i} className="flex items-center space-x-2">
-                    <RadioGroupItem value={option} id={`${field.id}-${i}`} />
-                    <Label htmlFor={`${field.id}-${i}`}>{option}</Label>
-                  </div>
-                ))}
+                  {field.options.map((option, i) => (
+                    <div key={i} className="flex items-center space-x-2">
+                      <RadioGroupItem value={option.value} id={`${field.id}-${i}`} />
+                      <Label htmlFor={`${field.id}-${i}`}>{option.label}</Label>
+                    </div>
+                  ))}
               </RadioGroup>
             )}
             

@@ -49,13 +49,15 @@ export function FormFieldRenderer({ field, value, onChange, error }: FormFieldRe
     case 'file':
       return <FileField field={field} onChange={onChange} error={error} />;
       
-    case 'phone':
+    case 'tel':
       return <PhoneField field={field} value={value} onChange={onChange} error={error} />;
       
     case 'rating':
       return <RatingField field={field} value={value || 0} onChange={onChange} error={error} />;
       
-    case 'section':
+    case 'divider':
+    case 'heading':
+    case 'paragraph':
       return <SectionField field={field} />;
       
     default:

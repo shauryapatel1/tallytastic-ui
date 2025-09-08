@@ -36,7 +36,7 @@ export async function getForms(): Promise<FormDefinition[]> {
       createdAt: form.created_at,
       updatedAt: form.updated_at,
       status: form.status,
-      settings: undefined // form.settings not available in current schema
+      settings: undefined
     })) as FormDefinition[];
   } catch (error) {
     console.error("Error fetching forms:", error);
@@ -113,7 +113,7 @@ export async function createForm({
       createdAt: data.created_at,
       updatedAt: data.updated_at,
       status: data.status,
-      settings: data.settings
+      settings: undefined
     } as FormDefinition;
   } catch (error) {
     console.error("Error creating form:", error);
@@ -143,7 +143,7 @@ export async function getForm(id: string): Promise<FormDefinition> {
       createdAt: data.created_at,
       updatedAt: data.updated_at,
       status: data.status,
-      settings: data.settings
+      settings: undefined
     } as FormDefinition;
   } catch (error) {
     console.error(`Error fetching form ${id}:`, error);
@@ -182,7 +182,7 @@ export async function updateForm(id: string, updates: Partial<FormDefinition>): 
       createdAt: data.created_at,
       updatedAt: data.updated_at,
       status: data.status,
-      settings: data.settings
+      settings: undefined
     } as FormDefinition;
   } catch (error) {
     console.error(`Error updating form ${id}:`, error);
@@ -231,7 +231,7 @@ export async function publishForm(id: string, publish: boolean): Promise<FormDef
       createdAt: data.created_at,
       updatedAt: data.updated_at,
       status: data.status,
-      settings: data.settings
+      settings: undefined
     } as FormDefinition;
   } catch (error) {
     console.error(`Error ${publish ? 'publishing' : 'unpublishing'} form ${id}:`, error);
