@@ -181,10 +181,9 @@ export default function FormResponses() {
             {responses && responses.length > 0 ? (
               <ResponsesTable responses={responses} form={{
                 ...form,
-                user_id: form.userId || '',
-                created_at: form.createdAt,
-                updated_at: form.updatedAt,
-                status: form.status || 'draft'
+                user_id: form?.userId || '',
+                created_at: form?.createdAt || '',
+                updated_at: form?.updatedAt || ''
               } as Form} />
             ) : (
               <div className="text-center p-12 border rounded-lg bg-background">

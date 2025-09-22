@@ -17,7 +17,6 @@ interface PublicFormViewProps {
     backgroundColor?: string;
     fontFamily?: string;
     borderRadius?: number;
-    logo?: string;
   };
   onSubmit?: (formData: Record<string, any>) => Promise<void>;
 }
@@ -155,11 +154,6 @@ export function PublicFormView({
         borderRadius: theme?.borderRadius !== undefined ? `${theme.borderRadius}px` : "0.5rem"
       }}
     >
-      {theme?.logo && (
-        <div className="flex justify-center mb-6">
-          <img src={theme.logo} alt="Logo" className="h-12" />
-        </div>
-      )}
       
       <div className="mb-6 text-center">
         <h1 className="text-2xl font-bold mb-2">{title}</h1>

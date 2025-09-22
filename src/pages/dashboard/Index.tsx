@@ -154,9 +154,21 @@ export default function Dashboard() {
 
                 {/* View modes */}
                 {viewMode === "grid" ? (
-                  <FormsGridView forms={sortedForms as any || []} />
+                  <FormsGridView forms={sortedForms?.map(form => ({
+                    ...form,
+                    user_id: form.userId || '',
+                    created_at: form.createdAt,
+                    updated_at: form.updatedAt,
+                    status: form.status || 'draft'
+                  })) || []} />
                 ) : (
-                  <FormsTableView forms={sortedForms as any || []} />
+                  <FormsTableView forms={sortedForms?.map(form => ({
+                    ...form,
+                    user_id: form.userId || '',
+                    created_at: form.createdAt,
+                    updated_at: form.updatedAt,
+                    status: form.status || 'draft'
+                  })) || []} />
                 )}
               </motion.div>
             ) : null}

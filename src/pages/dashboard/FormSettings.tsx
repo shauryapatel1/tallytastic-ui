@@ -107,7 +107,12 @@ export default function FormSettings() {
       setSuccessMessage(form.settings?.behavior?.successMessage || "");
       setAllowMultiple(form.settings?.behavior?.allowMultipleSubmissions || false);
       setEnableCaptcha(form.settings?.behavior?.captchaEnabled || false);
-      setFormTheme(form.settings?.theme || null);
+      setFormTheme({
+        primaryColor: form.settings?.theme?.primaryColor || "#6366f1",
+        backgroundColor: form.settings?.theme?.backgroundColor || "#ffffff",
+        fontFamily: form.settings?.theme?.fontFamily || "Inter, sans-serif",
+        borderRadius: form.settings?.theme?.borderRadius || "8"
+      });
     }
   }, [form]);
 

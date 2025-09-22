@@ -15,7 +15,7 @@ const getPublicFormById = async (id: string) => {
   const fields: FormField[] = [
     {
       id: "name",
-      name: "name",
+      name: "full_name",
       type: "text",
       label: "Full Name",
       placeholder: "Enter your full name",
@@ -41,8 +41,8 @@ const getPublicFormById = async (id: string) => {
       id: "consent",
       name: "consent",
       type: "checkbox",
-      label: "Consent",
-      placeholder: "I agree to the terms and conditions",
+      label: "I agree to the terms and conditions",
+      placeholder: "",
       isRequired: true,
     }
   ];
@@ -58,7 +58,7 @@ const getPublicFormById = async (id: string) => {
       backgroundColor: "#ffffff",
       fontFamily: "Inter, sans-serif",
       borderRadius: 8,
-      logo: "https://via.placeholder.com/150x50?text=Logo"
+      
     }
   };
 };

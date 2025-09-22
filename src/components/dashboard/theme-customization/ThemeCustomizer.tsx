@@ -201,8 +201,8 @@ export function ThemeCustomizer({ initialTheme, onThemeChange }: ThemeCustomizer
             <Input
               id="logo-url"
               placeholder="https://example.com/logo.png"
-              value={theme.logo || ""}
-              onChange={(e) => handleLogoChange(e.target.value)}
+              value=""
+              onChange={() => {}}
             />
           </div>
         </div>
@@ -214,17 +214,6 @@ export function ThemeCustomizer({ initialTheme, onThemeChange }: ThemeCustomizer
             fontFamily: theme.fontFamily
           }}>
             <h3 className="font-medium mb-4" style={{ color: theme.primaryColor }}>Theme Preview</h3>
-            {theme.logo && (
-              <img 
-                src={theme.logo} 
-                alt="Form Logo" 
-                className="h-12 object-contain mb-4" 
-                onError={(e) => {
-                  // Hide the image if it fails to load
-                  e.currentTarget.style.display = 'none';
-                }}
-              />
-            )}
             <div className="space-y-4">
               <div>
                 <label className="text-sm font-medium block mb-1">Sample field</label>

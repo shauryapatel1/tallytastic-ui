@@ -46,7 +46,6 @@ export interface FormTheme {
   backgroundColor: string;
   fontFamily: string;
   borderRadius: string;
-  logo?: string;
 }
 
 // The main Form interface, aligned with FormDefinition
