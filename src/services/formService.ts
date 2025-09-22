@@ -134,7 +134,7 @@ export const getFormById = async (id: string): Promise<FormDefinition> => {
       customSuccessMessage: data.custom_success_message || undefined,
       redirectUrl: data.redirect_url || undefined,
       settings: {
-        submitButtonText: data.submit_button_text || 'Submit',
+        // submitButtonText: data.submit_button_text || 'Submit', // Not in schema
       },
       version: data.version || 1,
       userId: data.user_id,
@@ -167,7 +167,7 @@ export const updateFormDefinitionInService = async (
     version: formDefinition.version,
     custom_success_message: formDefinition.customSuccessMessage,
     redirect_url: formDefinition.redirectUrl,
-    submit_button_text: formDefinition.settings?.submitButtonText,
+    // submit_button_text: formDefinition.settings?.submitButtonText, // Not in schema
     updated_at: new Date().toISOString(),
     // user_id, created_at are typically not updated here.
     // id is used in .eq() and not in payload.
@@ -398,7 +398,7 @@ export const duplicateFormAPI = async (formIdToDuplicate: string, newTitle?: str
       definition_sections: newFormDefinitionData.sections as unknown as Json, // Cast sections to Json
       custom_success_message: newFormDefinitionData.customSuccessMessage,
       redirect_url: newFormDefinitionData.redirectUrl,
-      submit_button_text: newFormDefinitionData.settings?.submitButtonText,
+      // submit_button_text: newFormDefinitionData.settings?.submitButtonText, // Not in schema
       created_at: currentTime, // Set explicitly for the new record
       updated_at: currentTime, // Set explicitly for the new record
     };
@@ -583,7 +583,7 @@ export const createNewBlankForm = async (defaultTitle: string = "Untitled Form")
       definition_sections: newFormDefinition.sections as unknown as Json, // Cast sections to Json
       custom_success_message: newFormDefinition.customSuccessMessage,
       redirect_url: newFormDefinition.redirectUrl,
-      submit_button_text: newFormDefinition.settings?.submitButtonText,
+      // submit_button_text: newFormDefinition.settings?.submitButtonText, // Not in schema
     };
 
     const { error: insertError } = await supabase

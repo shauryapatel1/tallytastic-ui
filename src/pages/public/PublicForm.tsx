@@ -15,6 +15,7 @@ const getPublicFormById = async (id: string) => {
   const fields: FormField[] = [
     {
       id: "name",
+      name: "name",
       type: "text",
       label: "Full Name",
       placeholder: "Enter your full name",
@@ -22,6 +23,7 @@ const getPublicFormById = async (id: string) => {
     },
     {
       id: "email",
+      name: "email",
       type: "email",
       label: "Email Address",
       placeholder: "you@example.com",
@@ -29,6 +31,7 @@ const getPublicFormById = async (id: string) => {
     },
     {
       id: "message",
+      name: "message",
       type: "textarea",
       label: "Message",
       placeholder: "What would you like to tell us?",
@@ -36,6 +39,7 @@ const getPublicFormById = async (id: string) => {
     },
     {
       id: "consent",
+      name: "consent",
       type: "checkbox",
       label: "Consent",
       placeholder: "I agree to the terms and conditions",

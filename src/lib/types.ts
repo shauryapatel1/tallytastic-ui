@@ -42,10 +42,11 @@ export type FormField = FormFieldDefinition;
 export type FieldType = FormFieldType;
 
 export interface FormTheme {
-  primaryColor?: string;
-  backgroundColor?: string;
-  fontFamily?: string;
-  borderRadius?: string;
+  primaryColor: string;
+  backgroundColor: string;
+  fontFamily: string;
+  borderRadius: string;
+  logo?: string;
 }
 
 // The main Form interface, aligned with FormDefinition

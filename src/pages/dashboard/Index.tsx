@@ -85,7 +85,7 @@ export default function Dashboard() {
   const getFormStatistics = () => {
     if (!forms) return { total: 0, published: 0, draft: 0, responses: 0 };
     
-    const published = forms.filter(form => form.published).length;
+    const published = forms.filter(form => form.status === 'published').length;
     
     return {
       total: forms.length,
@@ -154,9 +154,9 @@ export default function Dashboard() {
 
                 {/* View modes */}
                 {viewMode === "grid" ? (
-                  <FormsGridView forms={sortedForms || []} />
+                  <FormsGridView forms={sortedForms as any || []} />
                 ) : (
-                  <FormsTableView forms={sortedForms || []} />
+                  <FormsTableView forms={sortedForms as any || []} />
                 )}
               </motion.div>
             ) : null}

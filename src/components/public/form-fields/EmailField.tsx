@@ -18,7 +18,7 @@ export function EmailField({ field, value, onChange, error }: EmailFieldProps) {
         className={`block text-sm font-medium ${error ? 'text-red-500' : ''}`}
       >
         {field.label}
-        {field.required && <span className="text-red-500 ml-1">*</span>}
+        {field.isRequired && <span className="text-red-500 ml-1">*</span>}
       </Label>
       
       {field.description && (

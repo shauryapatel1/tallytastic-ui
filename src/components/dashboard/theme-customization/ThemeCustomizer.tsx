@@ -36,6 +36,12 @@ export function ThemeCustomizer({ initialTheme, onThemeChange }: ThemeCustomizer
     onThemeChange(updatedTheme);
   };
   
+  const handleLogoChange = (logo: string) => {
+    const updatedTheme = { ...theme, logo };
+    setTheme(updatedTheme);
+    onThemeChange(updatedTheme);
+  };
+  
   // Removed logo handling as it's not in FormTheme type
   
   const fontFamilies = [
@@ -178,15 +184,15 @@ export function ThemeCustomizer({ initialTheme, onThemeChange }: ThemeCustomizer
           <div className="grid gap-2">
             <Label>Border Radius</Label>
             <div className="flex items-center gap-4">
-              <Slider
-                defaultValue={[theme.borderRadius]}
-                min={0}
-                max={16}
-                step={1}
-                onValueChange={handleBorderRadiusChange}
-                className="flex-1"
-              />
-              <span className="w-12 text-center">{theme.borderRadius}px</span>
+            <Slider
+              defaultValue={[parseInt(theme.borderRadius) || 6]}
+              min={0}
+              max={16}
+              step={1}
+              onValueChange={handleBorderRadiusChange}
+              className="flex-1"
+            />
+            <span className="w-12 text-center">{theme.borderRadius}</span>
             </div>
           </div>
           

@@ -22,7 +22,7 @@ export function CheckboxField({ field, value, onChange, error }: CheckboxFieldPr
         />
         <Label htmlFor={field.id} className="text-sm">
           {field.label}
-          {field.required && <span className="text-red-500 ml-1">*</span>}
+          {field.isRequired && <span className="text-red-500 ml-1">*</span>}
         </Label>
       </div>
       

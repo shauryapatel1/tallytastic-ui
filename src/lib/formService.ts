@@ -58,7 +58,7 @@ export const responseService = {
       id: row.id,
       formId: row.form_id,
       submittedAt: row.submitted_at,
-      data: row.response_data
+      data: row.data
     })) || [];
   }
 };

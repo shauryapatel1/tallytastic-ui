@@ -22,7 +22,7 @@ export default function PublishStep() {
   const [isPublished, setIsPublished] = useState(formData?.status === 'published');
 
   const updateStatusMutation = useMutation({
-    mutationFn: ({ formId, status }: { formId: string; status: string }) =>
+    mutationFn: ({ formId, status }: { formId: string; status: 'draft' | 'published' | 'archived' }) =>
       formService.updateForm(formId, { status }),
     onSuccess: (_, variables) => {
       queryClient.invalidateQueries({ queryKey: ['form', formData.id] });
@@ -44,7 +44,7 @@ export default function PublishStep() {
   });
 
   const handleTogglePublish = () => {
-    const newStatus = isPublished ? 'draft' : 'published';
+    const newStatus = (isPublished ? 'draft' : 'published') as 'draft' | 'published';
     updateStatusMutation.mutate({
       formId: formData.id,
       status: newStatus

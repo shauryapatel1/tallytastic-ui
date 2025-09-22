@@ -68,7 +68,7 @@ const getFormById = async (id: string) => {
         primaryColor: "#6366f1",
         backgroundColor: "#ffffff",
         fontFamily: "Inter, sans-serif",
-        borderRadius: 8
+        borderRadius: "8px"
       }
     }
   };
