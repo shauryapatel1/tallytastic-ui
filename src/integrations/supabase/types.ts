@@ -14,6 +14,33 @@ export type Database = {
   }
   public: {
     Tables: {
+      form_events: {
+        Row: {
+          at: string
+          event_type: string
+          form_id: string
+          id: string
+          meta: Json | null
+          session_id: string | null
+        }
+        Insert: {
+          at?: string
+          event_type: string
+          form_id: string
+          id?: string
+          meta?: Json | null
+          session_id?: string | null
+        }
+        Update: {
+          at?: string
+          event_type?: string
+          form_id?: string
+          id?: string
+          meta?: Json | null
+          session_id?: string | null
+        }
+        Relationships: []
+      }
       form_responses: {
         Row: {
           created_at: string
@@ -54,6 +81,7 @@ export type Database = {
           description: string | null
           id: string
           redirect_url: string | null
+          slug: string | null
           status: string
           title: string
           updated_at: string
@@ -67,6 +95,7 @@ export type Database = {
           description?: string | null
           id?: string
           redirect_url?: string | null
+          slug?: string | null
           status?: string
           title: string
           updated_at?: string
@@ -80,11 +109,75 @@ export type Database = {
           description?: string | null
           id?: string
           redirect_url?: string | null
+          slug?: string | null
           status?: string
           title?: string
           updated_at?: string
           user_id?: string
           version?: number
+        }
+        Relationships: []
+      }
+      quotas: {
+        Row: {
+          created_at: string
+          id: string
+          last_reset_at: string
+          plan: string
+          response_limit: number
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          last_reset_at?: string
+          plan?: string
+          response_limit?: number
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          last_reset_at?: string
+          plan?: string
+          response_limit?: number
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      templates: {
+        Row: {
+          category: string
+          created_at: string
+          definition_sections: Json
+          description: string | null
+          id: string
+          name: string
+          thumbnail_url: string | null
+          updated_at: string
+        }
+        Insert: {
+          category?: string
+          created_at?: string
+          definition_sections?: Json
+          description?: string | null
+          id?: string
+          name: string
+          thumbnail_url?: string | null
+          updated_at?: string
+        }
+        Update: {
+          category?: string
+          created_at?: string
+          definition_sections?: Json
+          description?: string | null
+          id?: string
+          name?: string
+          thumbnail_url?: string | null
+          updated_at?: string
         }
         Relationships: []
       }
