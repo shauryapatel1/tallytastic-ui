@@ -5,7 +5,7 @@ import { Badge } from "@/components/ui/badge";
 import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
-import { formService } from "@/lib/formService";
+import FormsApi from "@/lib/api/forms";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { Globe, Lock, Settings } from "lucide-react";
 
@@ -23,7 +23,7 @@ export default function PublishStep() {
 
   const updateStatusMutation = useMutation({
     mutationFn: ({ formId, status }: { formId: string; status: "draft" | "published" | "archived" }) =>
-      formService.updateForm(formId, { status }),
+      FormsApi.updateForm(formId, { status }),
     onSuccess: (_, variables) => {
       queryClient.invalidateQueries({ queryKey: ['form', formData.id] });
       toast({

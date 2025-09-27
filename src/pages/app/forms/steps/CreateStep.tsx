@@ -5,7 +5,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/hooks/use-toast";
-import { formService } from "@/lib/formService";
+import FormsApi from "@/lib/api/forms";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 
 interface ContextType {
@@ -25,7 +25,7 @@ export default function CreateStep() {
 
   const updateFormMutation = useMutation({
     mutationFn: ({ formId, updates }: { formId: string; updates: any }) =>
-      formService.updateForm(formId, updates),
+      FormsApi.updateForm(formId, updates),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['form', formData.id] });
       toast({

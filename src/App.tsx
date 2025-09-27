@@ -115,6 +115,21 @@ const App = () => (
                 </ProtectedRoute>
               } />
               
+              {/* Form workflow routes */}
+              <Route path="/app/forms/:formId" element={
+                <ProtectedRoute>
+                  <FormWorkflowLayout />
+                </ProtectedRoute>
+              }>
+                <Route index element={<Navigate to="create" replace />} />
+                <Route path="create" element={<CreateStep />} />
+                <Route path="build" element={<BuildStep />} />
+                <Route path="preview" element={<PreviewStep />} />
+                <Route path="publish" element={<PublishStep />} />
+                <Route path="share" element={<ShareStep />} />
+                <Route path="analyze" element={<AnalyzeStep />} />
+              </Route>
+              
               {/* Fallback route for any other dashboard path */}
               <Route path="/dashboard/*" element={
                 <ProtectedRoute>

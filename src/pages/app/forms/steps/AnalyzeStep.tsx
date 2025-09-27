@@ -1,11 +1,11 @@
 import { useOutletContext } from "react-router-dom";
-import { useQuery } from "@tanstack/react-query";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { responseService } from "@/lib/formService";
-import { BarChart3, Download, Eye, Users, TrendingUp } from "lucide-react";
-import { Link } from "react-router-dom";
+import { Progress } from "@/components/ui/progress";
+import { useQuery } from "@tanstack/react-query";
+import FormsApi from "@/lib/api/forms";
+import { BarChart3, Users, Clock, TrendingUp, Eye, Target, AlertCircle } from "lucide-react";
+import { Skeleton } from "@/components/ui/skeleton";
 
 interface ContextType {
   formData: any;
@@ -14,24 +14,14 @@ interface ContextType {
 
 export default function AnalyzeStep() {
   const { formData } = useOutletContext<ContextType>();
-  
-  const { data: responses } = useQuery({
-    queryKey: ['responses', formData.id],
-    queryFn: () => responseService.getFormResponses(formData.id),
-    enabled: !!formData.id
+
+  const { data: analytics, isLoading, error } = useQuery({
+    queryKey: ['form-analytics', formData.id],
+    queryFn: () => FormsApi.getAnalyticsSummary(formData.id),
+    enabled: formData.status === 'published'
   });
 
-  const isPublished = formData?.status === 'published';
-  const responseCount = responses?.length || 0;
-  
-  // Calculate basic analytics
-  const today = new Date();
-  const lastWeek = new Date(today.getTime() - 7 * 24 * 60 * 60 * 1000);
-  const recentResponses = responses?.filter(r => 
-    new Date(r.submittedAt) >= lastWeek
-  ) || [];
-
-  if (!isPublished) {
+  if (formData.status !== 'published') {
     return (
       <div className="space-y-6">
         <div>
@@ -39,146 +29,251 @@ export default function AnalyzeStep() {
             Analytics & Insights
           </h2>
           <p className="text-gray-600 dark:text-gray-300">
-            View response data and form performance metrics.
+            Publish your form to start collecting analytics data.
           </p>
         </div>
 
-        <div className="text-center py-12 bg-gray-50 dark:bg-gray-900 rounded-lg">
-          <BarChart3 className="w-16 h-16 text-gray-400 mx-auto mb-4" />
-          <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-2">
-            No Analytics Available
-          </h3>
-          <p className="text-gray-500 mb-4">
-            Publish your form to start collecting responses and view analytics.
-          </p>
-          <Badge variant="secondary">Form Not Published</Badge>
-        </div>
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <BarChart3 className="w-5 h-5" />
+              Analytics Not Available
+            </CardTitle>
+            <CardDescription>
+              Your form needs to be published to collect analytics data.
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <div className="text-center py-8">
+              <div className="mx-auto w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mb-4">
+                <BarChart3 className="w-8 h-8 text-gray-400" />
+              </div>
+              <p className="text-gray-500 mb-4">
+                Publish your form to start tracking views, submissions, and user behavior.
+              </p>
+              <Badge variant="outline">Draft</Badge>
+            </div>
+          </CardContent>
+        </Card>
       </div>
     );
   }
 
-  return (
-    <div className="space-y-6">
-      <div className="flex items-center justify-between">
+  if (isLoading) {
+    return (
+      <div className="space-y-6">
         <div>
           <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-2">
             Analytics & Insights
           </h2>
           <p className="text-gray-600 dark:text-gray-300">
-            Track form performance and response data.
+            Track how your form is performing and understand user behavior.
           </p>
         </div>
 
-        <div className="flex gap-2">
-          <Button variant="outline" size="sm" asChild>
-            <Link to={`/dashboard/forms/${formData.id}/responses`}>
-              <Eye className="w-4 h-4 mr-2" />
-              View All Responses
-            </Link>
-          </Button>
-          <Button variant="outline" size="sm" disabled={responseCount === 0}>
-            <Download className="w-4 h-4 mr-2" />
-            Export Data
-          </Button>
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+          {[1, 2, 3, 4].map((i) => (
+            <Card key={i}>
+              <CardHeader className="pb-3">
+                <Skeleton className="h-4 w-16" />
+              </CardHeader>
+              <CardContent>
+                <Skeleton className="h-8 w-12 mb-2" />
+                <Skeleton className="h-3 w-20" />
+              </CardContent>
+            </Card>
+          ))}
         </div>
       </div>
+    );
+  }
 
-      {/* Analytics Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+  if (error) {
+    return (
+      <div className="space-y-6">
+        <div>
+          <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-2">
+            Analytics & Insights
+          </h2>
+          <p className="text-gray-600 dark:text-gray-300">
+            Unable to load analytics data at this time.
+          </p>
+        </div>
+
+        <Card>
+          <CardContent className="pt-6">
+            <div className="text-center py-8">
+              <AlertCircle className="w-16 h-16 text-red-400 mx-auto mb-4" />
+              <p className="text-gray-500">
+                Failed to load analytics data. Please try again later.
+              </p>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
+
+  const completionRate = analytics?.completionRate || 0;
+  const avgTimeMinutes = analytics?.avgTime ? Math.round(analytics.avgTime / 60) : null;
+
+  return (
+    <div className="space-y-6">
+      <div>
+        <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-2">
+          Analytics & Insights
+        </h2>
+        <p className="text-gray-600 dark:text-gray-300">
+          Track how your form is performing and understand user behavior.
+        </p>
+      </div>
+
+      {/* Key Metrics */}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Total Responses</CardTitle>
+            <CardTitle className="text-sm font-medium">Total Views</CardTitle>
+            <Eye className="h-4 w-4 text-muted-foreground" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">{analytics?.views || 0}</div>
+            <p className="text-xs text-muted-foreground">
+              People who viewed your form
+            </p>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">Form Starts</CardTitle>
             <Users className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{responseCount}</div>
+            <div className="text-2xl font-bold">{analytics?.starts || 0}</div>
             <p className="text-xs text-muted-foreground">
-              All time submissions
+              People who started filling the form
             </p>
           </CardContent>
         </Card>
 
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">This Week</CardTitle>
-            <TrendingUp className="h-4 w-4 text-muted-foreground" />
+            <CardTitle className="text-sm font-medium">Completions</CardTitle>
+            <Target className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{recentResponses.length}</div>
+            <div className="text-2xl font-bold">{analytics?.completes || 0}</div>
             <p className="text-xs text-muted-foreground">
-              New responses
+              Successfully submitted forms
             </p>
           </CardContent>
         </Card>
 
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Form Status</CardTitle>
-            <BarChart3 className="h-4 w-4 text-muted-foreground" />
+            <CardTitle className="text-sm font-medium">Avg. Time</CardTitle>
+            <Clock className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-green-600">Live</div>
+            <div className="text-2xl font-bold">
+              {avgTimeMinutes ? `${avgTimeMinutes}m` : 'N/A'}
+            </div>
             <p className="text-xs text-muted-foreground">
-              Accepting responses
+              Average completion time
             </p>
           </CardContent>
         </Card>
       </div>
 
-      {/* Recent Activity */}
+      {/* Completion Rate */}
       <Card>
         <CardHeader>
-          <CardTitle>Recent Activity</CardTitle>
+          <CardTitle className="flex items-center gap-2">
+            <TrendingUp className="w-5 h-5" />
+            Completion Rate
+          </CardTitle>
+          <CardDescription>
+            Percentage of users who complete your form after starting it
+          </CardDescription>
         </CardHeader>
-        <CardContent>
-          {responseCount === 0 ? (
-            <div className="text-center py-8 text-gray-500">
-              <Users className="w-12 h-12 mx-auto mb-4 text-gray-300" />
-              <p>No responses yet</p>
-              <p className="text-sm">Share your form to start collecting responses</p>
-            </div>
-          ) : (
-            <div className="space-y-3">
-              {responses?.slice(0, 5).map((response) => (
-                <div key={response.id} className="flex items-center justify-between py-2 border-b last:border-0">
-                  <div>
-                    <p className="text-sm font-medium">New response</p>
-                    <p className="text-xs text-gray-500">
-                      {new Date(response.submittedAt).toLocaleString()}
-                    </p>
-                  </div>
-                  <Badge variant="outline" className="text-xs">
-                    Submitted
-                  </Badge>
-                </div>
-              ))}
-              
-              {responseCount > 5 && (
-                <div className="text-center pt-4">
-                  <Button variant="outline" size="sm" asChild>
-                    <Link to={`/dashboard/forms/${formData.id}/responses`}>
-                      View All {responseCount} Responses
-                    </Link>
-                  </Button>
-                </div>
-              )}
-            </div>
-          )}
+        <CardContent className="space-y-4">
+          <div className="flex items-center justify-between">
+            <span className="text-sm font-medium">Completion Rate</span>
+            <span className="text-sm text-muted-foreground">{completionRate}%</span>
+          </div>
+          <Progress value={completionRate} className="h-2" />
+          <div className="text-sm text-muted-foreground">
+            {analytics?.starts || 0} started, {analytics?.completes || 0} completed
+          </div>
         </CardContent>
       </Card>
 
-      <div className="flex items-center justify-between pt-4 border-t">
-        <div className="text-sm text-gray-500">
-          <span className="text-green-600">✓ Analytics are being tracked</span>
-        </div>
-        
-        <Button variant="outline" asChild>
-          <Link to={`/dashboard/forms/${formData.id}/responses`}>
-            <BarChart3 className="w-4 h-4 mr-2" />
-            Full Analytics
-          </Link>
-        </Button>
-      </div>
+      {/* Drop-off Points */}
+      {analytics?.dropOffPoints && analytics.dropOffPoints.length > 0 && (
+        <Card>
+          <CardHeader>
+            <CardTitle>Drop-off Analysis</CardTitle>
+            <CardDescription>
+              Fields where users commonly abandon your form
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-4">
+              {analytics.dropOffPoints.map((point, index) => (
+                <div key={index} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                  <div>
+                    <p className="font-medium">Field: {point.fieldId}</p>
+                    <p className="text-sm text-gray-500">{point.dropOffs} abandonment(s)</p>
+                  </div>
+                  <Badge variant="outline">
+                    {point.dropOffs} drops
+                  </Badge>
+                </div>
+              ))}
+            </div>
+          </CardContent>
+        </Card>
+      )}
+
+      {/* Performance Summary */}
+      <Card>
+        <CardHeader>
+          <CardTitle>Performance Summary</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="space-y-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="p-4 bg-blue-50 rounded-lg">
+                <h4 className="font-medium text-blue-900">Form Health</h4>
+                <p className="text-sm text-blue-700 mt-1">
+                  {completionRate > 70 ? 'Excellent' : 
+                   completionRate > 50 ? 'Good' : 
+                   completionRate > 30 ? 'Fair' : 'Needs Improvement'}
+                </p>
+                <p className="text-xs text-blue-600 mt-2">
+                  {completionRate > 70 
+                    ? 'Your form is performing very well!' 
+                    : 'Consider optimizing fields that cause drop-offs'
+                  }
+                </p>
+              </div>
+              
+              <div className="p-4 bg-green-50 rounded-lg">
+                <h4 className="font-medium text-green-900">Engagement</h4>
+                <p className="text-sm text-green-700 mt-1">
+                  {analytics?.views > 0 ? 'Active' : 'No Activity'}
+                </p>
+                <p className="text-xs text-green-600 mt-2">
+                  {analytics?.views > 0 
+                    ? `${analytics.views} total views recorded`
+                    : 'Share your form to start getting responses'
+                  }
+                </p>
+              </div>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
     </div>
   );
 }

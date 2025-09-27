@@ -1,11 +1,12 @@
-import { useState } from "react";
 import { useOutletContext } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { useToast } from "@/hooks/use-toast";
-import { Copy, ExternalLink, Share2, QrCode, Code } from "lucide-react";
+import { Copy, ExternalLink, Share2, QrCode, Mail, MessageSquare } from "lucide-react";
+import { useState } from "react";
 
 interface ContextType {
   formData: any;
@@ -15,49 +16,52 @@ interface ContextType {
 export default function ShareStep() {
   const { formData } = useOutletContext<ContextType>();
   const { toast } = useToast();
-  
-  const isPublished = formData?.status === 'published';
-  const formUrl = `${window.location.origin}/public/form/${formData.id}`;
-  
-  const [embedCode] = useState(`<iframe src="${formUrl}" width="100%" height="600" frameborder="0"></iframe>`);
+  const [copiedField, setCopiedField] = useState<string | null>(null);
 
-  const handleCopyUrl = async () => {
+  const formUrl = `${window.location.origin}/f/${formData.id}`;
+  const embedCode = `<iframe src="${formUrl}" width="100%" height="600" frameborder="0"></iframe>`;
+
+  const handleCopy = async (text: string, field: string) => {
     try {
-      await navigator.clipboard.writeText(formUrl);
+      await navigator.clipboard.writeText(text);
+      setCopiedField(field);
       toast({
-        title: "Link copied!",
-        description: "Form URL has been copied to your clipboard."
+        title: "Copied!",
+        description: "Link copied to clipboard"
       });
+      setTimeout(() => setCopiedField(null), 2000);
     } catch (error) {
       toast({
-        title: "Failed to copy",
-        description: "Please copy the URL manually.",
+        title: "Copy failed",
+        description: "Please copy the link manually",
         variant: "destructive"
       });
     }
   };
 
-  const handleCopyEmbed = async () => {
-    try {
-      await navigator.clipboard.writeText(embedCode);
-      toast({
-        title: "Embed code copied!",
-        description: "HTML embed code has been copied to your clipboard."
+  const handleEmailShare = () => {
+    const subject = encodeURIComponent(`Fill out: ${formData.title}`);
+    const body = encodeURIComponent(`I'd like you to fill out this form: ${formUrl}`);
+    window.open(`mailto:?subject=${subject}&body=${body}`);
+  };
+
+  const handleSocialShare = () => {
+    const text = encodeURIComponent(`Check out this form: ${formData.title}`);
+    const url = encodeURIComponent(formUrl);
+    
+    if (navigator.share) {
+      navigator.share({
+        title: formData.title,
+        text: `Fill out: ${formData.title}`,
+        url: formUrl,
       });
-    } catch (error) {
-      toast({
-        title: "Failed to copy",
-        description: "Please copy the embed code manually.",
-        variant: "destructive"
-      });
+    } else {
+      // Fallback to Twitter
+      window.open(`https://twitter.com/intent/tweet?text=${text}&url=${url}`);
     }
   };
 
-  const handleOpenForm = () => {
-    window.open(formUrl, '_blank');
-  };
-
-  if (!isPublished) {
+  if (formData.status !== 'published') {
     return (
       <div className="space-y-6">
         <div>
@@ -65,20 +69,32 @@ export default function ShareStep() {
             Share Your Form
           </h2>
           <p className="text-gray-600 dark:text-gray-300">
-            Share your form link and embed it on websites.
+            Your form needs to be published before you can share it.
           </p>
         </div>
 
-        <div className="text-center py-12 bg-gray-50 dark:bg-gray-900 rounded-lg">
-          <Share2 className="w-16 h-16 text-gray-400 mx-auto mb-4" />
-          <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-2">
-            Form Not Published
-          </h3>
-          <p className="text-gray-500 mb-4">
-            Your form needs to be published before you can share it.
-          </p>
-          <Badge variant="secondary">Draft Status</Badge>
-        </div>
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <Share2 className="w-5 h-5" />
+              Form Not Published
+            </CardTitle>
+            <CardDescription>
+              Publish your form first to get a shareable link.
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <div className="text-center py-8">
+              <div className="mx-auto w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mb-4">
+                <Share2 className="w-8 h-8 text-gray-400" />
+              </div>
+              <p className="text-gray-500 mb-4">
+                Go back to the Publish step to make your form live.
+              </p>
+              <Badge variant="outline">Draft</Badge>
+            </div>
+          </CardContent>
+        </Card>
       </div>
     );
   }
@@ -90,107 +106,139 @@ export default function ShareStep() {
           Share Your Form
         </h2>
         <p className="text-gray-600 dark:text-gray-300">
-          Your form is live! Share the link or embed it on your website.
+          Your form is live! Share it with your audience using the options below.
         </p>
       </div>
 
-      {/* Direct Link */}
-      <div className="space-y-4">
-        <div>
-          <Label htmlFor="form-url" className="text-base font-medium">
-            Direct Link
-          </Label>
-          <p className="text-sm text-gray-500 mb-2">
-            Share this link to let people fill out your form
-          </p>
-          <div className="flex gap-2">
-            <Input
-              id="form-url"
-              value={formUrl}
-              readOnly
-              className="font-mono text-sm"
-            />
-            <Button onClick={handleCopyUrl} variant="outline" size="icon">
-              <Copy className="w-4 h-4" />
-            </Button>
-            <Button onClick={handleOpenForm} variant="outline" size="icon">
-              <ExternalLink className="w-4 h-4" />
-            </Button>
-          </div>
-        </div>
+      <div className="grid gap-6">
+        {/* Direct Link */}
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <ExternalLink className="w-5 h-5" />
+              Direct Link
+            </CardTitle>
+            <CardDescription>
+              Share this URL directly with anyone you want to fill out your form.
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <div>
+              <Label htmlFor="form-url">Form URL</Label>
+              <div className="flex gap-2 mt-1">
+                <Input
+                  id="form-url"
+                  value={formUrl}
+                  readOnly
+                  className="flex-1"
+                />
+                <Button
+                  variant="outline"
+                  onClick={() => handleCopy(formUrl, 'url')}
+                  className="shrink-0"
+                >
+                  {copiedField === 'url' ? 'Copied!' : <Copy className="w-4 h-4" />}
+                </Button>
+                <Button
+                  variant="outline"
+                  onClick={() => window.open(formUrl, '_blank')}
+                  className="shrink-0"
+                >
+                  <ExternalLink className="w-4 h-4" />
+                </Button>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
 
-        {/* Quick Actions */}
-        <div className="flex gap-2">
-          <Button onClick={handleCopyUrl} variant="outline" size="sm">
-            <Copy className="w-4 h-4 mr-2" />
-            Copy Link
-          </Button>
-          <Button onClick={handleOpenForm} variant="outline" size="sm">
-            <ExternalLink className="w-4 h-4 mr-2" />
-            Open Form
-          </Button>
-        </div>
-      </div>
+        {/* Embed Code */}
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <QrCode className="w-5 h-5" />
+              Embed on Website
+            </CardTitle>
+            <CardDescription>
+              Embed this form directly on your website or blog.
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <div>
+              <Label htmlFor="embed-code">HTML Embed Code</Label>
+              <div className="flex gap-2 mt-1">
+                <textarea
+                  id="embed-code"
+                  value={embedCode}
+                  readOnly
+                  className="flex-1 min-h-[80px] p-3 text-sm border rounded-md resize-none font-mono"
+                />
+                <Button
+                  variant="outline"
+                  onClick={() => handleCopy(embedCode, 'embed')}
+                  className="shrink-0"
+                >
+                  {copiedField === 'embed' ? 'Copied!' : <Copy className="w-4 h-4" />}
+                </Button>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
 
-      {/* Embed Code */}
-      <div className="space-y-4">
-        <div>
-          <Label htmlFor="embed-code" className="text-base font-medium">
-            Embed Code
-          </Label>
-          <p className="text-sm text-gray-500 mb-2">
-            Copy this HTML code to embed the form on your website
-          </p>
-          <div className="space-y-2">
-            <textarea
-              id="embed-code"
-              value={embedCode}
-              readOnly
-              className="w-full h-20 p-3 border rounded-lg font-mono text-sm bg-gray-50 dark:bg-gray-900"
-            />
-            <Button onClick={handleCopyEmbed} variant="outline" size="sm">
-              <Code className="w-4 h-4 mr-2" />
-              Copy Embed Code
-            </Button>
-          </div>
-        </div>
-      </div>
+        {/* Quick Share */}
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <Share2 className="w-5 h-5" />
+              Quick Share
+            </CardTitle>
+            <CardDescription>
+              Share your form through popular channels.
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <Button
+                variant="outline"
+                onClick={handleEmailShare}
+                className="flex items-center gap-2 h-auto p-4"
+              >
+                <Mail className="w-5 h-5" />
+                <div className="text-left">
+                  <div className="font-medium">Email</div>
+                  <div className="text-sm text-gray-500">Send via email</div>
+                </div>
+              </Button>
+              
+              <Button
+                variant="outline"
+                onClick={handleSocialShare}
+                className="flex items-center gap-2 h-auto p-4"
+              >
+                <MessageSquare className="w-5 h-5" />
+                <div className="text-left">
+                  <div className="font-medium">Social Media</div>
+                  <div className="text-sm text-gray-500">Share on social platforms</div>
+                </div>
+              </Button>
+            </div>
+          </CardContent>
+        </Card>
 
-      {/* Sharing Stats */}
-      <div className="bg-gray-50 dark:bg-gray-900 rounded-lg p-6">
-        <h3 className="font-semibold text-gray-900 dark:text-white mb-4">Sharing Options</h3>
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-          <div className="text-center p-4 border rounded-lg bg-white dark:bg-gray-800">
-            <Share2 className="w-8 h-8 text-blue-600 mx-auto mb-2" />
-            <h4 className="font-medium text-gray-900 dark:text-white">Direct Link</h4>
-            <p className="text-sm text-gray-500">Share via email, social media, or messaging</p>
-          </div>
-          
-          <div className="text-center p-4 border rounded-lg bg-white dark:bg-gray-800">
-            <Code className="w-8 h-8 text-purple-600 mx-auto mb-2" />
-            <h4 className="font-medium text-gray-900 dark:text-white">Website Embed</h4>
-            <p className="text-sm text-gray-500">Add to your website or blog</p>
-          </div>
-          
-          <div className="text-center p-4 border rounded-lg bg-white dark:bg-gray-800">
-            <QrCode className="w-8 h-8 text-green-600 mx-auto mb-2" />
-            <h4 className="font-medium text-gray-900 dark:text-white">QR Code</h4>
-            <p className="text-sm text-gray-500">Generate QR code for offline sharing</p>
-          </div>
-        </div>
-      </div>
-
-      <div className="flex items-center justify-between pt-4 border-t">
-        <div className="text-sm text-gray-500">
-          <span className="text-green-600">✓ Form is published and ready to share</span>
-        </div>
-        
-        <div className="flex gap-2">
-          <Button onClick={handleCopyUrl} className="bg-indigo-600 hover:bg-indigo-700">
-            <Share2 className="w-4 h-4 mr-2" />
-            Share Form
-          </Button>
-        </div>
+        {/* Form Status */}
+        <Card>
+          <CardHeader>
+            <CardTitle>Form Status</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="font-medium">Current Status</p>
+                <p className="text-sm text-gray-500">Your form is live and accepting responses</p>
+              </div>
+              <Badge className="bg-green-500 text-white">Published</Badge>
+            </div>
+          </CardContent>
+        </Card>
       </div>
     </div>
   );

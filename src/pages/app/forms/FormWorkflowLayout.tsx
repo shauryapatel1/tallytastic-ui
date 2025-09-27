@@ -1,6 +1,6 @@
 import { Outlet, useParams } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
-import { formService } from "@/lib/formService";
+import FormsApi from "@/lib/api/forms";
 import { FormStepNavigation } from "@/components/dashboard/form-workflow/FormStepNavigation";
 import { FormStepHeader } from "@/components/dashboard/form-workflow/FormStepHeader";
 import { useFormNavigation } from "@/hooks/useFormNavigation";
@@ -12,7 +12,7 @@ export default function FormWorkflowLayout() {
   
   const { data: formData, isLoading } = useQuery({
     queryKey: ['form', formId],
-    queryFn: () => formService.getFormById(formId!),
+    queryFn: () => FormsApi.getForm(formId!),
     enabled: !!formId
   });
 
