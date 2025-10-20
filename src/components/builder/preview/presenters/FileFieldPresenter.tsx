@@ -26,10 +26,11 @@ export interface FileFieldPresenterProps {
   };
   value?: FileList | string | undefined; // string could be a filename if already uploaded/persisted
   onValueChange?: (newValue: FileList | undefined) => void; // FileList from input event
+  onBlur?: () => void; // Callback for blur event
   error?: string; // Added error prop
 }
 
-export function FileFieldPresenter({ field, value, onValueChange, error }: FileFieldPresenterProps) {
+export function FileFieldPresenter({ field, value, onValueChange, onBlur, error }: FileFieldPresenterProps) {
   const {
     id,
     label,
@@ -107,6 +108,7 @@ export function FileFieldPresenter({ field, value, onValueChange, error }: FileF
         placeholder={placeholder} // Browser usually shows "No file chosen" or similar
         disabled={!isInteractive}
         onChange={handleChange}
+        onBlur={onBlur}
         accept={allowedFileTypes?.join(',')}
         // The Input component itself might need specific styling for error states or to use the style prop effectively for file inputs
         // Standard border styling might be overridden by browser default file input styling.

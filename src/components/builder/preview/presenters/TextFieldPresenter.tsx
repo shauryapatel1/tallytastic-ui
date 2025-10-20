@@ -10,6 +10,7 @@ interface TextFieldPresenterProps {
   field: FormFieldDefinition & { type: Extract<FormFieldType, 'text' | 'textarea' | 'email' | 'tel' | 'url'> }; 
   value?: any; // Current value from form state
   onValueChange?: (newValue: string) => void; // Callback to update form state
+  onBlur?: () => void; // Callback for blur event
   error?: string; // Added error prop
 }
 
@@ -25,7 +26,7 @@ const getWidthClass = (width: FormFieldStyleOptions['width']) => {
   }
 };
 
-export function TextFieldPresenter({ field, value, onValueChange, error }: TextFieldPresenterProps) {
+export function TextFieldPresenter({ field, value, onValueChange, onBlur, error }: TextFieldPresenterProps) {
   const {
     id,
     label,
@@ -53,6 +54,7 @@ export function TextFieldPresenter({ field, value, onValueChange, error }: TextF
     value: isInteractive ? (value as string ?? '') : (field.defaultValue as string ?? ''),
     disabled: !isInteractive, 
     onChange: handleChange, // Add common onChange handler
+    onBlur: onBlur, // Add blur handler
     style: {
       color: styleOptions.inputTextColor,
       backgroundColor: styleOptions.inputBackgroundColor,

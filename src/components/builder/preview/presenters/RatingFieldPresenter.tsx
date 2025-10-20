@@ -24,10 +24,11 @@ export interface RatingFieldPresenterProps {
   };
   value?: number | undefined;
   onValueChange?: (newValue: number | undefined) => void;
+  onBlur?: () => void; // Callback for blur event
   error?: string;
 }
 
-export function RatingFieldPresenter({ field, value, onValueChange, error }: RatingFieldPresenterProps) {
+export function RatingFieldPresenter({ field, value, onValueChange, onBlur, error }: RatingFieldPresenterProps) {
   const {
     id,
     label,

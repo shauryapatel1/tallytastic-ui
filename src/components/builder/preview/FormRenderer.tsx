@@ -16,6 +16,7 @@ interface FormRendererProps {
   formDefinition: FormDefinition; // Assuming definition is always present for rendering
   formValues?: Record<string, any>;
   onFormValueChange?: (fieldId: string, newValue: any) => void;
+  onFieldBlur?: (fieldId: string) => void;
   formErrors?: Record<string, string[]>; // Added prop for field errors
 }
 
@@ -25,12 +26,14 @@ const RenderField = ({
   allFields, // Pass all fields for context in isFieldVisible
   formValues,
   onFormValueChange,
+  onFieldBlur,
   fieldErrorMessages, // Added prop for error messages for this specific field
 }: {
   field: FormFieldDefinition;
   allFields: FormFieldDefinition[];
   formValues?: Record<string, any>;
   onFormValueChange?: (fieldId: string, newValue: any) => void;
+  onFieldBlur?: (fieldId: string) => void;
   fieldErrorMessages?: string[]; // Added prop
 }) => {
   // Dynamic visibility check using the evaluator
@@ -42,6 +45,7 @@ const RenderField = ({
   const interactivePresenterProps = {
     value: formValues?.[field.id],
     onValueChange: onFormValueChange ? (newValue: any) => onFormValueChange(field.id, newValue) : undefined,
+    onBlur: onFieldBlur ? () => onFieldBlur(field.id) : undefined,
     // Pass only the first error message for now, or consider how presenters handle multiple errors
     error: fieldErrorMessages && fieldErrorMessages.length > 0 ? fieldErrorMessages[0] : undefined,
   };
@@ -87,7 +91,7 @@ const RenderField = ({
   }
 };
 
-export function FormRenderer({ formDefinition, formValues, onFormValueChange, formErrors }: FormRendererProps) {
+export function FormRenderer({ formDefinition, formValues, onFormValueChange, onFieldBlur, formErrors }: FormRendererProps) {
   if (!formDefinition) { 
     return (
       <div className="p-8 text-center text-muted-foreground">
@@ -129,6 +133,7 @@ export function FormRenderer({ formDefinition, formValues, onFormValueChange, fo
                   allFields={allFields}
                   formValues={formValues}
                   onFormValueChange={onFormValueChange}
+                  onFieldBlur={onFieldBlur}
                   fieldErrorMessages={formErrors?.[field.id]}
                 />
               ))}

@@ -30,10 +30,11 @@ export interface ChoiceFieldPresenterProps {
   };
   value?: string | string[] | undefined;
   onValueChange?: (newValue: string | string[] | undefined) => void;
+  onBlur?: () => void; // Callback for blur event
   error?: string; // Moved error to top level props
 }
 
-export function ChoiceFieldPresenter({ field, value: propValue, onValueChange, error }: ChoiceFieldPresenterProps) {
+export function ChoiceFieldPresenter({ field, value: propValue, onValueChange, onBlur, error }: ChoiceFieldPresenterProps) {
   const {
     id,
     label,

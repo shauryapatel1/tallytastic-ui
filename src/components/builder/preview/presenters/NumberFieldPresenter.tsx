@@ -13,6 +13,7 @@ export interface NumberFieldPresenterProps {
   };
   value?: number | undefined; // Current value from form state, should be number or undefined
   onValueChange?: (newValue: number | undefined) => void; // Callback to update form state
+  onBlur?: () => void; // Callback for blur event
   error?: string; // Error prop correctly defined at this level
 }
 
@@ -28,7 +29,7 @@ const getWidthClass = (width?: FormFieldStyleOptions['width']) => { // Added opt
   }
 };
 
-export function NumberFieldPresenter({ field, value, onValueChange, error }: NumberFieldPresenterProps) {
+export function NumberFieldPresenter({ field, value, onValueChange, onBlur, error }: NumberFieldPresenterProps) {
   const {
     id,
     label,
@@ -75,6 +76,7 @@ export function NumberFieldPresenter({ field, value, onValueChange, error }: Num
     min: min,
     max: max,
     onChange: handleChange,
+    onBlur: onBlur,
     style: {
       color: styleOptions.inputTextColor,
       backgroundColor: styleOptions.inputBackgroundColor,

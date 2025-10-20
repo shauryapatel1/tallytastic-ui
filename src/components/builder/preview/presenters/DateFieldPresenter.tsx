@@ -13,6 +13,7 @@ export interface DateFieldPresenterProps {
   };
   value?: string | undefined; // ISO string or specific format for date/time
   onValueChange?: (newValue: string | undefined) => void;
+  onBlur?: () => void; // Callback for blur event
   error?: string; // Added error prop
 }
 
@@ -48,7 +49,7 @@ const formatDateForInput = (isoString: string | undefined, type: 'date' | 'time'
   return ''; // Should not be reached if logic above is complete
 };
 
-export function DateFieldPresenter({ field, value, onValueChange, error }: DateFieldPresenterProps) {
+export function DateFieldPresenter({ field, value, onValueChange, onBlur, error }: DateFieldPresenterProps) {
   const {
     id,
     label,
@@ -131,6 +132,7 @@ export function DateFieldPresenter({ field, value, onValueChange, error }: DateF
         value={displayValue}
         disabled={!isInteractive}
         onChange={handleChange}
+        onBlur={onBlur}
         min={type === 'date' ? minDate : undefined} // HTML min/max for date input
         max={type === 'date' ? maxDate : undefined} // HTML min/max for date input
         style={{

@@ -1,8 +1,8 @@
 import React, { useEffect, useState, useCallback } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import type { FormDefinition, FormFieldDefinition, FormValues, FormErrors } from '@/types/forms';
+import type { FormDefinition, FormValues, FormErrors } from '@/types/forms';
 import { FormRenderer } from '@/components/builder/preview/FormRenderer';
-import { validateField } from '@/lib/ValidationEngine';
+import { useFormValidation } from '@/hooks/useFormValidation';
 import { getFormById, submitFormResponse } from '@/services/formService';
 import { Button } from '@/components/ui/button';
 import { toast } from 'sonner';
@@ -13,10 +13,27 @@ export function PublicFormPage() {
 
   const [formDefinition, setFormDefinition] = useState<FormDefinition | null>(null);
   const [formValues, setFormValues] = useState<FormValues>({});
-  const [formErrors, setFormErrors] = useState<FormErrors>({});
   const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const [notFound, setNotFound] = useState<boolean>(false);
+
+  // Use unified validation hook
+  const { 
+    errors: formErrors, 
+    validateField: validateSingleField, 
+    validateForm: validateEntireForm,
+    clearAllErrors 
+  } = useFormValidation({
+    formDefinition: formDefinition || { 
+      id: '', 
+      title: '', 
+      sections: [],
+      version: 1,
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString()
+    },
+    formValues
+  });
 
   useEffect(() => {
     if (!formId) {
@@ -32,7 +49,7 @@ export function PublicFormPage() {
       // Clear previous form definition and errors
       setFormDefinition(null);
       setFormValues({});
-      setFormErrors({});
+      clearAllErrors();
       try {
         const definition = await getFormById(formId); // Use actual service call
 
@@ -71,26 +88,16 @@ export function PublicFormPage() {
   }, [formId]);
 
   const handleFormValueChange = useCallback((fieldId: string, value: any) => {
-    setFormValues(prevValues => {
-      const newValues = { ...prevValues, [fieldId]: value };
-      
-      if (formDefinition) {
-        const fieldDef = formDefinition.sections
-          .flatMap(s => s.fields)
-          .find(f => f.id === fieldId);
-        
-        if (fieldDef) {
-          // Adjusted call to validateField and handling of its result
-          const validationResult = validateField(fieldDef, value);
-          setFormErrors(prevErrors => ({
-            ...prevErrors,
-            [fieldId]: validationResult.errorMessages.length > 0 ? validationResult.errorMessages : undefined,
-          }));
-        }
-      }
-      return newValues;
-    });
-  }, [formDefinition]);
+    setFormValues(prevValues => ({
+      ...prevValues,
+      [fieldId]: value
+    }));
+  }, []);
+
+  // Handle field blur for validation
+  const handleFieldBlur = useCallback((fieldId: string) => {
+    validateSingleField(fieldId);
+  }, [validateSingleField]);
 
   const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
@@ -100,22 +107,9 @@ export function PublicFormPage() {
     }
 
     setIsSubmitting(true);
-    setFormErrors({}); // Clear previous errors before new validation
-    let allErrors: FormErrors = {};
-    let isValid = true;
 
-    formDefinition.sections.forEach(section => {
-      section.fields.forEach(field => {
-        const valueToValidate = formValues[field.id] !== undefined ? formValues[field.id] : ''; // Ensure value is not undefined for validation
-        const validationResult = validateField(field, valueToValidate);
-        if (!validationResult.isValid && validationResult.errorMessages.length > 0) {
-          allErrors[field.id] = validationResult.errorMessages;
-          isValid = false;
-        }
-      });
-    });
-
-    setFormErrors(allErrors);
+    // Validate entire form (automatically skips hidden fields)
+    const isValid = validateEntireForm();
 
     if (!isValid) {
       toast.error("Please correct the errors in the form before submitting.");
@@ -146,7 +140,7 @@ export function PublicFormPage() {
           });
         });
         setFormValues(initialValues);
-        setFormErrors({}); // Clear errors as well
+        clearAllErrors(); // Clear errors as well
         // Potentially scroll to top or show a persistent success message area if not redirecting
       }
     } catch (error) {
@@ -183,6 +177,7 @@ export function PublicFormPage() {
             formDefinition={formDefinition}
             formValues={formValues}
             onFormValueChange={handleFormValueChange}
+            onFieldBlur={handleFieldBlur}
             formErrors={formErrors}
           />
           {/* TODO: Implement customizable submit button text from formDefinition.settings.submitButtonText */}
