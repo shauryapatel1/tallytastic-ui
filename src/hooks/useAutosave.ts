@@ -1,4 +1,4 @@
-import { useCallback, useRef, useEffect } from 'react';
+import { useCallback, useRef, useEffect, useState } from 'react';
 import { useToast } from '@/hooks/use-toast';
 
 interface UseAutosaveProps {
@@ -22,21 +22,21 @@ export function useAutosave({
   const { toast } = useToast();
   const timeoutRef = useRef<NodeJS.Timeout>();
   const lastDataRef = useRef(data);
-  const statusRef = useRef<AutosaveStatus>({ status: 'idle' });
+  const [status, setStatus] = useState<AutosaveStatus>({ status: 'idle' });
 
   const triggerSave = useCallback(async () => {
     if (!enabled) return;
 
-    statusRef.current = { status: 'saving' };
+    setStatus({ status: 'saving' });
     
     try {
       await saveFunction(data);
-      statusRef.current = { 
+      setStatus({ 
         status: 'saved', 
         lastSaved: new Date() 
-      };
+      });
     } catch (error) {
-      statusRef.current = { status: 'error' };
+      setStatus({ status: 'error' });
       toast({
         title: "Autosave failed",
         description: "Your changes could not be saved automatically.",
@@ -72,5 +72,5 @@ export function useAutosave({
     };
   }, [data, debouncedSave, enabled]);
 
-  return statusRef.current;
+  return status;
 }
