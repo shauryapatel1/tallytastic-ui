@@ -1,15 +1,24 @@
 import React, { useEffect, useState, useCallback } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
+import { useParams, useNavigate, useSearchParams } from 'react-router-dom';
 import type { FormDefinition, FormValues, FormErrors } from '@/types/forms';
-import { FormRenderer } from '@/components/builder/preview/FormRenderer';
+import { ClassicFormRenderer } from '@/components/public/ClassicFormRenderer';
+import { ConversationalFormRenderer } from '@/components/public/conversational/ConversationalFormRenderer';
 import { useFormValidation } from '@/hooks/useFormValidation';
 import { getFormById, submitFormResponse } from '@/services/formService';
-import { Button } from '@/components/ui/button';
 import { toast } from 'sonner';
+import { MessageSquare, FileText } from 'lucide-react';
+import { Button } from '@/components/ui/button';
 
 export function PublicFormPage() {
   const { formId } = useParams<{ formId: string }>();
   const navigate = useNavigate();
+  const [searchParams, setSearchParams] = useSearchParams();
+  
+  // Determine mode from URL or form settings
+  const urlMode = searchParams.get('mode');
+  const [renderMode, setRenderMode] = useState<'classic' | 'chat'>(
+    urlMode === 'chat' ? 'chat' : 'classic'
+  );
 
   const [formDefinition, setFormDefinition] = useState<FormDefinition | null>(null);
   const [formValues, setFormValues] = useState<FormValues>({});
@@ -55,6 +64,12 @@ export function PublicFormPage() {
 
         if (definition) {
           setFormDefinition(definition);
+          
+          // Set render mode from form settings if not specified in URL
+          if (!urlMode && (definition as any).mode) {
+            setRenderMode((definition as any).mode === 'chat' ? 'chat' : 'classic');
+          }
+          
           const initialValues: FormValues = {};
           definition.sections.forEach(section => {
             section.fields.forEach(field => {
@@ -99,8 +114,8 @@ export function PublicFormPage() {
     validateSingleField(fieldId);
   }, [validateSingleField]);
 
-  const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
-    event.preventDefault();
+  const handleSubmit = async (event?: React.FormEvent<HTMLFormElement>) => {
+    event?.preventDefault();
     if (!formDefinition || !formId) {
       toast.error("Form definition or ID is not loaded. Cannot submit.");
       return;
@@ -164,28 +179,76 @@ export function PublicFormPage() {
     return <div className="flex justify-center items-center h-screen text-lg"><p>Could not load form definition.</p></div>;
   }
 
+  const toggleMode = () => {
+    const newMode = renderMode === 'classic' ? 'chat' : 'classic';
+    setRenderMode(newMode);
+    setSearchParams({ mode: newMode });
+  };
+
   return (
     <div className="container mx-auto p-4 py-8 md:p-12 max-w-3xl bg-background min-h-screen flex flex-col items-center">
       <div className="w-full bg-card p-6 sm:p-8 md:p-10 rounded-xl shadow-2xl">
-        <header className="mb-8 text-center">
-          <h1 className="text-3xl sm:text-4xl font-bold mb-3 tracking-tight text-card-foreground">{formDefinition.title}</h1>
-          {formDefinition.description && <p className="text-sm sm:text-base text-muted-foreground max-w-xl mx-auto">{formDefinition.description}</p>}
-        </header>
+        {/* Mode toggle */}
+        <div className="flex justify-end mb-4">
+          <Button
+            type="button"
+            variant="ghost"
+            size="sm"
+            onClick={toggleMode}
+            className="gap-2 text-muted-foreground hover:text-foreground"
+          >
+            {renderMode === 'classic' ? (
+              <>
+                <MessageSquare className="w-4 h-4" />
+                Switch to Chat Mode
+              </>
+            ) : (
+              <>
+                <FileText className="w-4 h-4" />
+                Switch to Classic Mode
+              </>
+            )}
+          </Button>
+        </div>
+
+        {/* Header - only show in classic mode */}
+        {renderMode === 'classic' && (
+          <header className="mb-8 text-center">
+            <h1 className="text-3xl sm:text-4xl font-bold mb-3 tracking-tight text-card-foreground">
+              {formDefinition.title}
+            </h1>
+            {formDefinition.description && (
+              <p className="text-sm sm:text-base text-muted-foreground max-w-xl mx-auto">
+                {formDefinition.description}
+              </p>
+            )}
+          </header>
+        )}
         
-        <form onSubmit={handleSubmit} className="space-y-6 sm:space-y-8">
-          <FormRenderer
+        {/* Render based on mode */}
+        {renderMode === 'classic' ? (
+          <ClassicFormRenderer
             formDefinition={formDefinition}
             formValues={formValues}
             onFormValueChange={handleFormValueChange}
             onFieldBlur={handleFieldBlur}
             formErrors={formErrors}
+            onSubmit={handleSubmit}
+            isSubmitting={isSubmitting}
           />
-          {/* TODO: Implement customizable submit button text from formDefinition.settings.submitButtonText */}
-          <Button type="submit" disabled={isSubmitting || isLoading} className="w-full text-base py-3">
-            {isSubmitting ? 'Submitting...' : 'Submit Response'} 
-          </Button>
-        </form>
+        ) : (
+          <ConversationalFormRenderer
+            formDefinition={formDefinition}
+            formValues={formValues}
+            onFormValueChange={handleFormValueChange}
+            onFieldBlur={handleFieldBlur}
+            formErrors={formErrors}
+            onSubmit={() => handleSubmit()}
+            isSubmitting={isSubmitting}
+          />
+        )}
       </div>
+      
       <footer className="mt-12 text-center">
         <p className="text-xs text-muted-foreground">
           Powered by FormCraft
@@ -193,4 +256,4 @@ export function PublicFormPage() {
       </footer>
     </div>
   );
-} 
+}
