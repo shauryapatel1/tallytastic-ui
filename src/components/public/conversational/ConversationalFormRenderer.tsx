@@ -187,10 +187,25 @@ export function ConversationalFormRenderer({
               </motion.div>
             )}
 
-            {/* Keyboard hints for single choice */}
+            {/* Keyboard hints */}
             {currentQuestion.type === 'radio' && currentQuestion.options && (
               <p className="text-xs text-muted-foreground italic">
                 Tip: Press 1-{Math.min(9, currentQuestion.options.length)} to select, or Enter to continue
+              </p>
+            )}
+            {currentQuestion.type === 'select' && (
+              <p className="text-xs text-muted-foreground italic">
+                Tip: Use arrow keys to navigate options
+              </p>
+            )}
+            {currentQuestion.type === 'date' && (
+              <p className="text-xs text-muted-foreground italic">
+                Tip: Use arrow keys to navigate calendar
+              </p>
+            )}
+            {currentQuestion.type === 'number' && (
+              <p className="text-xs text-muted-foreground italic">
+                Tip: Use arrow keys to adjust value
               </p>
             )}
           </motion.div>

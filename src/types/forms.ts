@@ -222,6 +222,7 @@ export interface FormSectionDefinition {
 // New: Interface for Form-level settings
 export interface FormSettings {
   submitButtonText?: string;
+  enablePagination?: boolean; // Enable section-based pagination in classic mode
   // Future: customSuccessMessage?: string;
   // Future: redirectUrl?: string;
 }

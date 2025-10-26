@@ -1,16 +1,17 @@
 
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Label } from "@/components/ui/label";
-import { FormField } from "@/lib/types";
+import { FormFieldDefinition } from "@/types/forms";
 
 interface SelectFieldProps {
-  field: FormField;
+  field: FormFieldDefinition;
   value: string;
   onChange: (value: string) => void;
+  onBlur?: () => void;
   error?: string;
 }
 
-export function SelectField({ field, value, onChange, error }: SelectFieldProps) {
+export function SelectField({ field, value, onChange, onBlur, error }: SelectFieldProps) {
   return (
     <div className="space-y-2">
       <Label 
@@ -27,7 +28,10 @@ export function SelectField({ field, value, onChange, error }: SelectFieldProps)
       
       <Select
         value={value || ''}
-        onValueChange={onChange}
+        onValueChange={(val) => {
+          onChange(val);
+          onBlur?.();
+        }}
       >
         <SelectTrigger id={field.id} className={error ? 'border-red-500' : ''}>
           <SelectValue placeholder={field.placeholder || "Select an option"} />

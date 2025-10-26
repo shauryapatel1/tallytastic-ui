@@ -3,7 +3,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { FormFieldDefinition } from "@/types/forms";
 
-interface PhoneFieldProps {
+interface UrlFieldProps {
   field: FormFieldDefinition;
   value: string;
   onChange: (value: string) => void;
@@ -11,7 +11,7 @@ interface PhoneFieldProps {
   error?: string;
 }
 
-export function PhoneField({ field, value, onChange, onBlur, error }: PhoneFieldProps) {
+export function UrlField({ field, value, onChange, onBlur, error }: UrlFieldProps) {
   return (
     <div className="space-y-2">
       <Label 
@@ -28,8 +28,8 @@ export function PhoneField({ field, value, onChange, onBlur, error }: PhoneField
       
       <Input 
         id={field.id} 
-        type="tel"
-        placeholder={field.placeholder || "Phone number"}
+        type="url"
+        placeholder={field.placeholder || "https://example.com"}
         value={value || ''}
         onChange={(e) => onChange(e.target.value)}
         onBlur={onBlur}

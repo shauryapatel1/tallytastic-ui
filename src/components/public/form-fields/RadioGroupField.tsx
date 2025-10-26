@@ -1,16 +1,17 @@
 
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Label } from "@/components/ui/label";
-import { FormField } from "@/lib/types";
+import { FormFieldDefinition } from "@/types/forms";
 
 interface RadioGroupFieldProps {
-  field: FormField;
+  field: FormFieldDefinition;
   value: string;
   onChange: (value: string) => void;
+  onBlur?: () => void;
   error?: string;
 }
 
-export function RadioGroupField({ field, value, onChange, error }: RadioGroupFieldProps) {
+export function RadioGroupField({ field, value, onChange, onBlur, error }: RadioGroupFieldProps) {
   return (
     <div className="space-y-2">
       <Label 
@@ -26,7 +27,10 @@ export function RadioGroupField({ field, value, onChange, error }: RadioGroupFie
       
       <RadioGroup
         value={value || ''}
-        onValueChange={onChange}
+        onValueChange={(val) => {
+          onChange(val);
+          onBlur?.();
+        }}
         className={error ? 'border-red-500 border rounded-md p-2' : ''}
       >
         {field.options?.map((option, i) => (

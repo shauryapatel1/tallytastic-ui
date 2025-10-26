@@ -1,23 +1,27 @@
 
 import { Checkbox } from "@/components/ui/checkbox";
 import { Label } from "@/components/ui/label";
-import { FormField } from "@/lib/types";
+import { FormFieldDefinition } from "@/types/forms";
 
 interface CheckboxFieldProps {
-  field: FormField;
+  field: FormFieldDefinition;
   value: boolean;
   onChange: (value: boolean) => void;
+  onBlur?: () => void;
   error?: string;
 }
 
-export function CheckboxField({ field, value, onChange, error }: CheckboxFieldProps) {
+export function CheckboxField({ field, value, onChange, onBlur, error }: CheckboxFieldProps) {
   return (
     <div className="space-y-2">
       <div className="flex items-center space-x-2">
         <Checkbox 
           id={field.id}
           checked={value || false}
-          onCheckedChange={(checked) => onChange(Boolean(checked))}
+          onCheckedChange={(checked) => {
+            onChange(Boolean(checked));
+            onBlur?.();
+          }}
           className={error ? 'border-red-500' : ''}
         />
         <Label htmlFor={field.id} className="text-sm">

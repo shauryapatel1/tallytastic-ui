@@ -1,16 +1,17 @@
 
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
-import { FormField } from "@/lib/types";
+import { FormFieldDefinition } from "@/types/forms";
 
 interface RatingFieldProps {
-  field: FormField;
+  field: FormFieldDefinition;
   value: number;
   onChange: (value: number) => void;
+  onBlur?: () => void;
   error?: string;
 }
 
-export function RatingField({ field, value, onChange, error }: RatingFieldProps) {
+export function RatingField({ field, value, onChange, onBlur, error }: RatingFieldProps) {
   return (
     <div className="space-y-2">
       <Label 
@@ -32,7 +33,10 @@ export function RatingField({ field, value, onChange, error }: RatingFieldProps)
             type="button" 
             variant="outline"
             size="sm"
-            onClick={() => onChange(star)}
+            onClick={() => {
+              onChange(star);
+              onBlur?.();
+            }}
             className={
               Number(value) >= star
                 ? "bg-yellow-400 border-yellow-400 hover:bg-yellow-500"

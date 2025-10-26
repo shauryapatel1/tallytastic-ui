@@ -1,16 +1,17 @@
 
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { FormField } from "@/lib/types";
+import { FormFieldDefinition } from "@/types/forms";
 
 interface NumberFieldProps {
-  field: FormField;
+  field: FormFieldDefinition;
   value: number | undefined;
   onChange: (value: number) => void;
+  onBlur?: () => void;
   error?: string;
 }
 
-export function NumberField({ field, value, onChange, error }: NumberFieldProps) {
+export function NumberField({ field, value, onChange, onBlur, error }: NumberFieldProps) {
   return (
     <div className="space-y-2">
       <Label 
@@ -36,9 +37,10 @@ export function NumberField({ field, value, onChange, error }: NumberFieldProps)
             onChange(val);
           }
         }}
+        onBlur={onBlur}
         className={`w-full ${error ? 'border-red-500' : ''}`}
-      min={field.min}
-      max={field.max}
+        min={field.min}
+        max={field.max}
       />
       
       {error && (

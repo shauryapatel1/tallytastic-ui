@@ -1,5 +1,4 @@
-
-import { FormField } from "@/lib/types";
+import { FormFieldDefinition } from "@/types/forms";
 import { TextField } from "./TextField";
 import { EmailField } from "./EmailField";
 import { TextareaField } from "./TextareaField";
@@ -12,48 +11,57 @@ import { FileField } from "./FileField";
 import { PhoneField } from "./PhoneField";
 import { RatingField } from "./RatingField";
 import { SectionField } from "./SectionField";
+import { UrlField } from "./UrlField";
+import { TimeField } from "./TimeField";
 
 interface FormFieldRendererProps {
-  field: FormField;
+  field: FormFieldDefinition;
   value: any;
   onChange: (value: any) => void;
+  onBlur?: () => void;
   error?: string;
 }
 
-export function FormFieldRenderer({ field, value, onChange, error }: FormFieldRendererProps) {
+export function FormFieldRenderer({ field, value, onChange, onBlur, error }: FormFieldRendererProps) {
   switch (field.type) {
     case 'text':
-      return <TextField field={field} value={value} onChange={onChange} error={error} />;
+      return <TextField field={field} value={value} onChange={onChange} onBlur={onBlur} error={error} />;
       
     case 'email':
-      return <EmailField field={field} value={value} onChange={onChange} error={error} />;
+      return <EmailField field={field} value={value} onChange={onChange} onBlur={onBlur} error={error} />;
       
     case 'textarea':
-      return <TextareaField field={field} value={value} onChange={onChange} error={error} />;
+      return <TextareaField field={field} value={value} onChange={onChange} onBlur={onBlur} error={error} />;
       
     case 'checkbox':
-      return <CheckboxField field={field} value={value} onChange={onChange} error={error} />;
+      return <CheckboxField field={field} value={value} onChange={onChange} onBlur={onBlur} error={error} />;
       
     case 'select':
-      return <SelectField field={field} value={value} onChange={onChange} error={error} />;
+      return <SelectField field={field} value={value} onChange={onChange} onBlur={onBlur} error={error} />;
       
     case 'radio':
-      return <RadioGroupField field={field} value={value} onChange={onChange} error={error} />;
+      return <RadioGroupField field={field} value={value} onChange={onChange} onBlur={onBlur} error={error} />;
       
     case 'number':
-      return <NumberField field={field} value={value} onChange={onChange} error={error} />;
+      return <NumberField field={field} value={value} onChange={onChange} onBlur={onBlur} error={error} />;
       
     case 'date':
-      return <DateField field={field} value={value} onChange={onChange} error={error} />;
+      return <DateField field={field} value={value} onChange={onChange} onBlur={onBlur} error={error} />;
       
     case 'file':
-      return <FileField field={field} onChange={onChange} error={error} />;
+      return <FileField field={field} onChange={onChange} onBlur={onBlur} error={error} />;
       
     case 'tel':
-      return <PhoneField field={field} value={value} onChange={onChange} error={error} />;
+      return <PhoneField field={field} value={value} onChange={onChange} onBlur={onBlur} error={error} />;
       
     case 'rating':
-      return <RatingField field={field} value={value || 0} onChange={onChange} error={error} />;
+      return <RatingField field={field} value={value || 0} onChange={onChange} onBlur={onBlur} error={error} />;
+    
+    case 'url':
+      return <UrlField field={field} value={value} onChange={onChange} onBlur={onBlur} error={error} />;
+    
+    case 'time':
+      return <TimeField field={field} value={value} onChange={onChange} onBlur={onBlur} error={error} />;
       
     case 'divider':
     case 'heading':

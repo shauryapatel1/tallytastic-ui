@@ -1,16 +1,17 @@
 
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { FormField } from "@/lib/types";
+import { FormFieldDefinition } from "@/types/forms";
 import { useState } from "react";
 
 interface FileFieldProps {
-  field: FormField;
+  field: FormFieldDefinition;
   onChange: (file: File | null) => void;
+  onBlur?: () => void;
   error?: string;
 }
 
-export function FileField({ field, onChange, error }: FileFieldProps) {
+export function FileField({ field, onChange, onBlur, error }: FileFieldProps) {
   const [fileName, setFileName] = useState<string>("");
   
   return (
@@ -39,6 +40,7 @@ export function FileField({ field, onChange, error }: FileFieldProps) {
           }
           onChange(file);
         }}
+        onBlur={onBlur}
         className={`w-full ${error ? 'border-red-500' : ''}`}
       />
       

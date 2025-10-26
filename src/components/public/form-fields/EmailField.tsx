@@ -1,16 +1,17 @@
 
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { FormField } from "@/lib/types";
+import { FormFieldDefinition } from "@/types/forms";
 
 interface EmailFieldProps {
-  field: FormField;
+  field: FormFieldDefinition;
   value: string;
   onChange: (value: string) => void;
+  onBlur?: () => void;
   error?: string;
 }
 
-export function EmailField({ field, value, onChange, error }: EmailFieldProps) {
+export function EmailField({ field, value, onChange, onBlur, error }: EmailFieldProps) {
   return (
     <div className="space-y-2">
       <Label 
@@ -31,6 +32,7 @@ export function EmailField({ field, value, onChange, error }: EmailFieldProps) {
         placeholder={field.placeholder}
         value={value || ''}
         onChange={(e) => onChange(e.target.value)}
+        onBlur={onBlur}
         className={`w-full ${error ? 'border-red-500' : ''}`}
       />
       

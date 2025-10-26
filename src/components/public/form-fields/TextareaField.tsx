@@ -1,16 +1,17 @@
 
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
-import { FormField } from "@/lib/types";
+import { FormFieldDefinition } from "@/types/forms";
 
 interface TextareaFieldProps {
-  field: FormField;
+  field: FormFieldDefinition;
   value: string;
   onChange: (value: string) => void;
+  onBlur?: () => void;
   error?: string;
 }
 
-export function TextareaField({ field, value, onChange, error }: TextareaFieldProps) {
+export function TextareaField({ field, value, onChange, onBlur, error }: TextareaFieldProps) {
   return (
     <div className="space-y-2">
       <Label 
@@ -30,6 +31,7 @@ export function TextareaField({ field, value, onChange, error }: TextareaFieldPr
         placeholder={field.placeholder}
         value={value || ''}
         onChange={(e) => onChange(e.target.value)}
+        onBlur={onBlur}
         className={`w-full min-h-[100px] ${error ? 'border-red-500' : ''}`}
       />
       
