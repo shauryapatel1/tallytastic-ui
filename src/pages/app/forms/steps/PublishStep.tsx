@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { useOutletContext } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -7,7 +7,9 @@ import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
 import FormsApi from "@/lib/api/forms";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { Globe, Lock, Settings } from "lucide-react";
+import { Globe, Lock, Settings, AlertCircle, CheckCircle } from "lucide-react";
+import { checkFormReadiness } from "@/lib/formReadinessCheck";
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 
 interface ContextType {
   formData: any;
@@ -20,6 +22,12 @@ export default function PublishStep() {
   const queryClient = useQueryClient();
   
   const [isPublished, setIsPublished] = useState(formData?.status === 'published');
+
+  // Check form readiness
+  const readinessCheck = useMemo(() => {
+    if (!formData) return { isReady: false, issues: [] };
+    return checkFormReadiness(formData);
+  }, [formData]);
 
   const updateStatusMutation = useMutation({
     mutationFn: ({ formId, status }: { formId: string; status: "draft" | "published" | "archived" }) =>
@@ -44,6 +52,16 @@ export default function PublishStep() {
   });
 
   const handleTogglePublish = () => {
+    // Prevent publishing if form has readiness issues
+    if (!isPublished && !readinessCheck.isReady) {
+      toast({
+        title: "Cannot publish form",
+        description: "Please fix the issues listed below before publishing.",
+        variant: "destructive"
+      });
+      return;
+    }
+
     const newStatus = (isPublished ? 'draft' : 'published') as "draft" | "published";
     updateStatusMutation.mutate({
       formId: formData.id,
@@ -120,17 +138,36 @@ export default function PublishStep() {
           />
         </div>
 
-        {fieldCount === 0 && (
-          <div className="bg-amber-50 border border-amber-200 rounded-lg p-4">
-            <div className="flex items-center gap-2">
-              <Settings className="w-4 h-4 text-amber-600" />
-              <span className="text-sm font-medium text-amber-800">
-                Form needs at least one field before publishing
-              </span>
-            </div>
-          </div>
-        )}
       </div>
+
+      {/* Readiness Checks */}
+      {!isPublished && readinessCheck.issues.length > 0 && (
+        <div className="space-y-2">
+          <h3 className="font-semibold text-foreground">Readiness Checks</h3>
+          {readinessCheck.issues.map((issue, idx) => (
+            <Alert key={idx} variant={issue.type === 'error' ? 'destructive' : 'default'}>
+              {issue.type === 'error' ? (
+                <AlertCircle className="h-4 w-4" />
+              ) : (
+                <Settings className="h-4 w-4" />
+              )}
+              <AlertTitle>{issue.type === 'error' ? 'Error' : 'Warning'}</AlertTitle>
+              <AlertDescription>{issue.message}</AlertDescription>
+            </Alert>
+          ))}
+        </div>
+      )}
+
+      {/* Success indicator */}
+      {!isPublished && readinessCheck.isReady && fieldCount > 0 && (
+        <Alert>
+          <CheckCircle className="h-4 w-4 text-green-600" />
+          <AlertTitle>Ready to publish</AlertTitle>
+          <AlertDescription>
+            Your form has passed all readiness checks and is ready to go live.
+          </AlertDescription>
+        </Alert>
+      )}
 
       {/* Publishing Options */}
       <div className="space-y-4">
@@ -168,20 +205,29 @@ export default function PublishStep() {
       </div>
 
       <div className="flex items-center justify-between pt-4 border-t">
-        <div className="text-sm text-gray-500">
+        <div className="text-sm">
           {isPublished ? (
-            <span className="text-green-600">✓ Form is published and live</span>
-          ) : fieldCount > 0 ? (
-            <span className="text-amber-600">Ready to publish</span>
+            <span className="text-green-600 flex items-center gap-2">
+              <CheckCircle className="w-4 h-4" />
+              Form is published and live
+            </span>
+          ) : readinessCheck.isReady && fieldCount > 0 ? (
+            <span className="text-green-600 flex items-center gap-2">
+              <CheckCircle className="w-4 h-4" />
+              Ready to publish
+            </span>
           ) : (
-            <span className="text-red-600">Add fields before publishing</span>
+            <span className="text-destructive flex items-center gap-2">
+              <AlertCircle className="w-4 h-4" />
+              {readinessCheck.issues.filter(i => i.type === 'error').length} issue(s) to fix
+            </span>
           )}
         </div>
 
         <Button 
           onClick={handleTogglePublish}
-          disabled={fieldCount === 0 || updateStatusMutation.isPending}
-          className={isPublished ? "bg-red-600 hover:bg-red-700" : "bg-green-600 hover:bg-green-700"}
+          disabled={(!isPublished && !readinessCheck.isReady) || updateStatusMutation.isPending}
+          className={isPublished ? "bg-destructive hover:bg-destructive/90" : ""}
         >
           {updateStatusMutation.isPending 
             ? "Updating..." 

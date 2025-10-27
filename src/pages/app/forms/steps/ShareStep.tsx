@@ -5,8 +5,9 @@ import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { useToast } from "@/hooks/use-toast";
-import { Copy, ExternalLink, Share2, QrCode, Mail, MessageSquare } from "lucide-react";
-import { useState } from "react";
+import { Copy, ExternalLink, Share2, QrCode, Mail, MessageSquare, Code } from "lucide-react";
+import { useState, useEffect, useRef } from "react";
+import QRCodeLib from 'qrcode';
 
 interface ContextType {
   formData: any;
@@ -17,9 +18,58 @@ export default function ShareStep() {
   const { formData } = useOutletContext<ContextType>();
   const { toast } = useToast();
   const [copiedField, setCopiedField] = useState<string | null>(null);
+  const [qrCodeUrl, setQrCodeUrl] = useState<string>('');
+  const qrCanvasRef = useRef<HTMLCanvasElement>(null);
 
   const formUrl = `${window.location.origin}/f/${formData.id}`;
-  const embedCode = `<iframe src="${formUrl}" width="100%" height="600" frameborder="0"></iframe>`;
+  
+  // Enhanced embed code with auto-resize script
+  const embedCode = `<iframe 
+  id="formcraft-embed-${formData.id}" 
+  src="${formUrl}?embedded=true" 
+  width="100%" 
+  height="600" 
+  frameborder="0"
+  style="border: none; width: 100%;"
+></iframe>
+<script>
+  // Auto-resize script
+  window.addEventListener('message', function(e) {
+    if (e.origin !== '${window.location.origin}') return;
+    if (e.data.type === 'formcraft-resize') {
+      const iframe = document.getElementById('formcraft-embed-${formData.id}');
+      if (iframe && e.data.height) {
+        iframe.style.height = e.data.height + 'px';
+      }
+    }
+  });
+</script>`;
+
+  // Generate QR code
+  useEffect(() => {
+    if (qrCanvasRef.current && formUrl) {
+      QRCodeLib.toCanvas(qrCanvasRef.current, formUrl, {
+        width: 200,
+        margin: 2,
+        color: {
+          dark: '#000000',
+          light: '#FFFFFF'
+        }
+      }).catch(err => {
+        console.error('QR code generation error:', err);
+      });
+
+      // Also generate data URL for download
+      QRCodeLib.toDataURL(formUrl, {
+        width: 400,
+        margin: 2
+      }).then(url => {
+        setQrCodeUrl(url);
+      }).catch(err => {
+        console.error('QR code data URL error:', err);
+      });
+    }
+  }, [formUrl]);
 
   const handleCopy = async (text: string, field: string) => {
     try {
@@ -58,6 +108,15 @@ export default function ShareStep() {
     } else {
       // Fallback to Twitter
       window.open(`https://twitter.com/intent/tweet?text=${text}&url=${url}`);
+    }
+  };
+
+  const handleDownloadQR = () => {
+    if (qrCodeUrl) {
+      const link = document.createElement('a');
+      link.href = qrCodeUrl;
+      link.download = `qr-code-${formData.title.replace(/\s+/g, '-').toLowerCase()}.png`;
+      link.click();
     }
   };
 
@@ -151,26 +210,52 @@ export default function ShareStep() {
           </CardContent>
         </Card>
 
-        {/* Embed Code */}
+        {/* QR Code */}
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
               <QrCode className="w-5 h-5" />
+              QR Code
+            </CardTitle>
+            <CardDescription>
+              Let users scan this QR code to access your form on mobile devices.
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <div className="flex flex-col items-center gap-4">
+              <canvas ref={qrCanvasRef} className="border rounded-lg p-2 bg-white" />
+              <Button
+                variant="outline"
+                onClick={handleDownloadQR}
+                disabled={!qrCodeUrl}
+                className="w-full sm:w-auto"
+              >
+                Download QR Code
+              </Button>
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Embed Code */}
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <Code className="w-5 h-5" />
               Embed on Website
             </CardTitle>
             <CardDescription>
-              Embed this form directly on your website or blog.
+              Embed this form directly on your website with automatic height adjustment.
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
             <div>
-              <Label htmlFor="embed-code">HTML Embed Code</Label>
+              <Label htmlFor="embed-code">HTML Embed Code (with auto-resize)</Label>
               <div className="flex gap-2 mt-1">
                 <textarea
                   id="embed-code"
                   value={embedCode}
                   readOnly
-                  className="flex-1 min-h-[80px] p-3 text-sm border rounded-md resize-none font-mono"
+                  className="flex-1 min-h-[200px] p-3 text-xs border rounded-md resize-none font-mono bg-muted"
                 />
                 <Button
                   variant="outline"
@@ -180,6 +265,9 @@ export default function ShareStep() {
                   {copiedField === 'embed' ? 'Copied!' : <Copy className="w-4 h-4" />}
                 </Button>
               </div>
+              <p className="text-xs text-muted-foreground mt-2">
+                The form will automatically adjust its height based on content. Works on any website.
+              </p>
             </div>
           </CardContent>
         </Card>

@@ -612,10 +612,10 @@ export const createNewBlankForm = async (defaultTitle: string = "Untitled Form")
   }
 };
 
-// Function to submit form responses
 export const submitFormResponse = async (
   formId: string,
-  responseData: FormValues // FormValues is Record<string, any>
+  responseData: FormValues, // FormValues is Record<string, any>
+  metadata?: Record<string, any> // Optional metadata for UTM, referrer, hidden fields
 ): Promise<void> => {
   // Log the submission attempt with only essential, non-sensitive info
   console.log(
@@ -642,17 +642,15 @@ export const submitFormResponse = async (
     throw new Error("Invalid response data provided for submission (must be a non-array object).");
   }
 
-  // The insertPayload is typed with FormResponseInsertPayload.
-  // FormResponseInsertPayload expects 'data' to be of type 'Json | null | undefined'.
-  // 'responseData' is of type 'FormValues' (Record<string, any>).
-  // The 'as Json' cast asserts that 'responseData' conforms to the 'Json' type.
-  // This is appropriate and type-safe if FormValues is ensured (e.g., by validation or sanitization)
-  // to contain only JSON-serializable values prior to calling this service.
-  // It is more specific than 'as any' and avoids 'as unknown as Json' when the structural
-  // compatibility is reasonably assumed.
+  // Merge response data with metadata
+  const fullResponseData = {
+    ...responseData,
+    ...(metadata && { _metadata: metadata })
+  };
+
   const insertPayload: FormResponseInsertPayload = {
     form_id: formId,
-    data: responseData as Json,
+    data: fullResponseData as Json,
     // 'submitted_at' and 'id' are typically handled by database defaults or triggers.
   };
 

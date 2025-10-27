@@ -25,6 +25,7 @@ export function PublicFormPage() {
   const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const [notFound, setNotFound] = useState<boolean>(false);
+  const [metadata, setMetadata] = useState<Record<string, any>>({});
 
   // Use unified validation hook
   const { 
@@ -51,6 +52,60 @@ export function PublicFormPage() {
       toast.error("Form ID is missing.");
       return;
     }
+
+    // Capture metadata from URL parameters and referrer
+    const captureMetadata = () => {
+      const meta: Record<string, any> = {};
+      
+      // Capture referrer
+      if (document.referrer) {
+        meta.referrer = document.referrer;
+      }
+
+      // Capture all URL parameters
+      const allParams: Record<string, string> = {};
+      searchParams.forEach((value, key) => {
+        allParams[key] = value;
+      });
+
+      // Capture UTM parameters
+      const utmParams: Record<string, string> = {};
+      ['utm_source', 'utm_medium', 'utm_campaign', 'utm_term', 'utm_content'].forEach(param => {
+        const value = searchParams.get(param);
+        if (value) {
+          utmParams[param] = value;
+        }
+      });
+
+      if (Object.keys(utmParams).length > 0) {
+        meta.utm = utmParams;
+      }
+
+      // Capture any hidden field values from URL (prefixed with 'h_')
+      const hiddenFields: Record<string, string> = {};
+      searchParams.forEach((value, key) => {
+        if (key.startsWith('h_')) {
+          const fieldName = key.substring(2); // Remove 'h_' prefix
+          hiddenFields[fieldName] = value;
+        }
+      });
+
+      if (Object.keys(hiddenFields).length > 0) {
+        meta.hiddenFields = hiddenFields;
+      }
+
+      // Store all params for reference
+      if (Object.keys(allParams).length > 0) {
+        meta.urlParams = allParams;
+      }
+
+      // Capture timestamp
+      meta.submittedAt = new Date().toISOString();
+
+      setMetadata(meta);
+    };
+
+    captureMetadata();
 
     const fetchForm = async () => {
       setIsLoading(true);
@@ -133,8 +188,8 @@ export function PublicFormPage() {
     }
 
     try {
-      // Ensure formValues are passed, formId is already confirmed not null
-      await submitFormResponse(formId, formValues); 
+      // Submit with metadata (UTM params, referrer, hidden fields)
+      await submitFormResponse(formId, formValues, metadata);
       
       // Use a more specific success message if available from formDefinition, otherwise a default
       toast.success(formDefinition.customSuccessMessage || "Your response has been submitted successfully!");
@@ -184,6 +239,28 @@ export function PublicFormPage() {
     setRenderMode(newMode);
     setSearchParams({ mode: newMode });
   };
+
+  // Send resize message for embedded forms
+  useEffect(() => {
+    if (searchParams.get('embedded') === 'true') {
+      const sendHeight = () => {
+        const height = document.documentElement.scrollHeight;
+        window.parent.postMessage({
+          type: 'formcraft-resize',
+          height: height
+        }, '*');
+      };
+
+      // Send initial height
+      sendHeight();
+
+      // Send height on content changes
+      const observer = new ResizeObserver(sendHeight);
+      observer.observe(document.body);
+
+      return () => observer.disconnect();
+    }
+  }, [searchParams, formValues, renderMode]);
 
   return (
     <div className="container mx-auto p-4 py-8 md:p-12 max-w-3xl bg-background min-h-screen flex flex-col items-center">
