@@ -8,9 +8,11 @@ import { Button } from "@/components/ui/button";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { ChevronLeft, Download, Loader2, AlertTriangle } from "lucide-react";
 import { motion } from "framer-motion";
+import { format } from "date-fns";
 import { ResponsesTable } from "@/components/dashboard/responses/ResponsesTable";
 import { getForm } from "@/lib/api";
-import { getFormResponses, getFormAnalytics } from "@/lib/responseApi";
+import { getFormResponses } from "@/lib/responseApi";
+import { getFormAnalyticsMetrics } from "@/lib/analyticsService";
 import { Form, FormResponse } from "@/lib/types";
 import { ErrorDisplay } from "@/components/ui/error-display";
 
@@ -42,14 +44,14 @@ export default function FormResponses() {
     enabled: !!id,
   });
   
-  // Fetch analytics
+  // Fetch analytics metrics
   const {
     data: analytics,
     isLoading: isAnalyticsLoading,
     error: analyticsError
   } = useQuery({
-    queryKey: ["formAnalytics", id],
-    queryFn: () => id ? getFormAnalytics(id) : Promise.reject("No form ID provided"),
+    queryKey: ["formAnalyticsMetrics", id],
+    queryFn: () => id ? getFormAnalyticsMetrics(id) : Promise.reject("No form ID provided"),
     enabled: !!id && activeTab === "analytics",
   });
   
@@ -201,49 +203,67 @@ export default function FormResponses() {
           </TabsContent>
           
           <TabsContent value="analytics" className="space-y-4">
-            {responses && responses.length > 0 ? (
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <div className="p-6 bg-white rounded-lg border shadow-sm">
-                  <h3 className="text-lg font-medium mb-4">Response Overview</h3>
-                  <div className="space-y-3">
-                    <div className="flex justify-between items-center">
-                      <span className="text-muted-foreground">Total Responses:</span>
-                      <span className="font-medium">{analytics?.totalResponses || 0}</span>
-                    </div>
-                    <div className="flex justify-between items-center">
-                      <span className="text-muted-foreground">Last Submission:</span>
-                      <span className="font-medium">
-                        {analytics?.lastSubmission 
-                          ? new Date(analytics.lastSubmission).toLocaleDateString() 
-                          : 'N/A'}
-                      </span>
-                    </div>
-                    <div className="flex justify-between items-center">
-                      <span className="text-muted-foreground">Avg. Completion Rate:</span>
-                      <span className="font-medium">
-                        {analytics?.avgCompletionRate 
-                          ? `${Math.round(analytics.avgCompletionRate * 100)}%` 
-                          : 'N/A'}
-                      </span>
-                    </div>
+            {analytics ? (
+              <div className="space-y-6">
+                {/* Key Metrics */}
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
+                  <div className="p-6 bg-card rounded-lg border shadow-sm">
+                    <p className="text-sm text-muted-foreground">Total Views</p>
+                    <p className="text-2xl font-bold mt-1">{analytics.views}</p>
+                  </div>
+                  <div className="p-6 bg-card rounded-lg border shadow-sm">
+                    <p className="text-sm text-muted-foreground">Form Starts</p>
+                    <p className="text-2xl font-bold mt-1">{analytics.starts}</p>
+                  </div>
+                  <div className="p-6 bg-card rounded-lg border shadow-sm">
+                    <p className="text-sm text-muted-foreground">Completions</p>
+                    <p className="text-2xl font-bold mt-1">{analytics.completes}</p>
+                  </div>
+                  <div className="p-6 bg-card rounded-lg border shadow-sm">
+                    <p className="text-sm text-muted-foreground">Completion Rate</p>
+                    <p className="text-2xl font-bold mt-1">{analytics.completionRate}%</p>
+                  </div>
+                  <div className="p-6 bg-card rounded-lg border shadow-sm">
+                    <p className="text-sm text-muted-foreground">Avg. Time</p>
+                    <p className="text-2xl font-bold mt-1">
+                      {analytics.avgTime ? `${Math.round(analytics.avgTime / 60)}m` : 'N/A'}
+                    </p>
                   </div>
                 </div>
-                
-                <div className="p-6 bg-white rounded-lg border shadow-sm">
-                  <h3 className="text-lg font-medium mb-4">Browser Distribution</h3>
-                  {analytics?.browsers ? (
-                    <div className="space-y-3">
-                      {Object.entries(analytics.browsers).map(([browser, count]) => (
-                        <div key={browser} className="flex justify-between items-center">
-                          <span className="text-muted-foreground">{browser}:</span>
-                          <span className="font-medium">{count} ({Math.round((count / (analytics?.totalResponses || 1)) * 100)}%)</span>
+
+                {/* Daily Trend */}
+                {analytics.dailyTrend && analytics.dailyTrend.length > 0 && (
+                  <div className="p-6 bg-card rounded-lg border shadow-sm">
+                    <h3 className="text-lg font-medium mb-4">30-Day Trend</h3>
+                    <div className="space-y-2">
+                      {analytics.dailyTrend.slice(-7).map((day) => (
+                        <div key={day.date} className="flex items-center justify-between text-sm">
+                          <span className="text-muted-foreground">{format(new Date(day.date), 'MMM d')}</span>
+                          <div className="flex gap-4">
+                            <span className="text-blue-600">{day.views} views</span>
+                            <span className="text-amber-600">{day.starts} starts</span>
+                            <span className="text-green-600">{day.completes} completes</span>
+                          </div>
                         </div>
                       ))}
                     </div>
-                  ) : (
-                    <p className="text-muted-foreground">No browser data available.</p>
-                  )}
-                </div>
+                  </div>
+                )}
+
+                {/* Drop-off Analysis */}
+                {analytics.dropOffPoints && analytics.dropOffPoints.length > 0 && (
+                  <div className="p-6 bg-card rounded-lg border shadow-sm">
+                    <h3 className="text-lg font-medium mb-4">Drop-off Points</h3>
+                    <div className="space-y-3">
+                      {analytics.dropOffPoints.slice(0, 5).map((point) => (
+                        <div key={point.fieldId} className="flex justify-between items-center">
+                          <span className="text-muted-foreground">Field: {point.fieldId}</span>
+                          <span className="font-medium">{point.dropOffs} drop-offs</span>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
               </div>
             ) : (
               <div className="text-center p-12 border rounded-lg bg-background">

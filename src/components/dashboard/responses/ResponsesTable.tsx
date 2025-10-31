@@ -4,9 +4,11 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
-import { ChevronDown, Download, Filter, Search } from "lucide-react";
+import { ChevronDown, Download, Search } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { Form, FormResponse as AppFormResponse } from "@/lib/types";
+import { ResponseFilters, DateRangeFilter } from "./ResponseFilters";
+import { format } from "date-fns";
 
 // Local interface to match the component's expectations
 export interface FormResponse {
@@ -24,6 +26,7 @@ interface ResponsesTableProps {
 export function ResponsesTable({ responses, form }: ResponsesTableProps) {
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedResponses, setSelectedResponses] = useState<string[]>([]);
+  const [dateRange, setDateRange] = useState<DateRangeFilter>({ from: undefined, to: undefined });
   const { toast } = useToast();
 
   // Transform the app FormResponse to the component's expected format
@@ -34,12 +37,75 @@ export function ResponsesTable({ responses, form }: ResponsesTableProps) {
     values: response.data
   }));
 
-  const handleExport = (format: "csv" | "excel" | "pdf") => {
-    toast({
-      title: "Export initiated",
-      description: `Your responses are being exported as ${format.toUpperCase()}`,
+  const handleExport = (format: "csv") => {
+    const responsesToExport = selectedResponses.length > 0
+      ? filteredResponses.filter(r => selectedResponses.includes(r.id))
+      : filteredResponses;
+
+    if (responsesToExport.length === 0) {
+      toast({
+        title: "No responses to export",
+        description: "Please select responses or adjust your filters.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    // Get all unique field keys
+    const allKeys = new Set<string>();
+    responsesToExport.forEach(response => {
+      Object.keys(response.values).forEach(key => {
+        if (!key.startsWith('_')) allKeys.add(key); // Skip metadata keys
+      });
     });
-    // In a real implementation, this would trigger the export functionality
+    
+    const headers = ['Submitted At', 'Respondent', ...Array.from(allKeys)];
+    
+    // Create CSV content
+    let csvContent = "data:text/csv;charset=utf-8,";
+    csvContent += headers.map(h => `"${h}"`).join(",") + "\r\n";
+    
+    // Add data rows
+    responsesToExport.forEach(response => {
+      const row = [
+        `"${formatDate(response.submittedAt)}"`,
+        `"${response.respondent || 'Anonymous'}"`,
+        ...Array.from(allKeys).map(key => {
+          const value = response.values[key];
+          if (value === null || value === undefined) return '""';
+          
+          // Handle arrays (multi-select)
+          if (Array.isArray(value)) {
+            return `"${value.join(', ').replace(/"/g, '""')}"`;
+          }
+          
+          // Handle objects
+          if (typeof value === 'object') {
+            return `"${JSON.stringify(value).replace(/"/g, '""')}"`;
+          }
+          
+          // Handle strings and numbers
+          return `"${String(value).replace(/"/g, '""')}"`;
+        })
+      ];
+      csvContent += row.join(",") + "\r\n";
+    });
+    
+    // Create download link
+    const encodedUri = encodeURI(csvContent);
+    const link = document.createElement("a");
+    link.setAttribute("href", encodedUri);
+    const currentDate = new Date();
+    const dateStr = `${currentDate.getFullYear()}-${String(currentDate.getMonth() + 1).padStart(2, '0')}-${String(currentDate.getDate()).padStart(2, '0')}`;
+    link.setAttribute("download", `${form.title || "form"}_responses_${dateStr}.csv`);
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    
+    toast({
+      title: "Export complete",
+      description: `${responsesToExport.length} response(s) exported successfully.`,
+    });
   };
 
   const handleSelectAll = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -61,12 +127,32 @@ export function ResponsesTable({ responses, form }: ResponsesTableProps) {
   };
 
   const filteredResponses = transformedResponses.filter(response => {
-    if (!searchQuery) return true;
+    // Search filter
+    if (searchQuery) {
+      const matchesSearch = Object.values(response.values).some(
+        value => value && value.toString().toLowerCase().includes(searchQuery.toLowerCase())
+      );
+      if (!matchesSearch) return false;
+    }
     
-    // Search in all values
-    return Object.values(response.values).some(
-      value => value && value.toString().toLowerCase().includes(searchQuery.toLowerCase())
-    );
+    // Date range filter
+    if (dateRange.from || dateRange.to) {
+      const submittedDate = new Date(response.submittedAt);
+      
+      if (dateRange.from) {
+        const fromDate = new Date(dateRange.from);
+        fromDate.setHours(0, 0, 0, 0);
+        if (submittedDate < fromDate) return false;
+      }
+      
+      if (dateRange.to) {
+        const toDate = new Date(dateRange.to);
+        toDate.setHours(23, 59, 59, 999);
+        if (submittedDate > toDate) return false;
+      }
+    }
+    
+    return true;
   });
 
   // Format date for display
@@ -100,10 +186,12 @@ export function ResponsesTable({ responses, form }: ResponsesTableProps) {
               className="pl-8 w-64"
             />
           </div>
-          <Button variant="outline" size="sm" className="h-9">
-            <Filter className="h-4 w-4 mr-1" />
-            Filter
-          </Button>
+          <ResponseFilters
+            dateRange={dateRange}
+            onDateRangeChange={setDateRange}
+            onClearFilters={() => setDateRange({ from: undefined, to: undefined })}
+            hasActiveFilters={!!dateRange.from || !!dateRange.to}
+          />
         </div>
         
         <div className="flex items-center gap-2">
@@ -117,12 +205,6 @@ export function ResponsesTable({ responses, form }: ResponsesTableProps) {
             <DropdownMenuContent align="end">
               <DropdownMenuItem onClick={() => handleExport("csv")}>
                 Export as CSV
-              </DropdownMenuItem>
-              <DropdownMenuItem onClick={() => handleExport("excel")}>
-                Export as Excel
-              </DropdownMenuItem>
-              <DropdownMenuItem onClick={() => handleExport("pdf")}>
-                Export as PDF
               </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>

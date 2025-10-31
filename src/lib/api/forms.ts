@@ -22,7 +22,8 @@ export interface FormAnalyticsSummary {
   completes: number;
   completionRate: number;
   avgTime: number | null;
-  dropOffPoints: Array<{
+  dailyTrend: Array<{ date: string; views: number; starts: number; completes: number }>;
+  dropOffPoints?: Array<{
     fieldId: string;
     dropOffs: number;
   }>;
@@ -290,90 +291,9 @@ export class FormsApi {
    * Get analytics summary for a form
    */
   static async getAnalyticsSummary(formId: string): Promise<FormAnalyticsSummary> {
-    const { data: userData } = await supabase.auth.getUser();
-    if (!userData.user) throw new Error("User not authenticated");
-
-    // Verify user owns the form
-    const { data: formData, error: formError } = await supabase
-      .from('forms')
-      .select('user_id')
-      .eq('id', formId)
-      .single();
-
-    if (formError) throw formError;
-    if (!formData || formData.user_id !== userData.user.id) {
-      throw new Error("You don't have permission to view these analytics");
-    }
-
-    // Get form events
-    const { data: events, error: eventsError } = await supabase
-      .from('form_events')
-      .select('*')
-      .eq('form_id', formId)
-      .order('at', { ascending: true });
-
-    if (eventsError) throw eventsError;
-
-    // Calculate analytics
-    const views = events?.filter(e => e.event_type === 'view').length || 0;
-    const starts = events?.filter(e => e.event_type === 'start').length || 0;
-    const completes = events?.filter(e => e.event_type === 'complete').length || 0;
-    const dropOffs = events?.filter(e => e.event_type === 'drop_off') || [];
-
-    // Calculate completion rate
-    const completionRate = starts > 0 ? (completes / starts) * 100 : 0;
-
-    // Calculate average completion time
-    let avgTime: number | null = null;
-    const completeSessions = new Map<string, { start?: string; complete?: string }>();
-    
-    events?.forEach(event => {
-      if (!event.session_id) return;
-      
-      if (event.event_type === 'start') {
-        const existing = completeSessions.get(event.session_id) || {};
-        completeSessions.set(event.session_id, { ...existing, start: event.at });
-      } else if (event.event_type === 'complete') {
-        const existing = completeSessions.get(event.session_id) || {};
-        completeSessions.set(event.session_id, { ...existing, complete: event.at });
-      }
-    });
-
-    const completionTimes: number[] = [];
-    completeSessions.forEach(({ start, complete }) => {
-      if (start && complete) {
-        const timeInMs = new Date(complete).getTime() - new Date(start).getTime();
-        completionTimes.push(timeInMs / 1000); // Convert to seconds
-      }
-    });
-
-    if (completionTimes.length > 0) {
-      avgTime = completionTimes.reduce((sum, time) => sum + time, 0) / completionTimes.length;
-    }
-
-    // Calculate drop-off points
-    const dropOffPoints = dropOffs.reduce((acc, event) => {
-      const fieldId = event.meta && typeof event.meta === 'object' && 'fieldId' in event.meta 
-        ? String(event.meta.fieldId) 
-        : 'unknown';
-      
-      const existing = acc.find(point => point.fieldId === fieldId);
-      if (existing) {
-        existing.dropOffs++;
-      } else {
-        acc.push({ fieldId, dropOffs: 1 });
-      }
-      return acc;
-    }, [] as Array<{ fieldId: string; dropOffs: number }>);
-
-    return {
-      views,
-      starts,
-      completes,
-      completionRate: Math.round(completionRate * 100) / 100,
-      avgTime: avgTime ? Math.round(avgTime * 100) / 100 : null,
-      dropOffPoints
-    };
+    // Import and use the comprehensive analytics service
+    const { getFormAnalyticsMetrics } = await import("@/lib/analyticsService");
+    return getFormAnalyticsMetrics(formId);
   }
 
   /**
