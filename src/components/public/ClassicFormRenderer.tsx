@@ -14,6 +14,7 @@ interface ClassicFormRendererProps {
   formErrors: FormErrors;
   onSubmit: (e: React.FormEvent) => void;
   isSubmitting: boolean;
+  onPageChange?: (direction: 'next' | 'back', pageIndex: number) => void;
 }
 
 export function ClassicFormRenderer({
@@ -23,7 +24,8 @@ export function ClassicFormRenderer({
   onFieldBlur,
   formErrors,
   onSubmit,
-  isSubmitting
+  isSubmitting,
+  onPageChange
 }: ClassicFormRendererProps) {
   const enablePagination = formDefinition.settings?.enablePagination ?? false;
   const [currentPage, setCurrentPage] = useState(0);
@@ -48,14 +50,18 @@ export function ClassicFormRenderer({
 
   const handleNext = () => {
     if (currentPage < totalPages - 1) {
-      setCurrentPage(prev => prev + 1);
+      const newPage = currentPage + 1;
+      setCurrentPage(newPage);
+      onPageChange?.('next', newPage);
       window.scrollTo({ top: 0, behavior: 'smooth' });
     }
   };
 
   const handlePrevious = () => {
     if (currentPage > 0) {
-      setCurrentPage(prev => prev - 1);
+      const newPage = currentPage - 1;
+      setCurrentPage(newPage);
+      onPageChange?.('back', newPage);
       window.scrollTo({ top: 0, behavior: 'smooth' });
     }
   };

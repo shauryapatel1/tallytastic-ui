@@ -16,6 +16,7 @@ import type {
   FormResponseDataSupabase,
   Json,
 } from "@/types/supabase"; // Added Supabase types
+import { trackFormCreated } from "@/lib/posthogService";
 
 // Define concrete types for Supabase table rows
 type FormRow = Database["public"]["Tables"]["forms"]["Row"];
@@ -598,6 +599,13 @@ export const createNewBlankForm = async (defaultTitle: string = "Untitled Form")
       console.error('[formService] Error inserting new blank form:', insertError);
       throw new Error(`Failed to create new form: ${insertError.message}`);
     }
+
+    // Track form creation in PostHog
+    trackFormCreated(newFormDefinition.id, {
+      form_title: newFormDefinition.title,
+      field_count: 1,
+      section_count: 1,
+    });
 
     console.log(`[formService] New blank form ${newFormDefinition.id} created successfully for user ${user.id}.`);
     // Return the locally constructed FormDefinition object, as it's already complete and accurate.

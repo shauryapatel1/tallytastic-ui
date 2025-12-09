@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useCallback } from 'react';
+import React, { useEffect, useState, useCallback, useRef } from 'react';
 import { useParams, useNavigate, useSearchParams } from 'react-router-dom';
 import type { FormDefinition, FormValues, FormErrors } from '@/types/forms';
 import { ClassicFormRenderer } from '@/components/public/ClassicFormRenderer';
@@ -8,6 +8,8 @@ import { getFormById, submitFormResponse } from '@/services/formService';
 import { toast } from 'sonner';
 import { MessageSquare, FileText } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { createFormTracker } from '@/lib/formEventsService';
+import { trackFormPageView, trackSubmission, trackEmbedView } from '@/lib/posthogService';
 
 export function PublicFormPage() {
   const { formId } = useParams<{ formId: string }>();
@@ -16,6 +18,7 @@ export function PublicFormPage() {
   
   // Determine mode from URL or form settings
   const urlMode = searchParams.get('mode');
+  const isEmbedded = searchParams.get('embedded') === 'true';
   const [renderMode, setRenderMode] = useState<'classic' | 'chat'>(
     urlMode === 'chat' ? 'chat' : 'classic'
   );
@@ -26,6 +29,9 @@ export function PublicFormPage() {
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const [notFound, setNotFound] = useState<boolean>(false);
   const [metadata, setMetadata] = useState<Record<string, any>>({});
+  
+  // Form tracker ref to persist across renders
+  const formTrackerRef = useRef<ReturnType<typeof createFormTracker> | null>(null);
 
   // Use unified validation hook
   const { 
@@ -157,17 +163,65 @@ export function PublicFormPage() {
     fetchForm();
   }, [formId]);
 
+  // Initialize form tracking
+  useEffect(() => {
+    if (formId && formDefinition && !formTrackerRef.current) {
+      formTrackerRef.current = createFormTracker(formId);
+      formTrackerRef.current.trackView();
+      
+      // Track PostHog events
+      const source = isEmbedded ? 'embed' : 'direct';
+      
+      if (isEmbedded) {
+        trackEmbedView(formId, {
+          referrer: document.referrer,
+          utm_source: searchParams.get('utm_source') || undefined,
+          utm_medium: searchParams.get('utm_medium') || undefined,
+          utm_campaign: searchParams.get('utm_campaign') || undefined,
+        });
+      } else {
+        trackFormPageView(formId, {
+          mode: renderMode,
+          source,
+          referrer: document.referrer,
+        });
+      }
+    }
+
+    // Track drop-off on unmount
+    return () => {
+      if (formTrackerRef.current) {
+        formTrackerRef.current.trackDropOff();
+      }
+    };
+  }, [formId, formDefinition, isEmbedded, renderMode, searchParams]);
+
   const handleFormValueChange = useCallback((fieldId: string, value: any) => {
     setFormValues(prevValues => ({
       ...prevValues,
       [fieldId]: value
     }));
+    
+    // Track field interaction
+    if (formTrackerRef.current) {
+      formTrackerRef.current.trackFieldFocus(fieldId);
+    }
   }, []);
 
   // Handle field blur for validation
   const handleFieldBlur = useCallback((fieldId: string) => {
     validateSingleField(fieldId);
+    if (formTrackerRef.current) {
+      formTrackerRef.current.setLastField(fieldId);
+    }
   }, [validateSingleField]);
+
+  // Handle page navigation (for pagination tracking)
+  const handlePageChange = useCallback((direction: 'next' | 'back', pageIndex: number) => {
+    if (formTrackerRef.current) {
+      formTrackerRef.current.trackPageChange(direction, pageIndex);
+    }
+  }, []);
 
   const handleSubmit = async (event?: React.FormEvent<HTMLFormElement>) => {
     event?.preventDefault();
@@ -190,6 +244,19 @@ export function PublicFormPage() {
     try {
       // Submit with metadata (UTM params, referrer, hidden fields)
       await submitFormResponse(formId, formValues, metadata);
+      
+      // Track completion events
+      if (formTrackerRef.current) {
+        formTrackerRef.current.trackComplete();
+        formTrackerRef.current = null; // Reset tracker to prevent drop-off on unmount
+      }
+      
+      // Track in PostHog
+      trackSubmission(formId, {
+        form_title: formDefinition.title,
+        source: isEmbedded ? 'embed' : 'direct',
+        field_count: formDefinition.sections.reduce((acc, s) => acc + s.fields.length, 0),
+      });
       
       // Use a more specific success message if available from formDefinition, otherwise a default
       toast.success(formDefinition.customSuccessMessage || "Your response has been submitted successfully!");
@@ -312,6 +379,7 @@ export function PublicFormPage() {
             formErrors={formErrors}
             onSubmit={handleSubmit}
             isSubmitting={isSubmitting}
+            onPageChange={handlePageChange}
           />
         ) : (
           <ConversationalFormRenderer
@@ -322,6 +390,7 @@ export function PublicFormPage() {
             formErrors={formErrors}
             onSubmit={() => handleSubmit()}
             isSubmitting={isSubmitting}
+            onPageChange={handlePageChange}
           />
         )}
       </div>

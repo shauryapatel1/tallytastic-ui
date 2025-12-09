@@ -16,6 +16,7 @@ interface ConversationalFormRendererProps {
   formErrors: FormErrors;
   onSubmit: () => void;
   isSubmitting: boolean;
+  onPageChange?: (direction: 'next' | 'back', pageIndex: number) => void;
 }
 
 export function ConversationalFormRenderer({
@@ -25,7 +26,8 @@ export function ConversationalFormRenderer({
   onFieldBlur,
   formErrors,
   onSubmit,
-  isSubmitting
+  isSubmitting,
+  onPageChange
 }: ConversationalFormRendererProps) {
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
   const inputRef = useRef<HTMLInputElement>(null);
@@ -83,13 +85,17 @@ export function ConversationalFormRenderer({
     if (isLastQuestion) {
       onSubmit();
     } else {
-      setCurrentQuestionIndex(prev => Math.min(prev + 1, visibleQuestions.length - 1));
+      const newIndex = Math.min(currentQuestionIndex + 1, visibleQuestions.length - 1);
+      setCurrentQuestionIndex(newIndex);
+      onPageChange?.('next', newIndex);
     }
-  }, [currentQuestion, formErrors, isLastQuestion, onFieldBlur, onSubmit, visibleQuestions.length]);
+  }, [currentQuestion, formErrors, isLastQuestion, onFieldBlur, onSubmit, visibleQuestions.length, currentQuestionIndex, onPageChange]);
 
   const handlePrevious = useCallback(() => {
-    setCurrentQuestionIndex(prev => Math.max(prev - 1, 0));
-  }, []);
+    const newIndex = Math.max(currentQuestionIndex - 1, 0);
+    setCurrentQuestionIndex(newIndex);
+    onPageChange?.('back', newIndex);
+  }, [currentQuestionIndex, onPageChange]);
 
   const handleKeyPress = useCallback((e: KeyboardEvent) => {
     // Enter to continue
