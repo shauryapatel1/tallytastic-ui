@@ -10,6 +10,7 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { Globe, Lock, Settings, AlertCircle, CheckCircle } from "lucide-react";
 import { checkFormReadiness } from "@/lib/formReadinessCheck";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
+import { trackFormPublished } from "@/lib/posthogService";
 
 interface ContextType {
   formData: any;
@@ -34,6 +35,19 @@ export default function PublishStep() {
       FormsApi.updateForm(formId, { status }),
     onSuccess: (_, variables) => {
       queryClient.invalidateQueries({ queryKey: ['form', formData.id] });
+      
+      // Track publish event in PostHog
+      if (variables.status === 'published') {
+        trackFormPublished(formData.id, {
+          form_title: formData.title,
+          field_count: fieldCount,
+          section_count: formData?.sections?.length || 0,
+          has_redirect: !!formData?.redirectUrl,
+          has_custom_message: !!formData?.customSuccessMessage,
+          has_pagination: formData?.settings?.enablePagination || false,
+        });
+      }
+      
       toast({
         title: variables.status === 'published' ? "Form published!" : "Form unpublished",
         description: variables.status === 'published' 
