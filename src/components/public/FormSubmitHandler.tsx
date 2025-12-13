@@ -1,10 +1,11 @@
-
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { submitFormResponse } from "@/lib/api";
-import { Loader2 } from "lucide-react";
+import { Loader2, AlertCircle } from "lucide-react";
 import { Form } from "@/lib/types";
 import { toast } from "@/hooks/use-toast";
+import { checkFormOwnerQuota } from "@/lib/subscriptionService";
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 
 interface FormSubmitHandlerProps {
   form: Form;
@@ -21,11 +22,21 @@ export function FormSubmitHandler({
 }: FormSubmitHandlerProps) {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isSubmitted, setIsSubmitted] = useState(false);
+  const [quotaError, setQuotaError] = useState<string | null>(null);
   
   const handleSubmit = async () => {
     setIsSubmitting(true);
+    setQuotaError(null);
     
     try {
+      // Check form owner's quota before submitting
+      const quotaCheck = await checkFormOwnerQuota(form.id);
+      if (!quotaCheck.canSubmit) {
+        setQuotaError(quotaCheck.message || "This form has reached its response limit.");
+        setIsSubmitting(false);
+        return;
+      }
+      
       const fields = form.sections?.flatMap(section => section.fields) || [];
       const requiredFields = fields.filter(field => field.isRequired);
       const missingFields = requiredFields.filter(field => {
@@ -86,21 +97,31 @@ export function FormSubmitHandler({
   }
   
   return (
-    <div className="flex justify-end py-4">
-      <Button 
-        onClick={handleSubmit}
-        disabled={isSubmitting}
-        className="px-8"
-      >
-        {isSubmitting ? (
-          <>
-            <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-            Submitting...
-          </>
-        ) : (
-          "Submit"
-        )}
-      </Button>
+    <div className="space-y-4">
+      {quotaError && (
+        <Alert variant="destructive">
+          <AlertCircle className="h-4 w-4" />
+          <AlertTitle>Unable to submit</AlertTitle>
+          <AlertDescription>{quotaError}</AlertDescription>
+        </Alert>
+      )}
+      
+      <div className="flex justify-end py-4">
+        <Button 
+          onClick={handleSubmit}
+          disabled={isSubmitting || !!quotaError}
+          className="px-8"
+        >
+          {isSubmitting ? (
+            <>
+              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+              Submitting...
+            </>
+          ) : (
+            "Submit"
+          )}
+        </Button>
+      </div>
     </div>
   );
 }
