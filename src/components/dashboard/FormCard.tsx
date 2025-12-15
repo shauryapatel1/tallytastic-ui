@@ -87,13 +87,13 @@ export const FormCard = ({ form }: FormCardProps) => {
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end">
               <DropdownMenuItem asChild>
-                <Link to={`/dashboard/forms/${form.id}`} className="cursor-pointer">
+                <Link to={`/app/forms/${form.id}/build`} className="cursor-pointer">
                   <Edit className="mr-2 h-4 w-4" />
                   Edit Form
                 </Link>
               </DropdownMenuItem>
               <DropdownMenuItem asChild>
-                <Link to={`/dashboard/forms/${form.id}/preview`} className="cursor-pointer">
+                <Link to={`/app/forms/${form.id}/preview`} className="cursor-pointer">
                   <Eye className="mr-2 h-4 w-4" />
                   Preview Form
                 </Link>
@@ -133,13 +133,13 @@ export const FormCard = ({ form }: FormCardProps) => {
       </CardContent>
       <CardFooter className="bg-gradient-to-r from-indigo-50/50 to-purple-50/50 p-3 grid grid-cols-3 gap-2">
         <Button variant="ghost" size="sm" asChild className="h-8 hover:bg-indigo-100 hover:text-indigo-700">
-          <Link to={`/dashboard/forms/${form.id}`}>
+          <Link to={`/app/forms/${form.id}/build`}>
             <Pencil className="mr-2 h-3 w-3" />
             Edit
           </Link>
         </Button>
         <Button variant="ghost" size="sm" asChild className="h-8 hover:bg-indigo-100 hover:text-indigo-700">
-          <Link to={`/dashboard/forms/${form.id}/preview`}>
+          <Link to={`/app/forms/${form.id}/preview`}>
             <Eye className="mr-2 h-3 w-3" />
             Preview
           </Link>

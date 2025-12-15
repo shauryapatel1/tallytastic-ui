@@ -3,17 +3,13 @@ import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
+import { BrowserRouter, Routes, Route, Navigate, useParams } from "react-router-dom";
 import { AuthProvider } from "@/lib/auth";
 import { AnimatePresence } from "framer-motion";
 import Index from "./pages/Index";
 import Dashboard from "./pages/dashboard/Index";
 import Auth from "./pages/Auth";
 import NotFound from "./pages/NotFound";
-import FormBuilder from "./pages/dashboard/FormBuilder";
-import FormPublish from "./pages/dashboard/FormPublish";
-import FormResponses from "./pages/dashboard/FormResponses";
-import FormSettings from "./pages/dashboard/FormSettings";
 import FormWorkflowLayout from "./pages/app/forms/FormWorkflowLayout";
 import CreateStep from "./pages/app/forms/steps/CreateStep";
 import BuildStep from "./pages/app/forms/steps/BuildStep";
@@ -26,6 +22,12 @@ import Integrations from "./pages/dashboard/Integrations";
 import Analytics from "./pages/dashboard/Analytics";
 import UserProfile from "./pages/dashboard/UserProfile";
 import { ProtectedRoute } from "./components/ProtectedRoute";
+
+// Redirect component for old dashboard form routes
+function RedirectToWorkflow({ step }: { step: string }) {
+  const { id } = useParams();
+  return <Navigate to={`/app/forms/${id}/${step}`} replace />;
+}
 
 // Create a new QueryClient instance
 const queryClient = new QueryClient({
@@ -88,30 +90,35 @@ const App = () => (
                 </ProtectedRoute>
               } />
               
-              {/* Form management routes */}
+              {/* Redirect old form routes to new workflow */}
               <Route path="/dashboard/forms/:id" element={
                 <ProtectedRoute>
-                  <FormBuilder />
+                  <RedirectToWorkflow step="build" />
+                </ProtectedRoute>
+              } />
+              <Route path="/dashboard/forms/:id/preview" element={
+                <ProtectedRoute>
+                  <RedirectToWorkflow step="preview" />
                 </ProtectedRoute>
               } />
               <Route path="/dashboard/forms/:id/publish" element={
                 <ProtectedRoute>
-                  <FormPublish />
+                  <RedirectToWorkflow step="publish" />
                 </ProtectedRoute>
               } />
               <Route path="/dashboard/forms/:id/responses" element={
                 <ProtectedRoute>
-                  <FormResponses />
+                  <RedirectToWorkflow step="analyze" />
                 </ProtectedRoute>
               } />
               <Route path="/dashboard/forms/:id/settings" element={
                 <ProtectedRoute>
-                  <FormSettings />
+                  <RedirectToWorkflow step="build" />
                 </ProtectedRoute>
               } />
               <Route path="/dashboard/forms/:id/collaborate" element={
                 <ProtectedRoute>
-                  <FormSettings />
+                  <RedirectToWorkflow step="build" />
                 </ProtectedRoute>
               } />
               
