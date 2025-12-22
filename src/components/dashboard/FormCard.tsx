@@ -10,7 +10,7 @@ import {
 import { Form } from "@/lib/types";
 import { formatDistanceToNow } from "date-fns";
 import { Link } from "react-router-dom";
-import { Copy, Eye, Pencil, MoreHorizontal, Clock, CheckCircle, Edit, Share2, Trash, ExternalLink, FileText, Send } from "lucide-react";
+import { Eye, Pencil, MoreHorizontal, Clock, CheckCircle, Edit, Share2, Trash, ExternalLink, FileText, Send, BarChart3, Upload } from "lucide-react";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -58,6 +58,14 @@ export const FormCard = ({ form, responseCount = 0 }: FormCardProps) => {
       title: "Not implemented",
       description: "Form deletion is not implemented in this demo",
     });
+  };
+
+  // Smart navigation: determine the best step based on form state
+  const getSmartLink = () => {
+    if (form.status === 'published') {
+      return responseCount > 0 ? `/app/forms/${form.id}/analyze` : `/app/forms/${form.id}/share`;
+    }
+    return `/app/forms/${form.id}/build`;
   };
 
   return (
@@ -157,28 +165,54 @@ export const FormCard = ({ form, responseCount = 0 }: FormCardProps) => {
           )}
         </div>
       </CardContent>
-      <CardFooter className="bg-gradient-to-r from-indigo-50/50 to-purple-50/50 p-3 grid grid-cols-3 gap-2">
-        <Button variant="ghost" size="sm" asChild className="h-8 hover:bg-indigo-100 hover:text-indigo-700">
-          <Link to={`/app/forms/${form.id}/build`}>
-            <Pencil className="mr-2 h-3 w-3" />
-            Edit
-          </Link>
-        </Button>
-        <Button variant="ghost" size="sm" asChild className="h-8 hover:bg-indigo-100 hover:text-indigo-700">
-          <Link to={`/app/forms/${form.id}/preview`}>
-            <Eye className="mr-2 h-3 w-3" />
-            Preview
-          </Link>
-        </Button>
-        <Button 
-          variant="ghost" 
-          size="sm" 
-          className="h-8 hover:bg-indigo-100 hover:text-indigo-700" 
-          onClick={handleCopyLink}
-        >
-          <Copy className="mr-2 h-3 w-3" />
-          Share
-        </Button>
+      <CardFooter className="bg-gradient-to-r from-indigo-50/50 to-purple-50/50 p-3">
+        <div className="w-full flex items-center justify-between gap-2">
+          <div className="flex items-center gap-1">
+            <Button variant="ghost" size="sm" asChild className="h-8 px-2 hover:bg-indigo-100 hover:text-indigo-700">
+              <Link to={`/app/forms/${form.id}/build`}>
+                <Pencil className="h-3.5 w-3.5" />
+                <span className="sr-only md:not-sr-only md:ml-1.5">Edit</span>
+              </Link>
+            </Button>
+            <Button variant="ghost" size="sm" asChild className="h-8 px-2 hover:bg-indigo-100 hover:text-indigo-700">
+              <Link to={`/app/forms/${form.id}/preview`}>
+                <Eye className="h-3.5 w-3.5" />
+                <span className="sr-only md:not-sr-only md:ml-1.5">Preview</span>
+              </Link>
+            </Button>
+            {form.status === 'draft' ? (
+              <Button variant="ghost" size="sm" asChild className="h-8 px-2 hover:bg-green-100 hover:text-green-700">
+                <Link to={`/app/forms/${form.id}/publish`}>
+                  <Upload className="h-3.5 w-3.5" />
+                  <span className="sr-only md:not-sr-only md:ml-1.5">Publish</span>
+                </Link>
+              </Button>
+            ) : (
+              <Button variant="ghost" size="sm" asChild className="h-8 px-2 hover:bg-indigo-100 hover:text-indigo-700">
+                <Link to={`/app/forms/${form.id}/share`}>
+                  <Share2 className="h-3.5 w-3.5" />
+                  <span className="sr-only md:not-sr-only md:ml-1.5">Share</span>
+                </Link>
+              </Button>
+            )}
+            <Button variant="ghost" size="sm" asChild className="h-8 px-2 hover:bg-indigo-100 hover:text-indigo-700">
+              <Link to={`/app/forms/${form.id}/analyze`}>
+                <BarChart3 className="h-3.5 w-3.5" />
+                <span className="sr-only md:not-sr-only md:ml-1.5">Analytics</span>
+              </Link>
+            </Button>
+          </div>
+          <Button 
+            variant="default" 
+            size="sm" 
+            asChild
+            className="h-8"
+          >
+            <Link to={getSmartLink()}>
+              Open
+            </Link>
+          </Button>
+        </div>
       </CardFooter>
     </Card>
   );
