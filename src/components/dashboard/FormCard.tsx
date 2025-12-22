@@ -102,10 +102,20 @@ export const FormCard = ({ form }: FormCardProps) => {
                 <Share2 className="mr-2 h-4 w-4" />
                 Share Form
               </DropdownMenuItem>
-              <DropdownMenuItem className="cursor-pointer">
-                <ExternalLink className="mr-2 h-4 w-4" />
-                View Submissions
+              <DropdownMenuItem asChild>
+                <Link to={`/app/forms/${form.id}/analyze`} className="cursor-pointer">
+                  <ExternalLink className="mr-2 h-4 w-4" />
+                  View Responses
+                </Link>
               </DropdownMenuItem>
+              {form.status === 'published' && (
+                <DropdownMenuItem asChild>
+                  <Link to={`/app/forms/${form.id}/share`} className="cursor-pointer">
+                    <Share2 className="mr-2 h-4 w-4" />
+                    Share Form
+                  </Link>
+                </DropdownMenuItem>
+              )}
               <DropdownMenuSeparator />
               <DropdownMenuItem className="text-destructive cursor-pointer" onClick={handleDeleteForm}>
                 <Trash className="mr-2 h-4 w-4" />
