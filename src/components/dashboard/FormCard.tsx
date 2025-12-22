@@ -24,18 +24,14 @@ import { Badge } from "@/components/ui/badge";
 
 interface FormCardProps {
   form: Form;
+  responseCount?: number;
 }
 
-export const FormCard = ({ form }: FormCardProps) => {
+export const FormCard = ({ form, responseCount = 0 }: FormCardProps) => {
   const { toast } = useToast();
   const formattedDate = formatDistanceToNow(new Date(form.updated_at), { 
     addSuffix: true 
   });
-
-  const getResponseCount = () => {
-    // This would eventually come from the API
-    return Math.floor(Math.random() * 50);
-  };
 
   const handleCopyLink = () => {
     // In a real app, this would be the actual sharable link
@@ -146,10 +142,19 @@ export const FormCard = ({ form }: FormCardProps) => {
             <Clock className="mr-1 h-3 w-3" />
             {formattedDate}
           </div>
-          <div className="text-xs font-medium flex items-center">
-            <CheckCircle className="mr-1 h-3 w-3 text-green-500" />
-            {getResponseCount()} responses
-          </div>
+          {responseCount > 0 ? (
+            <Link 
+              to={`/app/forms/${form.id}/analyze`}
+              className="text-xs font-medium flex items-center hover:text-primary transition-colors"
+            >
+              <Badge variant="secondary" className="px-2 py-0 h-5 bg-blue-100 text-blue-700 hover:bg-blue-200">
+                <CheckCircle className="mr-1 h-3 w-3" />
+                {responseCount} {responseCount === 1 ? 'response' : 'responses'}
+              </Badge>
+            </Link>
+          ) : (
+            <span className="text-xs text-muted-foreground">No responses yet</span>
+          )}
         </div>
       </CardContent>
       <CardFooter className="bg-gradient-to-r from-indigo-50/50 to-purple-50/50 p-3 grid grid-cols-3 gap-2">
