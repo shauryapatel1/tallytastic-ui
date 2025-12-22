@@ -10,7 +10,7 @@ import {
 import { Form } from "@/lib/types";
 import { formatDistanceToNow } from "date-fns";
 import { Link } from "react-router-dom";
-import { Copy, Eye, Pencil, MoreHorizontal, Clock, CheckCircle, Edit, Share2, Trash, ExternalLink } from "lucide-react";
+import { Copy, Eye, Pencil, MoreHorizontal, Clock, CheckCircle, Edit, Share2, Trash, ExternalLink, FileText, Send } from "lucide-react";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -68,10 +68,21 @@ export const FormCard = ({ form }: FormCardProps) => {
     <Card className="overflow-hidden transition-all hover:shadow-md group border-indigo-100">
       <CardHeader className="pb-2 pt-4 bg-gradient-to-r from-indigo-50/50 to-purple-50/50">
         <div className="flex items-start justify-between">
-          <div className="flex items-center space-x-2">
-            <Badge variant={form.status === 'published' ? "default" : "outline"} className="px-2 py-0 h-5">
-              {form.status === 'published' ? 'Published' : 'Draft'}
-            </Badge>
+          <div className="flex flex-col gap-2">
+            <div className="flex items-center gap-2 flex-wrap">
+              <Badge variant={form.status === 'published' ? "default" : "outline"} className="px-2 py-0 h-5">
+                {form.status === 'published' ? (
+                  <><Send className="mr-1 h-3 w-3" /> Published</>
+                ) : (
+                  <><FileText className="mr-1 h-3 w-3" /> Draft</>
+                )}
+              </Badge>
+              {form.status === 'published' && (
+                <Badge variant="secondary" className="px-2 py-0 h-5 bg-green-100 text-green-700">
+                  <CheckCircle className="mr-1 h-3 w-3" /> Live
+                </Badge>
+              )}
+            </div>
             <CardTitle className="line-clamp-1 text-xl">{form.title}</CardTitle>
           </div>
           <DropdownMenu>
