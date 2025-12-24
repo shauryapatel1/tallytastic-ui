@@ -17,6 +17,7 @@ import PreviewStep from "./pages/app/forms/steps/PreviewStep";
 import PublishStep from "./pages/app/forms/steps/PublishStep";
 import ShareStep from "./pages/app/forms/steps/ShareStep";
 import AnalyzeStep from "./pages/app/forms/steps/AnalyzeStep";
+import NewFormPage from "./pages/app/forms/NewFormPage";
 import PublicForm from "./pages/public/PublicForm";
 import Integrations from "./pages/dashboard/Integrations";
 import Analytics from "./pages/dashboard/Analytics";
@@ -119,6 +120,13 @@ const App = () => (
               <Route path="/dashboard/forms/:id/collaborate" element={
                 <ProtectedRoute>
                   <RedirectToWorkflow step="build" />
+                </ProtectedRoute>
+              } />
+              
+              {/* Create new form route */}
+              <Route path="/app/forms/new" element={
+                <ProtectedRoute>
+                  <NewFormPage />
                 </ProtectedRoute>
               } />
               

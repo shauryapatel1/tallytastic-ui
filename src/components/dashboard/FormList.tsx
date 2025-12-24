@@ -88,7 +88,7 @@ export function FormList({
           It looks like you haven't created any forms yet, or your current filter returned no results.
         </p>
         <Button asChild variant="default">
-          <Link to="/builder/new">
+          <Link to="/app/forms/new">
             <Plus className="mr-2 h-4 w-4" />
             Create Your First Form
           </Link>
