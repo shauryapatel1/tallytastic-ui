@@ -78,20 +78,15 @@ export default function DashboardPage() {
   }, [forms, searchTerm, filterCriteria]);
 
   const handleEditForm = (formId: string) => {
-    navigate(`/builder/${formId}`);
+    navigate(`/app/forms/${formId}/build`);
   };
 
   const handlePreviewForm = (formId: string) => {
-    // TODO: Determine if preview route should be /f/:id (public) or a specific /preview/:id (internal)
-    window.open(`/f/${formId}`, '_blank'); 
-    toast({ title: "Previewing Form", description: `Opening public view for form ${formId} in a new tab.` });
+    navigate(`/app/forms/${formId}/preview`);
   };
 
   const handleViewResponses = (formId: string) => {
-    // TODO: Navigate to a dedicated responses page e.g. /responses/:formId
-    // navigate(`/responses/${formId}`); 
-    toast({ title: "View Responses", description: `TODO: Navigate to responses for form ${formId}. Current placeholder: /dashboard/forms/${formId}/responses` });
-    navigate(`/dashboard/forms/${formId}/responses`); // Uses existing (soon deprecated) route as placeholder
+    navigate(`/app/forms/${formId}/analyze`);
   };
 
   const handleDuplicateForm = async (formId: string, formTitle: string) => {

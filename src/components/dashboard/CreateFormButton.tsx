@@ -9,8 +9,8 @@ export function CreateFormButton() {
   // const { toast } = useToast();
 
   const handleCreateNewForm = async () => {
-    // Option 1: Navigate to a dedicated builder page for a new form
-    navigate('/builder/new');
+    // Navigate to the new form creation route
+    navigate('/app/forms/new');
 
     // Option 2: Create blank form via API then navigate to it (example)
     // try {
