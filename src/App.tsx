@@ -22,6 +22,7 @@ import PublicForm from "./pages/public/PublicForm";
 import Integrations from "./pages/dashboard/Integrations";
 import Analytics from "./pages/dashboard/Analytics";
 import UserProfile from "./pages/dashboard/UserProfile";
+import SettingsPage from "./pages/dashboard/SettingsPage";
 import { ProtectedRoute } from "./components/ProtectedRoute";
 
 // Redirect component for old dashboard form routes
@@ -87,7 +88,7 @@ const App = () => (
               } />
               <Route path="/dashboard/settings" element={
                 <ProtectedRoute>
-                  <Dashboard />
+                  <SettingsPage />
                 </ProtectedRoute>
               } />
               

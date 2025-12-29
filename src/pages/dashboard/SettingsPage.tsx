@@ -14,9 +14,10 @@ import {
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { useToast } from '@/hooks/use-toast';
-import { deleteUserAccount } from '@/services/formService'; // Assuming this is the correct path
+import { deleteUserAccount } from '@/lib/accountService';
+import { useAuth } from '@/lib/auth';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { ChevronRight, ShieldAlert } from 'lucide-react'; // For icons
+import { ChevronRight, ShieldAlert } from 'lucide-react';
 import { Link } from 'react-router-dom';
 
 // It's assumed this page will be rendered within a DashboardLayout
@@ -27,6 +28,7 @@ export default function SettingsPage() {
   const [confirmationText, setConfirmationText] = useState('');
   const [isDeletingAccount, setIsDeletingAccount] = useState(false);
   const { toast } = useToast();
+  const { logout } = useAuth();
   const navigate = useNavigate();
 
   const expectedConfirmationPhrase = 'DELETE MY ACCOUNT';
@@ -48,19 +50,13 @@ export default function SettingsPage() {
 
     setIsDeletingAccount(true);
     try {
-      const { error } = await deleteUserAccount();
-      if (error) {
-        throw error;
-      }
+      await deleteUserAccount();
       toast({
-        title: 'Account Deletion Initiated',
-        description: 'Your account and all associated data are being deleted. You will be redirected.',
+        title: 'Account Deleted',
+        description: 'Your account and all associated data have been permanently deleted.',
       });
-      // The service function handles local sign out.
-      // Navigate to landing or login page after a short delay to allow toast to be seen.
-      setTimeout(() => {
-        navigate('/'); // Or '/auth/login'
-      }, 2000);
+      await logout();
+      navigate('/');
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : 'An unknown error occurred.';
       toast({
@@ -70,7 +66,6 @@ export default function SettingsPage() {
       });
     } finally {
       setIsDeletingAccount(false);
-      // setIsDeleteDialogOpen(false); // Keep dialog open on error, or close it. Let's close it.
       setIsDeleteDialogOpen(false);
     }
   };

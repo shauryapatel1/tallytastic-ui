@@ -1,6 +1,6 @@
 
 import { useLocation, Link } from "react-router-dom";
-import { FileText, LayoutDashboard } from "lucide-react";
+import { FileText, LayoutDashboard, Settings } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 
@@ -15,6 +15,12 @@ export const sidebarLinks = [
     title: "My Forms",
     href: "/dashboard/forms",
     icon: FileText,
+    implemented: true,
+  },
+  {
+    title: "Settings",
+    href: "/dashboard/settings",
+    icon: Settings,
     implemented: true,
   }
 ];
