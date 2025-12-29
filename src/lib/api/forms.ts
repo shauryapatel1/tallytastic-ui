@@ -25,8 +25,23 @@ export interface FormAnalyticsSummary {
   dailyTrend: Array<{ date: string; views: number; starts: number; completes: number }>;
   dropOffPoints?: Array<{
     fieldId: string;
+    fieldLabel: string;
     dropOffs: number;
   }>;
+  fieldStats?: Array<{
+    fieldId: string;
+    fieldLabel: string;
+    fieldType: string;
+    responseCount: number;
+    fillRate: number;
+    topValues?: Array<{ value: string; count: number; percentage: number }>;
+  }>;
+  weeklyComparison?: {
+    thisWeek: number;
+    lastWeek: number;
+    percentageChange: number;
+  };
+  peakSubmissionHours?: Array<{ hour: number; count: number }>;
 }
 
 export interface FormListItem {
