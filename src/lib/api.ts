@@ -208,36 +208,100 @@ export async function deleteForm(id: string) {
 
 export async function publishForm(id: string, publish: boolean): Promise<FormDefinition> {
   try {
-    const { data, error } = await supabase
+    // First fetch the current form to get its definition
+    const { data: currentForm, error: fetchError } = await supabase
       .from("forms")
-      .update({ 
-        status: publish ? 'published' : 'draft',
-        updated_at: new Date().toISOString()
-      })
+      .select("*")
       .eq("id", id)
-      .select()
       .single();
+    
+    if (fetchError || !currentForm) {
+      throw new Error("Form not found");
+    }
 
-    if (error) throw error;
-    return {
-      ...data,
-      id: data.id,
-      userId: data.user_id,
-      title: data.title,
-      description: data.description ?? undefined,
-      sections: data.definition_sections as unknown as FormSectionDefinition[],
-      customSuccessMessage: data.custom_success_message ?? undefined,
-      redirectUrl: data.redirect_url ?? undefined,
-      version: data.version,
-      createdAt: data.created_at,
-      updatedAt: data.updated_at,
-      status: data.status,
-      settings: undefined
-    } as FormDefinition;
+    let publishedVersionId = currentForm.published_version_id;
+
+    if (publish) {
+      // When publishing, create a new immutable version snapshot
+      const nextVersionNumber = (currentForm.version || 0) + 1;
+      
+      const { data: newVersion, error: versionError } = await supabase
+        .from("form_versions")
+        .insert({
+          form_id: id,
+          version_number: nextVersionNumber,
+          definition_sections: currentForm.definition_sections,
+          title: currentForm.title,
+          description: currentForm.description,
+          custom_success_message: currentForm.custom_success_message,
+          redirect_url: currentForm.redirect_url,
+          published_at: new Date().toISOString()
+        })
+        .select()
+        .single();
+
+      if (versionError) {
+        console.error("Error creating form version:", versionError);
+        throw new Error("Failed to create form version");
+      }
+
+      publishedVersionId = newVersion.id;
+      
+      // Update the form with the new version number and published version reference
+      const { data, error } = await supabase
+        .from("forms")
+        .update({ 
+          status: 'published',
+          version: nextVersionNumber,
+          published_version_id: publishedVersionId,
+          updated_at: new Date().toISOString()
+        })
+        .eq("id", id)
+        .select()
+        .single();
+
+      if (error) throw error;
+      
+      console.log(`[publishForm] Created version ${nextVersionNumber} for form ${id}`);
+      
+      return mapFormRowToDefinition(data);
+    } else {
+      // Unpublishing - just change status, keep version reference
+      const { data, error } = await supabase
+        .from("forms")
+        .update({ 
+          status: 'draft',
+          updated_at: new Date().toISOString()
+        })
+        .eq("id", id)
+        .select()
+        .single();
+
+      if (error) throw error;
+      return mapFormRowToDefinition(data);
+    }
   } catch (error) {
     console.error(`Error ${publish ? 'publishing' : 'unpublishing'} form ${id}:`, error);
     throw error;
   }
+}
+
+// Helper function to map form row to FormDefinition
+function mapFormRowToDefinition(data: any): FormDefinition {
+  return {
+    id: data.id,
+    userId: data.user_id,
+    title: data.title,
+    description: data.description ?? undefined,
+    sections: data.definition_sections as unknown as FormSectionDefinition[],
+    customSuccessMessage: data.custom_success_message ?? undefined,
+    redirectUrl: data.redirect_url ?? undefined,
+    version: data.version,
+    createdAt: data.created_at,
+    updatedAt: data.updated_at,
+    status: data.status,
+    settings: undefined
+  } as FormDefinition;
 }
 
 // Define a type for form response input to help with type safety

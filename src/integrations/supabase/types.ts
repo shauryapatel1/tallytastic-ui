@@ -46,6 +46,7 @@ export type Database = {
           created_at: string
           data: Json
           form_id: string
+          form_version_id: string | null
           id: string
           submitted_at: string
         }
@@ -53,6 +54,7 @@ export type Database = {
           created_at?: string
           data?: Json
           form_id: string
+          form_version_id?: string | null
           id?: string
           submitted_at?: string
         }
@@ -60,12 +62,67 @@ export type Database = {
           created_at?: string
           data?: Json
           form_id?: string
+          form_version_id?: string | null
           id?: string
           submitted_at?: string
         }
         Relationships: [
           {
             foreignKeyName: "form_responses_form_id_fkey"
+            columns: ["form_id"]
+            isOneToOne: false
+            referencedRelation: "forms"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "form_responses_form_version_id_fkey"
+            columns: ["form_version_id"]
+            isOneToOne: false
+            referencedRelation: "form_versions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      form_versions: {
+        Row: {
+          created_at: string
+          custom_success_message: string | null
+          definition_sections: Json
+          description: string | null
+          form_id: string
+          id: string
+          published_at: string
+          redirect_url: string | null
+          title: string
+          version_number: number
+        }
+        Insert: {
+          created_at?: string
+          custom_success_message?: string | null
+          definition_sections?: Json
+          description?: string | null
+          form_id: string
+          id?: string
+          published_at?: string
+          redirect_url?: string | null
+          title: string
+          version_number: number
+        }
+        Update: {
+          created_at?: string
+          custom_success_message?: string | null
+          definition_sections?: Json
+          description?: string | null
+          form_id?: string
+          id?: string
+          published_at?: string
+          redirect_url?: string | null
+          title?: string
+          version_number?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "form_versions_form_id_fkey"
             columns: ["form_id"]
             isOneToOne: false
             referencedRelation: "forms"
@@ -80,6 +137,7 @@ export type Database = {
           definition_sections: Json
           description: string | null
           id: string
+          published_version_id: string | null
           redirect_url: string | null
           slug: string | null
           status: string
@@ -94,6 +152,7 @@ export type Database = {
           definition_sections?: Json
           description?: string | null
           id?: string
+          published_version_id?: string | null
           redirect_url?: string | null
           slug?: string | null
           status?: string
@@ -108,6 +167,7 @@ export type Database = {
           definition_sections?: Json
           description?: string | null
           id?: string
+          published_version_id?: string | null
           redirect_url?: string | null
           slug?: string | null
           status?: string
@@ -116,7 +176,15 @@ export type Database = {
           user_id?: string
           version?: number
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "forms_published_version_id_fkey"
+            columns: ["published_version_id"]
+            isOneToOne: false
+            referencedRelation: "form_versions"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       quotas: {
         Row: {
