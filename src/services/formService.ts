@@ -268,42 +268,66 @@ export const WorkspaceUserFormSummaries = async (): Promise<FormSummary[]> => {
     }
     if (!user) {
       console.warn('[formService] No authenticated user found.');
-      return []; // Or throw new Error('User not authenticated'); depending on desired strictness
+      return [];
     }
 
+    // Fetch forms
     const { data: formRows, error: queryError } = await supabase
       .from('forms')
       .select('id, title, created_at, updated_at, status')
       .eq('user_id', user.id)
       .order('updated_at', { ascending: false })
-      .returns<Partial<FormRow>[]>(); // Expecting an array of partial FormRow objects
+      .returns<Partial<FormRow>[]>();
 
     if (queryError) {
       console.error('[formService] Error fetching form summaries:', queryError);
       throw new Error(`Failed to fetch form summaries: ${queryError.message}`);
     }
 
-    if (!formRows) {
+    if (!formRows || formRows.length === 0) {
       console.log('[formService] No form summaries found for user:', user.id);
       return [];
     }
 
+    // Get form IDs for response count query
+    const formIds = formRows
+      .map(row => row.id)
+      .filter((id): id is string => !!id);
+
+    // Fetch response counts for all forms in one query
+    const { data: responseCounts, error: countError } = await supabase
+      .from('form_responses')
+      .select('form_id')
+      .in('form_id', formIds);
+
+    if (countError) {
+      console.warn('[formService] Error fetching response counts:', countError);
+      // Continue without counts rather than failing entirely
+    }
+
+    // Build a map of form_id -> count
+    const countMap: Record<string, number> = {};
+    if (responseCounts) {
+      for (const response of responseCounts) {
+        const formId = response.form_id;
+        countMap[formId] = (countMap[formId] || 0) + 1;
+      }
+    }
+
     const formSummaries: FormSummary[] = formRows.map(row => {
-      // Basic validation for essential fields from Partial<FormRow>
       if (!row.id || !row.title || !row.created_at || !row.updated_at || !row.status) {
         console.warn('[formService] Encountered partial form data, skipping item:', row);
-        return null; // Will be filtered out later
+        return null;
       }
       return {
         id: row.id,
         title: row.title,
         createdAt: row.created_at,
-        lastModified: row.updated_at, // Mapping updated_at to lastModified
-        status: row.status as FormStatus, // Assuming status in DB matches FormStatus
-        // TODO: Implement performant response count fetching (e.g., denormalized counter in DB or a separate view/RPC)
-        responseCount: 0, 
+        lastModified: row.updated_at,
+        status: row.status as FormStatus,
+        responseCount: countMap[row.id] || 0,
       };
-    }).filter(summary => summary !== null) as FormSummary[]; // Filter out nulls and assert type
+    }).filter(summary => summary !== null) as FormSummary[];
 
     console.log(`[formService] Successfully fetched ${formSummaries.length} form summaries for user ${user.id}.`);
     return formSummaries;
