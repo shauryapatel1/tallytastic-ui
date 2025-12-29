@@ -11,3 +11,12 @@ verify_jwt = false
 
 [functions.check-subscription]
 verify_jwt = false
+
+[functions.submit-form]
+verify_jwt = false
+
+[functions.delete-user-account]
+verify_jwt = true
+
+[auth]
+enable_leaked_password_check = true
