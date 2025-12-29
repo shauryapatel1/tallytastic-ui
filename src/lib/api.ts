@@ -4,6 +4,7 @@ import { User } from "./auth";
 import { v4 as uuidv4 } from 'uuid';
 import type { FormDefinition, FormFieldDefinition, FormResponse, FormSectionDefinition } from "@/types/forms";
 import type { Database } from "@/types/supabase";
+import { validateFormRedirectUrl } from "./urlValidation";
 
 // This file appears to contain functions from a previous data model.
 // It's being updated to align with the current `FormDefinition` structure.
@@ -249,40 +250,38 @@ interface FormResponseInput {
 
 export async function submitFormResponse(formId: string, responseData: Record<string, any>) {
   try {
-    const formResponseData: FormResponseInput = {
-      form_id: formId,
-      response_data: responseData,
-      submitted_at: new Date().toISOString(),
-      metadata: {
-        browser: navigator.userAgent,
-        referrer: document.referrer,
-        timeSpent: 0, // This would be calculated on the client
+    // Use edge function for server-side validation and rate limiting
+    const { data, error } = await supabase.functions.invoke('submit-form', {
+      body: {
+        formId,
+        responseData,
+        metadata: {
+          browser: navigator.userAgent,
+          referrer: document.referrer,
+        }
       }
-    };
+    });
 
-    // Use type assertion to handle the untyped table
-    const { data, error } = await supabase
-      .from("form_responses" as any)
-      .insert([formResponseData] as any)
-      .select();
-
-    if (error) throw error;
-    
-    if (!data || data.length === 0) {
-      throw new Error("No data returned after form response submission");
+    if (error) {
+      console.error(`Error submitting response for form ${formId}:`, error);
+      throw new Error(error.message || 'Failed to submit form');
     }
     
-    // Safely create a transformed response by casting to any first to avoid TypeScript errors
-    const responseArray = data as any[];
-    const transformedData = responseArray.map(item => ({
-      id: item.id,
-      formId: item.form_id,
-      submittedAt: item.submitted_at,
-      data: item.response_data,
-      metadata: item.metadata
-    })) as FormResponse[];
+    if (data?.error) {
+      // Handle validation errors from edge function
+      if (data.validationErrors) {
+        const errorMessages = data.validationErrors.map((e: any) => e.error).join(', ');
+        throw new Error(errorMessages);
+      }
+      throw new Error(data.message || data.error);
+    }
     
-    return transformedData;
+    return [{
+      id: data.responseId,
+      formId,
+      submittedAt: new Date().toISOString(),
+      data: responseData
+    }] as FormResponse[];
   } catch (error) {
     console.error(`Error submitting response for form ${formId}:`, error);
     throw error;

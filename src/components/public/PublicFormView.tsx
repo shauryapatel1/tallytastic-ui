@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
 import { FormFieldRenderer } from "./form-fields/FormFieldRenderer";
 import { FormSubmissionSuccess } from "./form-fields/FormSubmissionSuccess";
+import { validateFormRedirectUrl } from "@/lib/urlValidation";
 
 interface PublicFormViewProps {
   title: string;
@@ -115,11 +116,14 @@ export function PublicFormView({
         description: "Thank you for your submission",
       });
       
-      // Redirect if URL is provided
+      // Redirect if URL is provided and valid
       if (redirectUrl) {
-        setTimeout(() => {
-          window.location.href = redirectUrl;
-        }, 2000);
+        const validation = validateFormRedirectUrl(redirectUrl);
+        if (validation.isValid && validation.sanitizedUrl) {
+          setTimeout(() => {
+            window.location.href = validation.sanitizedUrl!;
+          }, 2000);
+        }
       }
     } catch (error) {
       console.error("Form submission error:", error);
