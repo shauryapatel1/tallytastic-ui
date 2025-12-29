@@ -311,10 +311,10 @@ Deno.serve(async (req) => {
     const supabaseServiceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
     const supabase = createClient(supabaseUrl, supabaseServiceKey);
     
-    // Fetch the form definition
+    // Fetch the form and its published version
     const { data: form, error: formError } = await supabase
       .from('forms')
-      .select('*')
+      .select('*, published_version_id')
       .eq('id', formId)
       .eq('status', 'published')
       .single();
@@ -325,6 +325,30 @@ Deno.serve(async (req) => {
         JSON.stringify({ error: "Form not found or not published" }),
         { status: 404, headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
+    }
+    
+    // Get the published version for validation (immutable snapshot)
+    let formVersionId = form.published_version_id;
+    let sections: any[] = [];
+    
+    if (formVersionId) {
+      // Use the immutable published version for validation
+      const { data: version, error: versionError } = await supabase
+        .from('form_versions')
+        .select('*')
+        .eq('id', formVersionId)
+        .single();
+        
+      if (versionError || !version) {
+        console.error(`[submit-form] Published version not found: ${formVersionId}`);
+        // Fall back to current form definition
+        sections = Array.isArray(form.definition_sections) ? form.definition_sections : [];
+      } else {
+        sections = Array.isArray(version.definition_sections) ? version.definition_sections : [];
+      }
+    } else {
+      // Legacy forms without versioning - use current definition
+      sections = Array.isArray(form.definition_sections) ? form.definition_sections : [];
     }
     
     // Check quota
@@ -338,7 +362,6 @@ Deno.serve(async (req) => {
     }
     
     // Parse form definition and validate response data
-    const sections = Array.isArray(form.definition_sections) ? form.definition_sections : [];
     const allFields: any[] = sections.flatMap((section: any) => section.fields || []);
     
     const validationErrors: { fieldId: string; error: string }[] = [];
@@ -382,11 +405,12 @@ Deno.serve(async (req) => {
       }
     }
     
-    // Insert the response
+    // Insert the response with version reference
     const { data: response, error: insertError } = await supabase
       .from('form_responses')
       .insert({
         form_id: formId,
+        form_version_id: formVersionId || null, // Link to the version used
         data: sanitizedData,
         submitted_at: new Date().toISOString()
       })
