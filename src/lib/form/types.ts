@@ -94,6 +94,7 @@ export type ValidationRule = z.infer<typeof ValidationRuleSchema>;
 // Base field definition
 export const FormFieldDefinitionSchema = z.object({
   id: z.string(),
+  name: z.string().optional(), // Field name for form data keys
   type: FormFieldTypeSchema,
   label: z.string(),
   description: z.string().optional(),
