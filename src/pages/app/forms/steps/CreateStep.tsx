@@ -8,55 +8,10 @@ import FormsApi from "@/lib/api/forms";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { FileText, Wand2, Sparkles, ArrowRight } from "lucide-react";
 import { EnhancedTemplateCard } from "@/components/dashboard/form-templates/EnhancedTemplateCard";
-import { EnhancedAIFormGenerator } from "@/components/dashboard/ai-form-generator/EnhancedAIFormGenerator";
-import { templateDefinitions } from "@/lib/templateDefinitions";
+import { SmartFormGenerator } from "@/components/dashboard/ai-form-generator/SmartFormGenerator";
+import { templateDefinitions, getTemplateCount } from "@/lib/templateDefinitions";
+import { templates as templateData, getRealTemplates } from "@/components/dashboard/form-templates/templateData";
 import { FormDefinition } from "@/lib/form/types";
-
-// Featured templates for the create step
-const featuredTemplates = [
-  {
-    id: "lead_capture",
-    name: "Lead Capture",
-    description: "Collect potential customer information",
-    icon: <Sparkles className="h-8 w-8 text-primary" />,
-    category: "business"
-  },
-  {
-    id: "product_feedback", 
-    name: "Product Feedback",
-    description: "Gather specific product improvement ideas",
-    icon: <FileText className="h-8 w-8 text-primary" />,
-    category: "feedback"
-  },
-  {
-    id: "event_registration",
-    name: "Event Registration", 
-    description: "Register attendees for your event",
-    icon: <FileText className="h-8 w-8 text-primary" />,
-    category: "events"
-  },
-  {
-    id: "nps_survey",
-    name: "NPS Survey",
-    description: "Measure Net Promoter Score",
-    icon: <FileText className="h-8 w-8 text-primary" />,
-    category: "feedback"
-  },
-  {
-    id: "job_application",
-    name: "Job Application",
-    description: "Collect resumes and applicant information", 
-    icon: <FileText className="h-8 w-8 text-primary" />,
-    category: "business"
-  },
-  {
-    id: "bug_report",
-    name: "Bug Report",
-    description: "Collect software issue details",
-    icon: <FileText className="h-8 w-8 text-primary" />,
-    category: "technical"
-  }
-];
 
 interface ContextType {
   formData: any;
@@ -74,6 +29,10 @@ export default function CreateStep() {
   const [mode, setMode] = useState<CreateMode>("select");
   const [selectedTemplate, setSelectedTemplate] = useState<string>("");
 
+  // Get real templates (excluding blank) for the template picker
+  const availableTemplates = getRealTemplates();
+  const templateCount = getTemplateCount();
+
   const updateFormMutation = useMutation({
     mutationFn: ({ formId, formDefinition }: { formId: string; formDefinition: Partial<FormDefinition> }) =>
       FormsApi.updateForm(formId, formDefinition),
@@ -83,7 +42,6 @@ export default function CreateStep() {
         title: "Form created",
         description: "Your form is ready to build!"
       });
-      // Navigate to build step
       navigate(`/app/forms/${formData.id}/build`);
     },
     onError: () => {
@@ -135,7 +93,7 @@ export default function CreateStep() {
     });
   };
 
-  const handleAIFormGenerated = (formDefinition: FormDefinition) => {
+  const handleSmartFormGenerated = (formDefinition: FormDefinition) => {
     updateFormMutation.mutate({
       formId: formData.id,
       formDefinition: {
@@ -148,8 +106,8 @@ export default function CreateStep() {
 
   if (mode === "ai") {
     return (
-      <EnhancedAIFormGenerator
-        onFormGenerated={handleAIFormGenerated}
+      <SmartFormGenerator
+        onFormGenerated={handleSmartFormGenerated}
         onBack={() => setMode("select")}
       />
     );
@@ -166,7 +124,7 @@ export default function CreateStep() {
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-          {featuredTemplates.map((template) => (
+          {availableTemplates.map((template) => (
             <EnhancedTemplateCard
               key={template.id}
               template={template}
@@ -228,25 +186,25 @@ export default function CreateStep() {
           </CardHeader>
           <CardContent className="text-center">
             <Badge variant="secondary" className="text-xs">
-              6 templates available
+              {templateCount} templates available
             </Badge>
           </CardContent>
         </Card>
 
-        {/* AI Generator */}
+        {/* Smart Form Generator */}
         <Card className="cursor-pointer hover:shadow-md transition-all group" onClick={() => setMode("ai")}>
           <CardHeader className="text-center">
             <div className="mx-auto p-3 rounded-full bg-muted group-hover:bg-primary/10 transition-colors">
               <Wand2 className="h-8 w-8 group-hover:text-primary transition-colors" />
             </div>
-            <CardTitle>AI Generator</CardTitle>
+            <CardTitle>Smart Generator</CardTitle>
             <CardDescription>
-              Describe your needs and let AI create your form
+              Describe your needs and we'll create your form
             </CardDescription>
           </CardHeader>
           <CardContent className="text-center">
             <Badge variant="secondary" className="text-xs">
-              Powered by AI
+              Pattern-based generation
             </Badge>
           </CardContent>
         </Card>

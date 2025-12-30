@@ -9,12 +9,12 @@ import { FormDefinition } from "@/lib/form/types";
 import { useToast } from "@/hooks/use-toast";
 import { v4 as uuidv4 } from "uuid";
 
-interface EnhancedAIFormGeneratorProps {
+interface SmartFormGeneratorProps {
   onFormGenerated: (formDefinition: FormDefinition) => void;
   onBack: () => void;
 }
 
-export const EnhancedAIFormGenerator = ({ onFormGenerated, onBack }: EnhancedAIFormGeneratorProps) => {
+export const SmartFormGenerator = ({ onFormGenerated, onBack }: SmartFormGeneratorProps) => {
   const [formTitle, setFormTitle] = useState("");
   const [purpose, setPurpose] = useState("");
   const [industry, setIndustry] = useState("");
@@ -236,7 +236,7 @@ export const EnhancedAIFormGenerator = ({ onFormGenerated, onBack }: EnhancedAIF
             <Wand2 className="h-8 w-8 text-primary" />
           </div>
         </div>
-        <h2 className="text-2xl font-bold mb-2">AI Form Generator</h2>
+        <h2 className="text-2xl font-bold mb-2">Smart Form Generator</h2>
         <p className="text-muted-foreground">
           Describe your form and we'll generate the perfect fields for you
         </p>

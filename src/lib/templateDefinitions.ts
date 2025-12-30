@@ -1,4 +1,4 @@
-import { FormDefinition, FormFieldDefinition } from "@/lib/form/types";
+import { FormDefinition } from "@/lib/form/types";
 import { v4 as uuidv4 } from "uuid";
 
 const now = new Date().toISOString();
@@ -11,8 +11,20 @@ const createOption = (label: string) => ({
   value: label.toLowerCase().replace(/\s+/g, '_')
 });
 
-// Template definitions that generate valid FormDefinition objects
+/**
+ * Template definitions that generate valid FormDefinition objects.
+ * Each template includes:
+ * - Unique field IDs
+ * - name property on all fields (for form data keys)
+ * - Validation rules where appropriate
+ * - Proper field types and configurations
+ */
 export const templateDefinitions: Record<string, () => FormDefinition> = {
+  /**
+   * Lead Capture Form
+   * Purpose: Collect potential customer information
+   * Fields: Name, email, phone, company, inquiry type
+   */
   lead_capture: () => ({
     id: uuidv4(),
     title: "Lead Capture Form",
@@ -23,13 +35,17 @@ export const templateDefinitions: Record<string, () => FormDefinition> = {
       fields: [
         {
           id: createFieldId(),
+          name: "full_name",
           type: "text",
           label: "Full Name",
           isRequired: true,
-          placeholder: "Enter your full name"
+          placeholder: "Enter your full name",
+          minLength: 2,
+          maxLength: 100
         },
         {
           id: createFieldId(),
+          name: "email",
           type: "email",
           label: "Email Address",
           isRequired: true,
@@ -37,6 +53,7 @@ export const templateDefinitions: Record<string, () => FormDefinition> = {
         },
         {
           id: createFieldId(),
+          name: "phone",
           type: "tel",
           label: "Phone Number",
           isRequired: false,
@@ -44,13 +61,16 @@ export const templateDefinitions: Record<string, () => FormDefinition> = {
         },
         {
           id: createFieldId(),
+          name: "company",
           type: "text",
           label: "Company Name",
           isRequired: false,
-          placeholder: "Your company"
+          placeholder: "Your company",
+          maxLength: 100
         },
         {
           id: createFieldId(),
+          name: "inquiry_type",
           type: "select",
           label: "How can we help you?",
           isRequired: true,
@@ -70,6 +90,11 @@ export const templateDefinitions: Record<string, () => FormDefinition> = {
     updatedAt: now
   }),
 
+  /**
+   * Product Feedback Form
+   * Purpose: Gather product improvement ideas
+   * Fields: Product name, rating, likes, improvements, recommendation
+   */
   product_feedback: () => ({
     id: uuidv4(),
     title: "Product Feedback Form",
@@ -80,13 +105,16 @@ export const templateDefinitions: Record<string, () => FormDefinition> = {
       fields: [
         {
           id: createFieldId(),
+          name: "product_name",
           type: "text",
           label: "Product Name",
           isRequired: true,
-          placeholder: "Which product are you reviewing?"
+          placeholder: "Which product are you reviewing?",
+          maxLength: 100
         },
         {
           id: createFieldId(),
+          name: "overall_rating",
           type: "radio",
           label: "Overall Rating",
           isRequired: true,
@@ -100,22 +128,28 @@ export const templateDefinitions: Record<string, () => FormDefinition> = {
         },
         {
           id: createFieldId(),
+          name: "likes",
           type: "textarea",
           label: "What do you like most about this product?",
           isRequired: false,
           placeholder: "Tell us what you love...",
-          rows: 3
+          rows: 3,
+          maxLength: 1000
         },
         {
           id: createFieldId(),
+          name: "improvements",
           type: "textarea",
           label: "What could be improved?",
           isRequired: true,
           placeholder: "Share your improvement suggestions...",
-          rows: 4
+          rows: 4,
+          minLength: 10,
+          maxLength: 2000
         },
         {
           id: createFieldId(),
+          name: "would_recommend",
           type: "checkbox",
           label: "Would you recommend this product to others?",
           isRequired: false
@@ -128,6 +162,11 @@ export const templateDefinitions: Record<string, () => FormDefinition> = {
     updatedAt: now
   }),
 
+  /**
+   * Event Registration Form
+   * Purpose: Register attendees for events
+   * Fields: Name, email, phone, organization, ticket type, dietary needs
+   */
   event_registration: () => ({
     id: uuidv4(),
     title: "Event Registration Form",
@@ -138,13 +177,17 @@ export const templateDefinitions: Record<string, () => FormDefinition> = {
       fields: [
         {
           id: createFieldId(),
+          name: "full_name",
           type: "text",
           label: "Full Name",
           isRequired: true,
-          placeholder: "Enter your full name"
+          placeholder: "Enter your full name",
+          minLength: 2,
+          maxLength: 100
         },
         {
           id: createFieldId(),
+          name: "email",
           type: "email",
           label: "Email Address",
           isRequired: true,
@@ -152,6 +195,7 @@ export const templateDefinitions: Record<string, () => FormDefinition> = {
         },
         {
           id: createFieldId(),
+          name: "phone",
           type: "tel",
           label: "Phone Number",
           isRequired: true,
@@ -159,13 +203,16 @@ export const templateDefinitions: Record<string, () => FormDefinition> = {
         },
         {
           id: createFieldId(),
+          name: "organization",
           type: "text",
           label: "Organization/Company",
           isRequired: false,
-          placeholder: "Your organization"
+          placeholder: "Your organization",
+          maxLength: 100
         },
         {
           id: createFieldId(),
+          name: "ticket_type",
           type: "select",
           label: "Ticket Type",
           isRequired: true,
@@ -178,11 +225,13 @@ export const templateDefinitions: Record<string, () => FormDefinition> = {
         },
         {
           id: createFieldId(),
+          name: "dietary_restrictions",
           type: "textarea",
           label: "Dietary Restrictions or Special Needs",
           isRequired: false,
           placeholder: "Let us know about any accommodations needed...",
-          rows: 3
+          rows: 3,
+          maxLength: 500
         }
       ]
     }],
@@ -192,6 +241,11 @@ export const templateDefinitions: Record<string, () => FormDefinition> = {
     updatedAt: now
   }),
 
+  /**
+   * NPS Survey Form
+   * Purpose: Measure Net Promoter Score
+   * Fields: NPS rating (0-10), reason, optional contact info
+   */
   nps_survey: () => ({
     id: uuidv4(),
     title: "NPS Survey",
@@ -202,6 +256,7 @@ export const templateDefinitions: Record<string, () => FormDefinition> = {
       fields: [
         {
           id: createFieldId(),
+          name: "nps_score",
           type: "rating",
           label: "How likely are you to recommend us to a friend or colleague?",
           isRequired: true,
@@ -210,21 +265,26 @@ export const templateDefinitions: Record<string, () => FormDefinition> = {
         },
         {
           id: createFieldId(),
+          name: "reason",
           type: "textarea",
           label: "What's the main reason for your score?",
           isRequired: false,
           placeholder: "Tell us more about your experience...",
-          rows: 4
+          rows: 4,
+          maxLength: 2000
         },
         {
           id: createFieldId(),
+          name: "name",
           type: "text",
           label: "Name (optional)",
           isRequired: false,
-          placeholder: "Your name"
+          placeholder: "Your name",
+          maxLength: 100
         },
         {
           id: createFieldId(),
+          name: "email",
           type: "email",
           label: "Email (optional)",
           isRequired: false,
@@ -238,6 +298,11 @@ export const templateDefinitions: Record<string, () => FormDefinition> = {
     updatedAt: now
   }),
 
+  /**
+   * Job Application Form
+   * Purpose: Collect resumes and applicant information
+   * Multi-section: Personal Info, Position & Experience
+   */
   job_application: () => ({
     id: uuidv4(),
     title: "Job Application Form",
@@ -249,13 +314,17 @@ export const templateDefinitions: Record<string, () => FormDefinition> = {
         fields: [
           {
             id: createFieldId(),
+            name: "full_name",
             type: "text",
             label: "Full Name",
             isRequired: true,
-            placeholder: "Enter your full name"
+            placeholder: "Enter your full name",
+            minLength: 2,
+            maxLength: 100
           },
           {
             id: createFieldId(),
+            name: "email",
             type: "email",
             label: "Email Address",
             isRequired: true,
@@ -263,6 +332,7 @@ export const templateDefinitions: Record<string, () => FormDefinition> = {
           },
           {
             id: createFieldId(),
+            name: "phone",
             type: "tel",
             label: "Phone Number",
             isRequired: true,
@@ -270,10 +340,12 @@ export const templateDefinitions: Record<string, () => FormDefinition> = {
           },
           {
             id: createFieldId(),
+            name: "city",
             type: "text",
             label: "Current City",
             isRequired: true,
-            placeholder: "City, State"
+            placeholder: "City, State",
+            maxLength: 100
           }
         ]
       },
@@ -283,13 +355,16 @@ export const templateDefinitions: Record<string, () => FormDefinition> = {
         fields: [
           {
             id: createFieldId(),
+            name: "position",
             type: "text",
             label: "Position Applied For",
             isRequired: true,
-            placeholder: "Job title"
+            placeholder: "Job title",
+            maxLength: 100
           },
           {
             id: createFieldId(),
+            name: "experience_years",
             type: "select",
             label: "Years of Experience",
             isRequired: true,
@@ -302,6 +377,7 @@ export const templateDefinitions: Record<string, () => FormDefinition> = {
           },
           {
             id: createFieldId(),
+            name: "resume",
             type: "file",
             label: "Resume/CV",
             isRequired: true,
@@ -310,11 +386,13 @@ export const templateDefinitions: Record<string, () => FormDefinition> = {
           },
           {
             id: createFieldId(),
+            name: "cover_letter",
             type: "textarea",
             label: "Cover Letter",
             isRequired: false,
             placeholder: "Why are you interested in this position?",
-            rows: 5
+            rows: 5,
+            maxLength: 5000
           }
         ]
       }
@@ -325,6 +403,11 @@ export const templateDefinitions: Record<string, () => FormDefinition> = {
     updatedAt: now
   }),
 
+  /**
+   * Bug Report Form
+   * Purpose: Collect software issue details
+   * Fields: Summary, priority, steps to reproduce, expected/actual behavior, browser, screenshots
+   */
   bug_report: () => ({
     id: uuidv4(),
     title: "Bug Report Form",
@@ -335,13 +418,17 @@ export const templateDefinitions: Record<string, () => FormDefinition> = {
       fields: [
         {
           id: createFieldId(),
+          name: "summary",
           type: "text",
           label: "Bug Summary",
           isRequired: true,
-          placeholder: "Brief description of the issue"
+          placeholder: "Brief description of the issue",
+          minLength: 5,
+          maxLength: 200
         },
         {
           id: createFieldId(),
+          name: "priority",
           type: "select",
           label: "Priority Level",
           isRequired: true,
@@ -354,41 +441,53 @@ export const templateDefinitions: Record<string, () => FormDefinition> = {
         },
         {
           id: createFieldId(),
+          name: "steps_to_reproduce",
           type: "textarea",
           label: "Steps to Reproduce",
           isRequired: true,
           placeholder: "1. Go to...\n2. Click on...\n3. See error...",
-          rows: 5
+          rows: 5,
+          minLength: 20,
+          maxLength: 3000
         },
         {
           id: createFieldId(),
+          name: "expected_behavior",
           type: "textarea",
           label: "Expected Behavior",
           isRequired: true,
           placeholder: "What should have happened?",
-          rows: 3
+          rows: 3,
+          minLength: 10,
+          maxLength: 1000
         },
         {
           id: createFieldId(),
+          name: "actual_behavior",
           type: "textarea",
           label: "Actual Behavior",
           isRequired: true,
           placeholder: "What actually happened?",
-          rows: 3
+          rows: 3,
+          minLength: 10,
+          maxLength: 1000
         },
         {
           id: createFieldId(),
+          name: "browser_device",
           type: "text",
           label: "Browser/Device",
           isRequired: false,
-          placeholder: "Chrome 120, iPhone 14, etc."
+          placeholder: "Chrome 120, iPhone 14, etc.",
+          maxLength: 100
         },
         {
           id: createFieldId(),
+          name: "screenshots",
           type: "file",
           label: "Screenshots",
           isRequired: false,
-          allowedFileTypes: [".png", ".jpg", ".gif"],
+          allowedFileTypes: [".png", ".jpg", ".jpeg", ".gif"],
           maxFileSizeMB: 10
         }
       ]
@@ -398,4 +497,25 @@ export const templateDefinitions: Record<string, () => FormDefinition> = {
     createdAt: now,
     updatedAt: now
   })
+};
+
+/**
+ * Get available template IDs
+ */
+export const getTemplateIds = (): string[] => {
+  return Object.keys(templateDefinitions);
+};
+
+/**
+ * Check if a template exists
+ */
+export const hasTemplate = (templateId: string): boolean => {
+  return templateId in templateDefinitions;
+};
+
+/**
+ * Get template count
+ */
+export const getTemplateCount = (): number => {
+  return Object.keys(templateDefinitions).length;
 };
