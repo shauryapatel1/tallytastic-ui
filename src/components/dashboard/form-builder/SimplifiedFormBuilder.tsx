@@ -4,18 +4,21 @@ import { Separator } from '@/components/ui/separator';
 import { FieldPalette } from '@/components/builder/FieldPalette';
 import { EnhancedFormFieldCard } from './EnhancedFormFieldCard';
 import { SimplifiedPropertyEditor } from './SimplifiedPropertyEditor';
+import { RegenerateFormDialog } from './RegenerateFormDialog';
 import { useFormBuilderState } from '@/hooks/useFormBuilderState';
 import { useAutosave } from '@/hooks/useAutosave';
 import { FormFieldDefinition } from '@/types/forms';
-import { Undo, Save, Check } from 'lucide-react';
+import { Undo, Check } from 'lucide-react';
 
 interface SimplifiedFormBuilderProps {
   initialFields?: FormFieldDefinition[];
+  formTitle?: string;
   onSave?: (fields: FormFieldDefinition[]) => Promise<void>;
 }
 
 export function SimplifiedFormBuilder({ 
   initialFields = [], 
+  formTitle,
   onSave 
 }: SimplifiedFormBuilderProps) {
   const {
@@ -28,6 +31,7 @@ export function SimplifiedFormBuilder({
     updateField,
     removeField,
     duplicateField,
+    replaceAllFields,
     handleDragStart,
     handleDragOver,
     handleDragEnd,
@@ -101,7 +105,7 @@ export function SimplifiedFormBuilder({
       <div className="flex-1 flex flex-col">
         {/* Canvas Header */}
         <div className="border-b p-4 flex items-center justify-between">
-          <div className="flex items-center space-x-4">
+          <div className="flex items-center space-x-3">
             <h2 className="text-lg font-semibold">Form Canvas</h2>
             <Button
               variant="outline"
@@ -113,6 +117,10 @@ export function SimplifiedFormBuilder({
               <Undo className="h-3 w-3" />
               <span>Undo</span>
             </Button>
+            <RegenerateFormDialog 
+              currentTitle={formTitle} 
+              onRegenerate={replaceAllFields} 
+            />
           </div>
           {getSaveStatusIndicator()}
         </div>

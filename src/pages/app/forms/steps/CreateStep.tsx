@@ -204,7 +204,7 @@ export default function CreateStep() {
           </CardHeader>
           <CardContent className="text-center">
             <Badge variant="secondary" className="text-xs">
-              Pattern-based generation
+              AI-powered
             </Badge>
           </CardContent>
         </Card>

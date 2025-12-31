@@ -152,6 +152,15 @@ export function useFormBuilderState({ initialFields }: UseFormBuilderStateProps)
     }
   }, [fields, updateField]);
 
+  const replaceAllFields = useCallback((newFields: FormFieldDefinition[]) => {
+    setFields(newFields);
+    setEditingField(null);
+    toast({
+      title: "Fields replaced",
+      description: `Form now has ${newFields.length} field${newFields.length !== 1 ? 's' : ''}.`,
+    });
+  }, [setFields, toast]);
+
   return {
     fields,
     editingField,
@@ -162,6 +171,7 @@ export function useFormBuilderState({ initialFields }: UseFormBuilderStateProps)
     updateField,
     removeField,
     duplicateField,
+    replaceAllFields,
     handleDragStart,
     handleDragOver,
     handleDragEnd,
