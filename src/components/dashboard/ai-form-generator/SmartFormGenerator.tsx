@@ -5,6 +5,7 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Skeleton } from "@/components/ui/skeleton";
 import { Wand2, ArrowRight, Sparkles, ArrowLeft, Lightbulb } from "lucide-react";
 import { FormDefinition } from "@/lib/form/types";
 import { useToast } from "@/hooks/use-toast";
@@ -22,6 +23,76 @@ const examplePrompts = [
   "Gather job applications with resume upload, experience, and cover letter",
   "Survey customers about their shopping experience with NPS score",
 ];
+
+const LoadingSkeleton = () => (
+  <div className="max-w-2xl mx-auto space-y-6">
+    {/* Header skeleton */}
+    <div className="text-center space-y-3">
+      <div className="inline-flex items-center justify-center p-3 rounded-2xl bg-gradient-to-br from-primary/20 to-primary/5 border border-primary/10">
+        <Sparkles className="h-8 w-8 text-primary animate-pulse" />
+      </div>
+      <div>
+        <h2 className="text-2xl font-bold tracking-tight">Generating Your Form...</h2>
+        <p className="text-muted-foreground mt-1">
+          AI is crafting the perfect fields for you
+        </p>
+      </div>
+    </div>
+
+    {/* Progress indicator */}
+    <Card className="border-2 border-primary/20 bg-primary/5">
+      <CardContent className="p-6">
+        <div className="flex items-center gap-3 mb-4">
+          <div className="h-2 w-2 rounded-full bg-primary animate-ping" />
+          <span className="text-sm font-medium text-primary">Analyzing your requirements...</span>
+        </div>
+        
+        {/* Skeleton fields */}
+        <div className="space-y-4">
+          {[1, 2, 3, 4].map((i) => (
+            <div key={i} className="flex items-start gap-3 p-3 rounded-lg bg-background/50" style={{ animationDelay: `${i * 150}ms` }}>
+              <Skeleton className="h-5 w-5 rounded shrink-0 mt-0.5" />
+              <div className="flex-1 space-y-2">
+                <Skeleton className="h-4 w-1/3" />
+                <Skeleton className="h-9 w-full" />
+              </div>
+            </div>
+          ))}
+        </div>
+
+        {/* Generating steps */}
+        <div className="mt-6 pt-4 border-t border-border/50">
+          <div className="flex items-center justify-between text-xs text-muted-foreground">
+            <span className="flex items-center gap-2">
+              <span className="inline-block h-1.5 w-1.5 rounded-full bg-primary animate-pulse" />
+              Understanding context
+            </span>
+            <span className="flex items-center gap-2">
+              <span className="inline-block h-1.5 w-1.5 rounded-full bg-primary/60 animate-pulse" style={{ animationDelay: '200ms' }} />
+              Building structure
+            </span>
+            <span className="flex items-center gap-2">
+              <span className="inline-block h-1.5 w-1.5 rounded-full bg-primary/40 animate-pulse" style={{ animationDelay: '400ms' }} />
+              Optimizing fields
+            </span>
+          </div>
+        </div>
+      </CardContent>
+    </Card>
+
+    {/* Disabled actions */}
+    <div className="flex items-center justify-between pt-2">
+      <Button variant="ghost" disabled className="gap-2 opacity-50">
+        <ArrowLeft className="h-4 w-4" />
+        Back
+      </Button>
+      <Button disabled size="lg" className="min-w-[180px] gap-2">
+        <Sparkles className="h-4 w-4 animate-pulse" />
+        Generating...
+      </Button>
+    </div>
+  </div>
+);
 
 export const SmartFormGenerator = ({ onFormGenerated, onBack }: SmartFormGeneratorProps) => {
   const [formTitle, setFormTitle] = useState("");
@@ -153,6 +224,11 @@ export const SmartFormGenerator = ({ onFormGenerated, onBack }: SmartFormGenerat
     }
   };
 
+  // Show loading skeleton when generating
+  if (isGenerating) {
+    return <LoadingSkeleton />;
+  }
+
   return (
     <div className="max-w-2xl mx-auto space-y-6">
       {/* Header */}
@@ -258,21 +334,12 @@ export const SmartFormGenerator = ({ onFormGenerated, onBack }: SmartFormGenerat
         </Button>
         <Button 
           onClick={handleGenerate}
-          disabled={!formTitle.trim() || !purpose.trim() || isGenerating}
+          disabled={!formTitle.trim() || !purpose.trim()}
           size="lg"
           className="min-w-[180px] gap-2"
         >
-          {isGenerating ? (
-            <>
-              <Sparkles className="h-4 w-4 animate-pulse" />
-              Generating...
-            </>
-          ) : (
-            <>
-              Generate Form
-              <ArrowRight className="h-4 w-4" />
-            </>
-          )}
+          Generate Form
+          <ArrowRight className="h-4 w-4" />
         </Button>
       </div>
     </div>
