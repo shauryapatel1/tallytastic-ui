@@ -41,6 +41,7 @@ export default function BuildStep() {
     <div className="h-full">
       <SimplifiedFormBuilder 
         initialFields={formData?.sections?.[0]?.fields || []}
+        formTitle={formData?.title}
         onSave={handleSave}
       />
     </div>
