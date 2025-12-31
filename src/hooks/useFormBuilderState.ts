@@ -155,11 +155,13 @@ export function useFormBuilderState({ initialFields }: UseFormBuilderStateProps)
   const replaceAllFields = useCallback((newFields: FormFieldDefinition[]) => {
     setFields(newFields);
     setEditingField(null);
-    toast({
-      title: "Fields replaced",
-      description: `Form now has ${newFields.length} field${newFields.length !== 1 ? 's' : ''}.`,
-    });
-  }, [setFields, toast]);
+  }, [setFields]);
+
+  const mergeFields = useCallback((newFields: FormFieldDefinition[]) => {
+    const mergedFields = [...fields, ...newFields];
+    setFields(mergedFields);
+    setEditingField(null);
+  }, [fields, setFields]);
 
   return {
     fields,
@@ -172,6 +174,7 @@ export function useFormBuilderState({ initialFields }: UseFormBuilderStateProps)
     removeField,
     duplicateField,
     replaceAllFields,
+    mergeFields,
     handleDragStart,
     handleDragOver,
     handleDragEnd,
