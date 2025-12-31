@@ -1,10 +1,11 @@
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
+import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Wand2, ArrowRight, Sparkles } from "lucide-react";
+import { Wand2, ArrowRight, Sparkles, ArrowLeft, Lightbulb } from "lucide-react";
 import { FormDefinition } from "@/lib/form/types";
 import { useToast } from "@/hooks/use-toast";
 import { v4 as uuidv4 } from "uuid";
@@ -14,6 +15,13 @@ interface SmartFormGeneratorProps {
   onFormGenerated: (formDefinition: FormDefinition) => void;
   onBack: () => void;
 }
+
+const examplePrompts = [
+  "Collect customer feedback about our mobile app with ratings and suggestions",
+  "Register attendees for a tech conference with ticket selection and dietary needs",
+  "Gather job applications with resume upload, experience, and cover letter",
+  "Survey customers about their shopping experience with NPS score",
+];
 
 export const SmartFormGenerator = ({ onFormGenerated, onBack }: SmartFormGeneratorProps) => {
   const [formTitle, setFormTitle] = useState("");
@@ -131,64 +139,95 @@ export const SmartFormGenerator = ({ onFormGenerated, onBack }: SmartFormGenerat
     }
   };
 
+  const handleExampleClick = (example: string) => {
+    setPurpose(example);
+    // Auto-fill title based on example
+    if (example.includes("feedback")) {
+      setFormTitle("Customer Feedback Form");
+    } else if (example.includes("conference") || example.includes("attendees")) {
+      setFormTitle("Event Registration Form");
+    } else if (example.includes("job") || example.includes("applications")) {
+      setFormTitle("Job Application Form");
+    } else if (example.includes("NPS") || example.includes("shopping")) {
+      setFormTitle("Customer Survey");
+    }
+  };
+
   return (
-    <div className="space-y-6">
-      <div className="text-center">
-        <div className="flex items-center justify-center mb-4">
-          <div className="p-3 rounded-full bg-primary/10">
-            <Wand2 className="h-8 w-8 text-primary" />
-          </div>
+    <div className="max-w-2xl mx-auto space-y-6">
+      {/* Header */}
+      <div className="text-center space-y-3">
+        <div className="inline-flex items-center justify-center p-3 rounded-2xl bg-gradient-to-br from-primary/20 to-primary/5 border border-primary/10">
+          <Wand2 className="h-8 w-8 text-primary" />
         </div>
-        <h2 className="text-2xl font-bold mb-2">Smart Form Generator</h2>
-        <p className="text-muted-foreground">
-          Describe your form and our AI will generate the perfect fields for you
-        </p>
+        <div>
+          <h2 className="text-2xl font-bold tracking-tight">AI Form Generator</h2>
+          <p className="text-muted-foreground mt-1">
+            Describe your form and AI will create the perfect fields
+          </p>
+        </div>
       </div>
 
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <Sparkles className="h-5 w-5 text-primary" />
-            Form Details
-          </CardTitle>
-          <CardDescription>
-            Tell us what you need and AI will create it automatically
-          </CardDescription>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          <div>
-            <label className="text-sm font-medium mb-2 block">
+      {/* Main Form Card */}
+      <Card className="border-2">
+        <CardContent className="p-6 space-y-5">
+          {/* Form Title */}
+          <div className="space-y-2">
+            <Label htmlFor="title" className="text-sm font-medium">
               Form Title <span className="text-destructive">*</span>
-            </label>
+            </Label>
             <Input
-              placeholder="e.g., Customer Feedback Survey, Event Registration"
+              id="title"
+              placeholder="e.g., Customer Feedback Survey"
               value={formTitle}
               onChange={(e) => setFormTitle(e.target.value)}
+              className="h-11"
             />
           </div>
 
-          <div>
-            <label className="text-sm font-medium mb-2 block">
-              What's the purpose of this form? <span className="text-destructive">*</span>
-            </label>
+          {/* Purpose */}
+          <div className="space-y-2">
+            <Label htmlFor="purpose" className="text-sm font-medium">
+              What should this form collect? <span className="text-destructive">*</span>
+            </Label>
             <Textarea
-              placeholder="e.g., Collect detailed feedback from customers about our new product launch, including satisfaction ratings and improvement suggestions"
+              id="purpose"
+              placeholder="Describe the data you want to collect, questions to ask, and any specific requirements..."
               value={purpose}
               onChange={(e) => setPurpose(e.target.value)}
-              rows={3}
+              rows={4}
+              className="resize-none"
             />
-            <p className="text-xs text-muted-foreground mt-1">
-              The more detail you provide, the better the generated form
+            <p className="text-xs text-muted-foreground flex items-center gap-1">
+              <Lightbulb className="h-3 w-3" />
+              More detail = better results
             </p>
           </div>
 
-          <div>
-            <label className="text-sm font-medium mb-2 block">
-              Industry (optional)
-            </label>
+          {/* Example Prompts */}
+          <div className="space-y-2">
+            <p className="text-xs font-medium text-muted-foreground">Try an example:</p>
+            <div className="flex flex-wrap gap-2">
+              {examplePrompts.map((example, index) => (
+                <button
+                  key={index}
+                  onClick={() => handleExampleClick(example)}
+                  className="text-xs px-3 py-1.5 rounded-full bg-muted hover:bg-muted/80 text-muted-foreground hover:text-foreground transition-colors text-left"
+                >
+                  {example.length > 50 ? example.slice(0, 50) + "..." : example}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          {/* Industry */}
+          <div className="space-y-2">
+            <Label className="text-sm font-medium">
+              Industry <span className="text-muted-foreground font-normal">(optional)</span>
+            </Label>
             <Select value={industry} onValueChange={setIndustry}>
-              <SelectTrigger>
-                <SelectValue placeholder="Select an industry for tailored fields" />
+              <SelectTrigger className="h-11">
+                <SelectValue placeholder="Select for industry-specific suggestions" />
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="technology">Technology</SelectItem>
@@ -207,24 +246,31 @@ export const SmartFormGenerator = ({ onFormGenerated, onBack }: SmartFormGenerat
         </CardContent>
       </Card>
 
-      <div className="flex items-center justify-between">
-        <Button variant="outline" onClick={onBack}>
+      {/* Actions */}
+      <div className="flex items-center justify-between pt-2">
+        <Button 
+          variant="ghost" 
+          onClick={onBack}
+          className="gap-2"
+        >
+          <ArrowLeft className="h-4 w-4" />
           Back
         </Button>
         <Button 
           onClick={handleGenerate}
           disabled={!formTitle.trim() || !purpose.trim() || isGenerating}
-          className="min-w-[160px]"
+          size="lg"
+          className="min-w-[180px] gap-2"
         >
           {isGenerating ? (
             <>
-              <Sparkles className="mr-2 h-4 w-4 animate-pulse" />
+              <Sparkles className="h-4 w-4 animate-pulse" />
               Generating...
             </>
           ) : (
             <>
               Generate Form
-              <ArrowRight className="ml-2 h-4 w-4" />
+              <ArrowRight className="h-4 w-4" />
             </>
           )}
         </Button>

@@ -11,27 +11,40 @@ import {
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
+import { Label } from "@/components/ui/label";
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Wand2, Sparkles } from "lucide-react";
+import { Wand2, Sparkles, Replace, Merge, AlertTriangle } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { FormFieldDefinition } from "@/types/forms";
 import { v4 as uuidv4 } from "uuid";
+import { Alert, AlertDescription } from "@/components/ui/alert";
+
+type GenerationMode = "replace" | "merge";
 
 interface RegenerateFormDialogProps {
   currentTitle?: string;
+  currentFieldCount?: number;
   onRegenerate: (fields: FormFieldDefinition[]) => void;
+  onMerge: (fields: FormFieldDefinition[]) => void;
 }
 
-export function RegenerateFormDialog({ currentTitle, onRegenerate }: RegenerateFormDialogProps) {
+export function RegenerateFormDialog({ 
+  currentTitle, 
+  currentFieldCount = 0,
+  onRegenerate,
+  onMerge 
+}: RegenerateFormDialogProps) {
   const [open, setOpen] = useState(false);
   const [formTitle, setFormTitle] = useState(currentTitle || "");
   const [purpose, setPurpose] = useState("");
   const [industry, setIndustry] = useState("");
+  const [mode, setMode] = useState<GenerationMode>("merge");
   const [isGenerating, setIsGenerating] = useState(false);
   const { toast } = useToast();
 
-  const handleRegenerate = async () => {
+  const handleGenerate = async () => {
     if (!formTitle.trim() || !purpose.trim()) {
       toast({
         title: "Missing Information",
@@ -88,17 +101,25 @@ export function RegenerateFormDialog({ currentTitle, onRegenerate }: RegenerateF
         }))
       );
 
-      onRegenerate(newFields);
+      if (mode === "replace") {
+        onRegenerate(newFields);
+        toast({
+          title: "Form Regenerated!",
+          description: `Replaced with ${newFields.length} new AI-generated fields.`
+        });
+      } else {
+        onMerge(newFields);
+        toast({
+          title: "Fields Added!",
+          description: `Added ${newFields.length} new AI-generated fields to your form.`
+        });
+      }
+
       setOpen(false);
       setPurpose("");
       setIndustry("");
-
-      toast({
-        title: "Form Regenerated!",
-        description: "New fields have been generated based on your description."
-      });
     } catch (error) {
-      console.error("Regeneration error:", error);
+      console.error("Generation error:", error);
       const message = error instanceof Error ? error.message : "Unknown error";
 
       if (message.includes("Rate limit")) {
@@ -115,7 +136,7 @@ export function RegenerateFormDialog({ currentTitle, onRegenerate }: RegenerateF
         });
       } else {
         toast({
-          title: "Regeneration Failed",
+          title: "Generation Failed",
           description: message || "There was an error generating your form.",
           variant: "destructive"
         });
@@ -130,54 +151,60 @@ export function RegenerateFormDialog({ currentTitle, onRegenerate }: RegenerateF
       <DialogTrigger asChild>
         <Button variant="outline" size="sm" className="flex items-center gap-2">
           <Wand2 className="h-4 w-4" />
-          Regenerate with AI
+          <span className="hidden sm:inline">AI Generate</span>
         </Button>
       </DialogTrigger>
-      <DialogContent className="sm:max-w-[500px]">
+      <DialogContent className="sm:max-w-[520px]">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
-            <Sparkles className="h-5 w-5 text-primary" />
-            Regenerate Form with AI
+            <div className="p-1.5 rounded-md bg-primary/10">
+              <Sparkles className="h-4 w-4 text-primary" />
+            </div>
+            Generate Fields with AI
           </DialogTitle>
           <DialogDescription>
-            Describe what you need and AI will generate new fields. This will replace your current fields.
+            Describe what fields you need and AI will generate them for you.
           </DialogDescription>
         </DialogHeader>
 
-        <div className="space-y-4 py-4">
-          <div>
-            <label className="text-sm font-medium mb-2 block">
+        <div className="space-y-5 py-4">
+          {/* Form Title */}
+          <div className="space-y-2">
+            <Label htmlFor="title">
               Form Title <span className="text-destructive">*</span>
-            </label>
+            </Label>
             <Input
+              id="title"
               placeholder="e.g., Customer Feedback Survey"
               value={formTitle}
               onChange={(e) => setFormTitle(e.target.value)}
             />
           </div>
 
-          <div>
-            <label className="text-sm font-medium mb-2 block">
-              What do you need this form to do? <span className="text-destructive">*</span>
-            </label>
+          {/* Purpose */}
+          <div className="space-y-2">
+            <Label htmlFor="purpose">
+              What fields do you need? <span className="text-destructive">*</span>
+            </Label>
             <Textarea
-              placeholder="e.g., Collect detailed feedback about our mobile app including ratings, feature requests, and bug reports"
+              id="purpose"
+              placeholder="e.g., Add fields for collecting user satisfaction ratings, feature requests, and contact information for follow-up"
               value={purpose}
               onChange={(e) => setPurpose(e.target.value)}
               rows={3}
+              className="resize-none"
             />
-            <p className="text-xs text-muted-foreground mt-1">
-              Be specific for better results
+            <p className="text-xs text-muted-foreground">
+              Be specific about the data you want to collect
             </p>
           </div>
 
-          <div>
-            <label className="text-sm font-medium mb-2 block">
-              Industry (optional)
-            </label>
+          {/* Industry */}
+          <div className="space-y-2">
+            <Label>Industry (optional)</Label>
             <Select value={industry} onValueChange={setIndustry}>
               <SelectTrigger>
-                <SelectValue placeholder="Select an industry" />
+                <SelectValue placeholder="Select for industry-specific fields" />
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="technology">Technology</SelectItem>
@@ -193,15 +220,72 @@ export function RegenerateFormDialog({ currentTitle, onRegenerate }: RegenerateF
               </SelectContent>
             </Select>
           </div>
+
+          {/* Mode Selection */}
+          {currentFieldCount > 0 && (
+            <div className="space-y-3">
+              <Label>How should we add the new fields?</Label>
+              <RadioGroup 
+                value={mode} 
+                onValueChange={(v) => setMode(v as GenerationMode)}
+                className="grid grid-cols-2 gap-3"
+              >
+                <Label
+                  htmlFor="merge"
+                  className={`flex items-start gap-3 rounded-lg border p-3 cursor-pointer transition-colors ${
+                    mode === "merge" ? "border-primary bg-primary/5" : "border-border hover:bg-muted/50"
+                  }`}
+                >
+                  <RadioGroupItem value="merge" id="merge" className="mt-0.5" />
+                  <div className="space-y-1">
+                    <div className="flex items-center gap-1.5 font-medium text-sm">
+                      <Merge className="h-3.5 w-3.5" />
+                      Add to existing
+                    </div>
+                    <p className="text-xs text-muted-foreground">
+                      Keep your {currentFieldCount} field{currentFieldCount !== 1 ? 's' : ''} and add new ones
+                    </p>
+                  </div>
+                </Label>
+                <Label
+                  htmlFor="replace"
+                  className={`flex items-start gap-3 rounded-lg border p-3 cursor-pointer transition-colors ${
+                    mode === "replace" ? "border-primary bg-primary/5" : "border-border hover:bg-muted/50"
+                  }`}
+                >
+                  <RadioGroupItem value="replace" id="replace" className="mt-0.5" />
+                  <div className="space-y-1">
+                    <div className="flex items-center gap-1.5 font-medium text-sm">
+                      <Replace className="h-3.5 w-3.5" />
+                      Replace all
+                    </div>
+                    <p className="text-xs text-muted-foreground">
+                      Remove existing and start fresh
+                    </p>
+                  </div>
+                </Label>
+              </RadioGroup>
+
+              {mode === "replace" && (
+                <Alert variant="destructive" className="py-2">
+                  <AlertTriangle className="h-4 w-4" />
+                  <AlertDescription className="text-xs">
+                    This will remove all {currentFieldCount} existing field{currentFieldCount !== 1 ? 's' : ''}. You can undo after.
+                  </AlertDescription>
+                </Alert>
+              )}
+            </div>
+          )}
         </div>
 
-        <DialogFooter>
-          <Button variant="outline" onClick={() => setOpen(false)}>
+        <DialogFooter className="gap-2 sm:gap-0">
+          <Button variant="ghost" onClick={() => setOpen(false)}>
             Cancel
           </Button>
           <Button 
-            onClick={handleRegenerate}
+            onClick={handleGenerate}
             disabled={!formTitle.trim() || !purpose.trim() || isGenerating}
+            className="min-w-[120px]"
           >
             {isGenerating ? (
               <>
@@ -211,7 +295,7 @@ export function RegenerateFormDialog({ currentTitle, onRegenerate }: RegenerateF
             ) : (
               <>
                 <Wand2 className="mr-2 h-4 w-4" />
-                Regenerate
+                {mode === "merge" ? "Add Fields" : "Replace All"}
               </>
             )}
           </Button>

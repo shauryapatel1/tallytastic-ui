@@ -32,6 +32,7 @@ export function SimplifiedFormBuilder({
     removeField,
     duplicateField,
     replaceAllFields,
+    mergeFields,
     handleDragStart,
     handleDragOver,
     handleDragEnd,
@@ -118,8 +119,10 @@ export function SimplifiedFormBuilder({
               <span>Undo</span>
             </Button>
             <RegenerateFormDialog 
-              currentTitle={formTitle} 
-              onRegenerate={replaceAllFields} 
+              currentTitle={formTitle}
+              currentFieldCount={fields.length}
+              onRegenerate={replaceAllFields}
+              onMerge={mergeFields}
             />
           </div>
           {getSaveStatusIndicator()}
