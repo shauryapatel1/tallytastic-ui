@@ -18,5 +18,8 @@ verify_jwt = false
 [functions.delete-user-account]
 verify_jwt = true
 
+[functions.generate-form]
+verify_jwt = false
+
 [auth]
 enable_leaked_password_check = true
