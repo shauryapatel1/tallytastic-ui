@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { useOutletContext, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -6,12 +6,23 @@ import { Badge } from "@/components/ui/badge";
 import { useToast } from "@/hooks/use-toast";
 import FormsApi from "@/lib/api/forms";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { FileText, Wand2, Sparkles, ArrowRight } from "lucide-react";
+import { FileText, Wand2, Sparkles, ArrowRight, LayoutGrid, Briefcase, MessageSquare, Calendar, Code } from "lucide-react";
 import { EnhancedTemplateCard } from "@/components/dashboard/form-templates/EnhancedTemplateCard";
 import { SmartFormGenerator } from "@/components/dashboard/ai-form-generator/SmartFormGenerator";
 import { templateDefinitions, getTemplateCount } from "@/lib/templateDefinitions";
-import { templates as templateData, getRealTemplates } from "@/components/dashboard/form-templates/templateData";
+import { getRealTemplates } from "@/components/dashboard/form-templates/templateData";
+import { TemplateCategory } from "@/components/dashboard/form-templates/types";
 import { FormDefinition } from "@/lib/form/types";
+
+type FilterCategory = "all" | TemplateCategory;
+
+const categoryFilters: { id: FilterCategory; label: string; icon: React.ReactNode }[] = [
+  { id: "all", label: "All", icon: <LayoutGrid className="h-4 w-4" /> },
+  { id: "business", label: "Business", icon: <Briefcase className="h-4 w-4" /> },
+  { id: "feedback", label: "Feedback", icon: <MessageSquare className="h-4 w-4" /> },
+  { id: "events", label: "Events", icon: <Calendar className="h-4 w-4" /> },
+  { id: "technical", label: "Technical", icon: <Code className="h-4 w-4" /> },
+];
 
 interface ContextType {
   formData: any;
@@ -28,10 +39,17 @@ export default function CreateStep() {
   
   const [mode, setMode] = useState<CreateMode>("select");
   const [selectedTemplate, setSelectedTemplate] = useState<string>("");
+  const [categoryFilter, setCategoryFilter] = useState<FilterCategory>("all");
 
   // Get real templates (excluding blank) for the template picker
-  const availableTemplates = getRealTemplates();
+  const allTemplates = getRealTemplates();
   const templateCount = getTemplateCount();
+  
+  // Filter templates by category
+  const filteredTemplates = useMemo(() => {
+    if (categoryFilter === "all") return allTemplates;
+    return allTemplates.filter(t => t.category === categoryFilter);
+  }, [allTemplates, categoryFilter]);
 
   const updateFormMutation = useMutation({
     mutationFn: ({ formId, formDefinition }: { formId: string; formDefinition: Partial<FormDefinition> }) =>
@@ -123,8 +141,32 @@ export default function CreateStep() {
           </p>
         </div>
 
+        {/* Category filter pills */}
+        <div className="flex flex-wrap justify-center gap-2">
+          {categoryFilters.map(({ id, label, icon }) => (
+            <Button
+              key={id}
+              size="sm"
+              variant={categoryFilter === id ? "default" : "outline"}
+              onClick={() => {
+                setCategoryFilter(id);
+                setSelectedTemplate(""); // Clear selection when changing filter
+              }}
+              className="gap-1.5"
+            >
+              {icon}
+              {label}
+            </Button>
+          ))}
+        </div>
+
+        {/* Template count */}
+        <p className="text-center text-sm text-muted-foreground">
+          {filteredTemplates.length} template{filteredTemplates.length !== 1 ? 's' : ''} available
+        </p>
+
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-          {availableTemplates.map((template) => (
+          {filteredTemplates.map((template) => (
             <EnhancedTemplateCard
               key={template.id}
               template={template}
@@ -133,6 +175,13 @@ export default function CreateStep() {
             />
           ))}
         </div>
+
+        {/* Empty state */}
+        {filteredTemplates.length === 0 && (
+          <div className="text-center py-8 text-muted-foreground">
+            <p>No templates in this category yet.</p>
+          </div>
+        )}
 
         <div className="flex items-center justify-between">
           <Button variant="outline" onClick={() => setMode("select")}>
