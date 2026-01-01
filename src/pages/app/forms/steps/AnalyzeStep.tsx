@@ -6,13 +6,13 @@ import { useQuery } from "@tanstack/react-query";
 import FormsApi from "@/lib/api/forms";
 import { 
   BarChart3, Users, Clock, TrendingUp, TrendingDown, Eye, Target, 
-  AlertCircle, ArrowUp, ArrowDown, Minus, PieChart, Activity
+  AlertCircle, ArrowUp, ArrowDown, Minus, PieChart, Activity, Zap
 } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
 import { ChartContainer, ChartTooltip, ChartTooltipContent } from "@/components/ui/chart";
 import { 
   LineChart, Line, XAxis, YAxis, CartesianGrid, ResponsiveContainer,
-  BarChart, Bar, Tooltip, Legend, AreaChart, Area
+  BarChart, Bar, Tooltip, Legend, AreaChart, Area, Cell, FunnelChart, Funnel, LabelList
 } from "recharts";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
@@ -306,60 +306,133 @@ export default function AnalyzeStep() {
         </TabsList>
 
         <TabsContent value="completion" className="space-y-4">
+          {/* Conversion Funnel Chart */}
           <Card>
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
                 <TrendingUp className="w-5 h-5" />
-                Completion Funnel
+                Conversion Funnel
               </CardTitle>
               <CardDescription>
-                Track how users progress through your form
+                Visualize how users progress through your form
               </CardDescription>
             </CardHeader>
-            <CardContent className="space-y-6">
-              <div className="flex items-center justify-between">
-                <span className="text-sm font-medium">Overall Completion Rate</span>
-                <span className="text-2xl font-bold">{completionRate}%</span>
-              </div>
-              <Progress value={completionRate} className="h-3" />
-              
-              <div className="grid grid-cols-3 gap-4 pt-4">
-                <div className="text-center p-4 bg-muted/50 rounded-lg">
-                  <div className="text-2xl font-bold text-primary">{analytics?.views || 0}</div>
-                  <div className="text-sm text-muted-foreground">Views</div>
+            <CardContent>
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                {/* Visual Funnel */}
+                <div className="space-y-4">
+                  {(() => {
+                    const funnelData = [
+                      { name: 'Views', value: analytics?.views || 0, color: 'hsl(var(--primary))' },
+                      { name: 'Started', value: analytics?.starts || 0, color: 'hsl(221 83% 53%)' },
+                      { name: 'Completed', value: analytics?.completes || 0, color: 'hsl(142 76% 36%)' },
+                    ];
+                    const maxValue = Math.max(...funnelData.map(d => d.value), 1);
+                    
+                    return funnelData.map((stage, index) => {
+                      const width = Math.max((stage.value / maxValue) * 100, 10);
+                      const prevValue = index > 0 ? funnelData[index - 1].value : stage.value;
+                      const dropRate = prevValue > 0 ? Math.round(((prevValue - stage.value) / prevValue) * 100) : 0;
+                      
+                      return (
+                        <div key={stage.name} className="relative">
+                          <div className="flex items-center justify-between mb-1">
+                            <span className="text-sm font-medium">{stage.name}</span>
+                            <div className="flex items-center gap-2">
+                              <span className="text-lg font-bold">{stage.value}</span>
+                              {index > 0 && dropRate > 0 && (
+                                <Badge variant="outline" className="text-xs text-destructive">
+                                  -{dropRate}%
+                                </Badge>
+                              )}
+                            </div>
+                          </div>
+                          <div className="h-10 bg-muted rounded-lg overflow-hidden">
+                            <div 
+                              className="h-full rounded-lg transition-all duration-500 flex items-center justify-center"
+                              style={{ 
+                                width: `${width}%`, 
+                                backgroundColor: stage.color,
+                              }}
+                            >
+                              {width > 30 && (
+                                <span className="text-white text-sm font-medium">
+                                  {Math.round(width)}%
+                                </span>
+                              )}
+                            </div>
+                          </div>
+                        </div>
+                      );
+                    });
+                  })()}
                 </div>
-                <div className="text-center p-4 bg-muted/50 rounded-lg">
-                  <div className="text-2xl font-bold text-primary">{analytics?.starts || 0}</div>
-                  <div className="text-sm text-muted-foreground">Started</div>
-                </div>
-                <div className="text-center p-4 bg-muted/50 rounded-lg">
-                  <div className="text-2xl font-bold text-green-600">{analytics?.completes || 0}</div>
-                  <div className="text-sm text-muted-foreground">Completed</div>
-                </div>
-              </div>
 
-              {/* Weekly comparison */}
-              {analytics?.weeklyComparison && (
-                <div className="pt-4 border-t">
-                  <h4 className="text-sm font-medium mb-2">Weekly Performance</h4>
-                  <div className="flex items-center gap-4">
-                    <div>
-                      <span className="text-lg font-bold">{analytics.weeklyComparison.thisWeek}</span>
-                      <span className="text-sm text-muted-foreground ml-1">this week</span>
-                    </div>
-                    <div className="text-muted-foreground">vs</div>
-                    <div>
-                      <span className="text-lg font-bold">{analytics.weeklyComparison.lastWeek}</span>
-                      <span className="text-sm text-muted-foreground ml-1">last week</span>
-                    </div>
-                    {weeklyChange !== 0 && (
-                      <Badge variant={weeklyChange > 0 ? "default" : "destructive"}>
-                        {weeklyChange > 0 ? '+' : ''}{weeklyChange}%
+                {/* Metrics Summary */}
+                <div className="space-y-4">
+                  <div className="p-4 rounded-lg bg-primary/10 border border-primary/20">
+                    <div className="flex items-center justify-between mb-2">
+                      <span className="text-sm font-medium">Completion Rate</span>
+                      <Badge variant="default" className="text-lg px-3">
+                        {completionRate}%
                       </Badge>
-                    )}
+                    </div>
+                    <Progress value={completionRate} className="h-2" />
+                    <p className="text-xs text-muted-foreground mt-2">
+                      {completionRate > 70 ? '🎉 Excellent performance!' : 
+                       completionRate > 50 ? '👍 Good conversion rate' : 
+                       completionRate > 30 ? '📊 Room for improvement' : 
+                       '⚠️ Consider optimizing your form'}
+                    </p>
                   </div>
+
+                  <div className="grid grid-cols-2 gap-3">
+                    <div className="p-3 rounded-lg bg-muted/50">
+                      <div className="text-xs text-muted-foreground">View → Start</div>
+                      <div className="text-lg font-bold">
+                        {analytics?.views && analytics.views > 0 
+                          ? Math.round((analytics.starts / analytics.views) * 100) 
+                          : 0}%
+                      </div>
+                    </div>
+                    <div className="p-3 rounded-lg bg-muted/50">
+                      <div className="text-xs text-muted-foreground">Start → Complete</div>
+                      <div className="text-lg font-bold">
+                        {analytics?.starts && analytics.starts > 0 
+                          ? Math.round((analytics.completes / analytics.starts) * 100) 
+                          : 0}%
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Weekly comparison */}
+                  {analytics?.weeklyComparison && (
+                    <div className="p-4 rounded-lg border">
+                      <h4 className="text-sm font-medium mb-2">Weekly Comparison</h4>
+                      <div className="flex items-center gap-3">
+                        <div className="flex-1">
+                          <div className="text-xs text-muted-foreground">This week</div>
+                          <div className="text-xl font-bold">{analytics.weeklyComparison.thisWeek}</div>
+                        </div>
+                        <div className="text-muted-foreground">vs</div>
+                        <div className="flex-1">
+                          <div className="text-xs text-muted-foreground">Last week</div>
+                          <div className="text-xl font-bold">{analytics.weeklyComparison.lastWeek}</div>
+                        </div>
+                        {weeklyChange !== 0 && (
+                          <Badge 
+                            variant={weeklyChange > 0 ? "default" : "destructive"}
+                            className="flex items-center gap-1"
+                          >
+                            {weeklyChange > 0 ? <ArrowUp className="w-3 h-3" /> : <ArrowDown className="w-3 h-3" />}
+                            {Math.abs(weeklyChange)}%
+                          </Badge>
+                        )}
+                      </div>
+                    </div>
+                  )}
                 </div>
-              )}
+              </div>
             </CardContent>
           </Card>
         </TabsContent>
@@ -428,74 +501,185 @@ export default function AnalyzeStep() {
         </TabsContent>
 
         <TabsContent value="dropoff" className="space-y-4">
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <TrendingDown className="w-5 h-5" />
-                Drop-off Analysis
-              </CardTitle>
-              <CardDescription>
-                Identify where users abandon your form
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              {analytics?.dropOffPoints && analytics.dropOffPoints.length > 0 ? (
-                <div className="space-y-3">
-                  {analytics.dropOffPoints.map((point, index) => (
-                    <div 
-                      key={index} 
-                      className="flex items-center justify-between p-4 bg-destructive/5 border border-destructive/20 rounded-lg"
-                    >
-                      <div>
-                        <p className="font-medium">{point.fieldLabel}</p>
-                        <p className="text-sm text-muted-foreground">
-                          {point.dropOffs} user{point.dropOffs !== 1 ? 's' : ''} dropped off here
-                        </p>
-                      </div>
-                      <Badge variant="destructive">
-                        {point.dropOffs} drops
-                      </Badge>
-                    </div>
-                  ))}
-                  
-                  <div className="mt-4 p-4 bg-muted rounded-lg">
-                    <h4 className="font-medium mb-2">💡 Tips to reduce drop-offs</h4>
-                    <ul className="text-sm text-muted-foreground space-y-1">
-                      <li>• Simplify complex fields or break them into smaller steps</li>
-                      <li>• Make optional fields clearly marked</li>
-                      <li>• Add helpful placeholder text or descriptions</li>
-                      <li>• Consider if all fields are truly necessary</li>
-                    </ul>
-                  </div>
-                </div>
-              ) : (
-                <div className="text-center py-8 text-muted-foreground">
-                  <TrendingDown className="w-12 h-12 mx-auto mb-2 opacity-50" />
-                  <p>No drop-off data recorded yet</p>
-                  <p className="text-sm">
-                    Drop-offs are tracked when users abandon the form at specific fields
-                  </p>
-                </div>
-              )}
-            </CardContent>
-          </Card>
-
-          {/* Peak Hours */}
-          {analytics?.peakSubmissionHours && analytics.peakSubmissionHours.length > 0 && (
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            {/* Drop-off Bar Chart */}
             <Card>
               <CardHeader>
-                <CardTitle>Peak Submission Hours</CardTitle>
+                <CardTitle className="flex items-center gap-2">
+                  <TrendingDown className="w-5 h-5" />
+                  Drop-off by Field
+                </CardTitle>
+                <CardDescription>
+                  Where users abandon your form
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                {analytics?.dropOffPoints && analytics.dropOffPoints.length > 0 ? (
+                  <div className="space-y-4">
+                    <ChartContainer 
+                      config={{
+                        dropOffs: { label: "Drop-offs", color: "hsl(var(--destructive))" }
+                      }} 
+                      className="h-[250px] w-full"
+                    >
+                      <BarChart 
+                        data={analytics.dropOffPoints.slice(0, 6)} 
+                        layout="vertical"
+                        margin={{ top: 5, right: 30, left: 20, bottom: 5 }}
+                      >
+                        <CartesianGrid strokeDasharray="3 3" className="stroke-muted" horizontal={false} />
+                        <XAxis type="number" tick={{ fontSize: 12 }} />
+                        <YAxis 
+                          dataKey="fieldLabel" 
+                          type="category" 
+                          width={100}
+                          tick={{ fontSize: 11 }}
+                          tickFormatter={(value) => value.length > 12 ? value.slice(0, 12) + '...' : value}
+                        />
+                        <ChartTooltip content={<ChartTooltipContent />} />
+                        <Bar 
+                          dataKey="dropOffs" 
+                          fill="hsl(var(--destructive))" 
+                          radius={[0, 4, 4, 0]}
+                          name="Drop-offs"
+                        />
+                      </BarChart>
+                    </ChartContainer>
+                    
+                    <div className="p-3 bg-muted rounded-lg">
+                      <p className="text-sm font-medium mb-1">💡 Quick tip</p>
+                      <p className="text-xs text-muted-foreground">
+                        Fields with high drop-offs may be confusing or too demanding. 
+                        Consider simplifying or making them optional.
+                      </p>
+                    </div>
+                  </div>
+                ) : (
+                  <div className="text-center py-8 text-muted-foreground">
+                    <TrendingDown className="w-12 h-12 mx-auto mb-2 opacity-50" />
+                    <p>No drop-off data yet</p>
+                    <p className="text-sm">Data appears when users leave mid-form</p>
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+
+            {/* Peak Hours Chart */}
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <Zap className="w-5 h-5" />
+                  Peak Submission Hours
+                </CardTitle>
                 <CardDescription>
                   When your form receives the most submissions
                 </CardDescription>
               </CardHeader>
               <CardContent>
-                <div className="flex flex-wrap gap-2">
-                  {analytics.peakSubmissionHours.map((h) => (
-                    <Badge key={h.hour} variant="secondary" className="text-sm">
-                      {h.hour.toString().padStart(2, '0')}:00 - {h.count} submissions
-                    </Badge>
-                  ))}
+                {analytics?.peakSubmissionHours && analytics.peakSubmissionHours.length > 0 ? (
+                  <div className="space-y-4">
+                    {/* 24-hour visualization */}
+                    <div className="grid grid-cols-12 gap-1">
+                      {Array.from({ length: 24 }, (_, hour) => {
+                        const hourData = analytics.peakSubmissionHours?.find(h => h.hour === hour);
+                        const count = hourData?.count || 0;
+                        const maxCount = Math.max(...(analytics.peakSubmissionHours?.map(h => h.count) || [1]));
+                        const intensity = count > 0 ? Math.max(0.2, count / maxCount) : 0.05;
+                        
+                        return (
+                          <div key={hour} className="text-center">
+                            <div 
+                              className="h-16 rounded-sm mb-1 transition-all hover:scale-110"
+                              style={{ 
+                                backgroundColor: count > 0 
+                                  ? `hsl(var(--primary) / ${intensity})` 
+                                  : 'hsl(var(--muted))',
+                              }}
+                              title={`${hour}:00 - ${count} submissions`}
+                            />
+                            {hour % 6 === 0 && (
+                              <span className="text-[10px] text-muted-foreground">{hour}h</span>
+                            )}
+                          </div>
+                        );
+                      })}
+                    </div>
+                    
+                    {/* Top hours list */}
+                    <div className="space-y-2">
+                      <p className="text-sm font-medium">Top hours:</p>
+                      <div className="flex flex-wrap gap-2">
+                        {analytics.peakSubmissionHours.slice(0, 3).map((h, i) => (
+                          <Badge 
+                            key={h.hour} 
+                            variant={i === 0 ? "default" : "secondary"}
+                            className="flex items-center gap-1"
+                          >
+                            {i === 0 && <Zap className="w-3 h-3" />}
+                            {h.hour.toString().padStart(2, '0')}:00
+                            <span className="opacity-70">({h.count})</span>
+                          </Badge>
+                        ))}
+                      </div>
+                    </div>
+                  </div>
+                ) : (
+                  <div className="text-center py-8 text-muted-foreground">
+                    <Clock className="w-12 h-12 mx-auto mb-2 opacity-50" />
+                    <p>No submission data yet</p>
+                    <p className="text-sm">Peak hours appear after submissions</p>
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+          </div>
+
+          {/* Detailed Drop-off List */}
+          {analytics?.dropOffPoints && analytics.dropOffPoints.length > 0 && (
+            <Card>
+              <CardHeader>
+                <CardTitle>Drop-off Details</CardTitle>
+                <CardDescription>
+                  Complete breakdown of where users leave your form
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-3">
+                  {analytics.dropOffPoints.map((point, index) => {
+                    const totalDropoffs = analytics.dropOffPoints?.reduce((sum, p) => sum + p.dropOffs, 0) || 1;
+                    const percentage = Math.round((point.dropOffs / totalDropoffs) * 100);
+                    
+                    return (
+                      <div 
+                        key={index} 
+                        className="flex items-center gap-4 p-3 bg-destructive/5 border border-destructive/20 rounded-lg"
+                      >
+                        <div className="w-8 h-8 rounded-full bg-destructive/20 flex items-center justify-center text-sm font-bold text-destructive">
+                          {index + 1}
+                        </div>
+                        <div className="flex-1">
+                          <p className="font-medium">{point.fieldLabel}</p>
+                          <div className="flex items-center gap-2 mt-1">
+                            <Progress value={percentage} className="h-1.5 flex-1 max-w-[100px]" />
+                            <span className="text-xs text-muted-foreground">{percentage}% of all drops</span>
+                          </div>
+                        </div>
+                        <Badge variant="destructive">
+                          {point.dropOffs}
+                        </Badge>
+                      </div>
+                    );
+                  })}
+                  
+                  <div className="mt-4 p-4 bg-muted rounded-lg">
+                    <h4 className="font-medium mb-2">💡 Reduce drop-offs</h4>
+                    <ul className="text-sm text-muted-foreground space-y-1">
+                      <li>• Simplify complex fields or break them into steps</li>
+                      <li>• Make optional fields clearly marked</li>
+                      <li>• Add helpful descriptions and examples</li>
+                      <li>• Consider if all fields are truly necessary</li>
+                    </ul>
+                  </div>
                 </div>
               </CardContent>
             </Card>
