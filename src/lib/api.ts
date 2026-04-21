@@ -1,4 +1,4 @@
-import { supabase } from "@/integrations/supabase/client";
+import { supabaseLegacy as supabase } from "@/integrations/supabase/legacy-client";
 import { Form } from "./types";
 import { User } from "./auth";
 import { v4 as uuidv4 } from 'uuid';
