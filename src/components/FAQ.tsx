@@ -8,28 +8,32 @@ import {
 
 const faqs = [
   {
-    question: "How easy is it to get started with FormCraft?",
-    answer: "Very easy! You can create your first form in minutes without any coding knowledge. Simply sign up for a free account, choose a template or start from scratch, and customize your form using our intuitive drag-and-drop builder."
+    question: "How is this different from Tally or Typeform?",
+    answer: "Tally and Typeform optimize for the form builder. FormCraft optimizes for what happens after submit — signed webhooks, retries, spam filtering, conditional routing, and a triage inbox. If your forms feed real workflows (CRM, Slack, internal tools), FormCraft is the layer those tools assume already exists."
   },
   {
-    question: "Can I customize the look and feel of my forms?",
-    answer: "Absolutely! FormCraft offers extensive customization options. You can change colors, fonts, add your logo, and adjust the layout to match your brand identity. With the Professional and Enterprise plans, you get even more advanced branding options."
+    question: "Can I keep my existing form HTML?",
+    answer: "Yes. Point any HTML form's action to your FormCraft endpoint, or POST JSON from your own UI. There's no SDK lock-in and no required builder. Use ours when it helps; ignore it when it doesn't."
   },
   {
-    question: "What types of forms can I create?",
-    answer: "FormCraft is versatile and supports a wide range of form types including contact forms, surveys, registration forms, application forms, order forms, feedback forms, and more. With conditional logic, you can create dynamic forms that adapt to user input."
+    question: "How do webhook retries work?",
+    answer: "Every webhook payload is HMAC-SHA256 signed and delivered with exponential backoff up to 5 attempts. Every attempt is logged with response code, body, and latency. Failed deliveries can be replayed from the dashboard with one click."
   },
   {
-    question: "How do I receive form submissions?",
-    answer: "Form submissions are stored securely in your FormCraft dashboard. You can also set up email notifications to receive submissions instantly. Additionally, you can export submissions to CSV or connect with other tools via our integrations."
+    question: "What's included in spam protection?",
+    answer: "Honeypot fields, per-IP rate limiting, and pluggable Cloudflare Turnstile / reCAPTCHA support out of the box. Suspected spam goes to a separate folder so it never pollutes your real submissions."
   },
   {
-    question: "Is FormCraft secure?",
-    answer: "Yes, security is our priority. FormCraft uses encryption to protect data in transit and at rest. All forms are hosted on secure servers, and we comply with data protection regulations. Enterprise plans include additional security features like SSO and advanced data retention policies."
+    question: "Do you support multi-client / agency workflows?",
+    answer: "Yes. The Agency plan gives you multiple workspaces, per-client branding, team roles, and reusable templates across workspaces. Built specifically for agencies juggling 10+ client sites."
   },
   {
-    question: "Do you offer refunds?",
-    answer: "Yes, we offer a 14-day money-back guarantee for all paid plans. If you're not satisfied with FormCraft, simply contact our support team within 14 days of your purchase for a full refund, no questions asked."
+    question: "Is there an API?",
+    answer: "Yes. Workspace-scoped API tokens let you submit, list submissions, manage webhooks, and update routing rules programmatically. Tokens are scoped, revocable, and audit-logged."
+  },
+  {
+    question: "Where is data stored?",
+    answer: "Submissions live in a Postgres database with row-level security and per-workspace isolation. You own your data, can export it as CSV/JSON anytime, and we provide one-click account deletion."
   },
 ];
 
@@ -39,10 +43,10 @@ export const FAQ = () => {
       <div className="container mx-auto px-4">
         <div className="max-w-3xl mx-auto text-center mb-16">
           <h2 className="text-3xl md:text-4xl font-playfair font-semibold mb-4">
-            Frequently asked questions
+            Questions developers and agencies ask
           </h2>
           <p className="text-primary/60">
-            Everything you need to know about FormCraft
+            Straight answers about reliability, pricing, and lock-in.
           </p>
         </div>
         

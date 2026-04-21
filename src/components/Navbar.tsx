@@ -80,29 +80,36 @@ export const Navbar = () => {
             FormCraft
           </a>
           <div className="hidden md:flex items-center space-x-8">
-            <a 
-              href="#features" 
+            <a
+              href="#features"
               onClick={(e) => scrollToSection(e, 'features')}
               className="text-sm hover:text-primary/80 transition-colors"
             >
-              Features
+              Product
             </a>
-            <a 
-              href="#pricing" 
+            <a
+              href="#code"
+              onClick={(e) => scrollToSection(e, 'code')}
+              className="text-sm hover:text-primary/80 transition-colors"
+            >
+              Developers
+            </a>
+            <a
+              href="#use-cases"
+              onClick={(e) => scrollToSection(e, 'use-cases')}
+              className="text-sm hover:text-primary/80 transition-colors"
+            >
+              Agencies
+            </a>
+            <a
+              href="#pricing"
               onClick={(e) => scrollToSection(e, 'pricing')}
               className="text-sm hover:text-primary/80 transition-colors"
             >
               Pricing
             </a>
-            <a 
-              href="#testimonials" 
-              onClick={(e) => scrollToSection(e, 'testimonials')}
-              className="text-sm hover:text-primary/80 transition-colors"
-            >
-              Testimonials
-            </a>
-            <a 
-              href="#faq" 
+            <a
+              href="#faq"
               onClick={(e) => scrollToSection(e, 'faq')}
               className="text-sm hover:text-primary/80 transition-colors"
             >

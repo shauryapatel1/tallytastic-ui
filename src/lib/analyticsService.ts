@@ -1,4 +1,5 @@
 import { supabase } from "@/integrations/supabase/client";
+import { supabaseLegacy as db } from "@/integrations/supabase/legacy-client";
 
 export interface AnalyticsMetrics {
   views: number;
@@ -33,7 +34,7 @@ export async function getFormAnalyticsMetrics(formId: string): Promise<Analytics
     if (!userData.user) throw new Error("User not authenticated");
     
     // Verify form ownership and get form definition
-    const { data: formData, error: formError } = await supabase
+    const { data: formData, error: formError } = await db
       .from("forms")
       .select("user_id, definition_sections")
       .eq("id", formId)
@@ -60,7 +61,7 @@ export async function getFormAnalyticsMetrics(formId: string): Promise<Analytics
     });
     
     // Fetch all events for this form
-    const { data: events, error: eventsError } = await supabase
+    const { data: events, error: eventsError } = await db
       .from("form_events")
       .select("*")
       .eq("form_id", formId)
@@ -69,7 +70,7 @@ export async function getFormAnalyticsMetrics(formId: string): Promise<Analytics
     if (eventsError) throw eventsError;
     
     // Fetch all responses for this form
-    const { data: responses, error: responsesError } = await supabase
+    const { data: responses, error: responsesError } = await db
       .from("form_responses")
       .select("*")
       .eq("form_id", formId);

@@ -1,5 +1,5 @@
 
-import { supabase } from "@/integrations/supabase/client";
+import { supabaseLegacy as supabase } from "@/integrations/supabase/legacy-client";
 import type { FormDefinition } from "@/types/forms";
 
 // Save a new form definition
