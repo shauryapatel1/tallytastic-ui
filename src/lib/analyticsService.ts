@@ -1,9 +1,5 @@
 import { supabase } from "@/integrations/supabase/client";
-
-// Cast around generated types: forms / form_events / form_responses tables
-// exist in the database but are not present in the auto-generated types file.
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-const db = supabase as any;
+import { supabaseLegacy as db } from "@/integrations/supabase/legacy-client";
 
 export interface AnalyticsMetrics {
   views: number;
