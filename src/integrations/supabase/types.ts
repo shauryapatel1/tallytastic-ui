@@ -14,16 +14,348 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      api_tokens: {
+        Row: {
+          created_at: string
+          created_by: string
+          expires_at: string | null
+          id: string
+          last_used_at: string | null
+          name: string
+          revoked_at: string | null
+          scopes: string[]
+          token_hash: string
+          token_prefix: string
+          workspace_id: string
+        }
+        Insert: {
+          created_at?: string
+          created_by: string
+          expires_at?: string | null
+          id?: string
+          last_used_at?: string | null
+          name: string
+          revoked_at?: string | null
+          scopes?: string[]
+          token_hash: string
+          token_prefix: string
+          workspace_id: string
+        }
+        Update: {
+          created_at?: string
+          created_by?: string
+          expires_at?: string | null
+          id?: string
+          last_used_at?: string | null
+          name?: string
+          revoked_at?: string | null
+          scopes?: string[]
+          token_hash?: string
+          token_prefix?: string
+          workspace_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "api_tokens_workspace_id_fkey"
+            columns: ["workspace_id"]
+            isOneToOne: false
+            referencedRelation: "workspaces"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      routing_rules: {
+        Row: {
+          actions: Json
+          conditions: Json
+          created_at: string
+          created_by: string
+          form_id: string
+          id: string
+          is_active: boolean
+          name: string
+          priority: number
+          updated_at: string
+          workspace_id: string
+        }
+        Insert: {
+          actions?: Json
+          conditions?: Json
+          created_at?: string
+          created_by: string
+          form_id: string
+          id?: string
+          is_active?: boolean
+          name: string
+          priority?: number
+          updated_at?: string
+          workspace_id: string
+        }
+        Update: {
+          actions?: Json
+          conditions?: Json
+          created_at?: string
+          created_by?: string
+          form_id?: string
+          id?: string
+          is_active?: boolean
+          name?: string
+          priority?: number
+          updated_at?: string
+          workspace_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "routing_rules_workspace_id_fkey"
+            columns: ["workspace_id"]
+            isOneToOne: false
+            referencedRelation: "workspaces"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      submission_metadata: {
+        Row: {
+          ai_summary: string | null
+          assigned_to: string | null
+          created_at: string
+          form_response_id: string
+          id: string
+          notes: string | null
+          status: Database["public"]["Enums"]["submission_status"]
+          tags: string[]
+          updated_at: string
+          workspace_id: string
+        }
+        Insert: {
+          ai_summary?: string | null
+          assigned_to?: string | null
+          created_at?: string
+          form_response_id: string
+          id?: string
+          notes?: string | null
+          status?: Database["public"]["Enums"]["submission_status"]
+          tags?: string[]
+          updated_at?: string
+          workspace_id: string
+        }
+        Update: {
+          ai_summary?: string | null
+          assigned_to?: string | null
+          created_at?: string
+          form_response_id?: string
+          id?: string
+          notes?: string | null
+          status?: Database["public"]["Enums"]["submission_status"]
+          tags?: string[]
+          updated_at?: string
+          workspace_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "submission_metadata_workspace_id_fkey"
+            columns: ["workspace_id"]
+            isOneToOne: false
+            referencedRelation: "workspaces"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      webhook_deliveries: {
+        Row: {
+          attempt: number
+          created_at: string
+          delivered_at: string | null
+          endpoint_id: string
+          error_message: string | null
+          id: string
+          max_attempts: number
+          next_retry_at: string | null
+          request_payload: Json
+          response_body: string | null
+          response_code: number | null
+          status: Database["public"]["Enums"]["webhook_delivery_status"]
+          submission_id: string
+          updated_at: string
+        }
+        Insert: {
+          attempt?: number
+          created_at?: string
+          delivered_at?: string | null
+          endpoint_id: string
+          error_message?: string | null
+          id?: string
+          max_attempts?: number
+          next_retry_at?: string | null
+          request_payload: Json
+          response_body?: string | null
+          response_code?: number | null
+          status?: Database["public"]["Enums"]["webhook_delivery_status"]
+          submission_id: string
+          updated_at?: string
+        }
+        Update: {
+          attempt?: number
+          created_at?: string
+          delivered_at?: string | null
+          endpoint_id?: string
+          error_message?: string | null
+          id?: string
+          max_attempts?: number
+          next_retry_at?: string | null
+          request_payload?: Json
+          response_body?: string | null
+          response_code?: number | null
+          status?: Database["public"]["Enums"]["webhook_delivery_status"]
+          submission_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "webhook_deliveries_endpoint_id_fkey"
+            columns: ["endpoint_id"]
+            isOneToOne: false
+            referencedRelation: "webhook_endpoints"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      webhook_endpoints: {
+        Row: {
+          created_at: string
+          created_by: string
+          description: string | null
+          form_id: string
+          id: string
+          is_active: boolean
+          secret: string
+          updated_at: string
+          url: string
+          workspace_id: string
+        }
+        Insert: {
+          created_at?: string
+          created_by: string
+          description?: string | null
+          form_id: string
+          id?: string
+          is_active?: boolean
+          secret: string
+          updated_at?: string
+          url: string
+          workspace_id: string
+        }
+        Update: {
+          created_at?: string
+          created_by?: string
+          description?: string | null
+          form_id?: string
+          id?: string
+          is_active?: boolean
+          secret?: string
+          updated_at?: string
+          url?: string
+          workspace_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "webhook_endpoints_workspace_id_fkey"
+            columns: ["workspace_id"]
+            isOneToOne: false
+            referencedRelation: "workspaces"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      workspace_members: {
+        Row: {
+          created_at: string
+          id: string
+          invited_by: string | null
+          role: Database["public"]["Enums"]["workspace_role"]
+          user_id: string
+          workspace_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          invited_by?: string | null
+          role?: Database["public"]["Enums"]["workspace_role"]
+          user_id: string
+          workspace_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          invited_by?: string | null
+          role?: Database["public"]["Enums"]["workspace_role"]
+          user_id?: string
+          workspace_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "workspace_members_workspace_id_fkey"
+            columns: ["workspace_id"]
+            isOneToOne: false
+            referencedRelation: "workspaces"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      workspaces: {
+        Row: {
+          created_at: string
+          id: string
+          name: string
+          owner_id: string
+          slug: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          name: string
+          owner_id: string
+          slug: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          name?: string
+          owner_id?: string
+          slug?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      has_workspace_role: {
+        Args: {
+          _role: Database["public"]["Enums"]["workspace_role"]
+          _user_id: string
+          _workspace_id: string
+        }
+        Returns: boolean
+      }
+      is_workspace_member: {
+        Args: { _user_id: string; _workspace_id: string }
+        Returns: boolean
+      }
     }
     Enums: {
-      [_ in never]: never
+      submission_status: "new" | "in_progress" | "done" | "archived" | "spam"
+      webhook_delivery_status:
+        | "pending"
+        | "success"
+        | "failed"
+        | "retrying"
+        | "dead"
+      workspace_role: "owner" | "admin" | "member"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -150,6 +482,16 @@ export type CompositeTypes<
 
 export const Constants = {
   public: {
-    Enums: {},
+    Enums: {
+      submission_status: ["new", "in_progress", "done", "archived", "spam"],
+      webhook_delivery_status: [
+        "pending",
+        "success",
+        "failed",
+        "retrying",
+        "dead",
+      ],
+      workspace_role: ["owner", "admin", "member"],
+    },
   },
 } as const
