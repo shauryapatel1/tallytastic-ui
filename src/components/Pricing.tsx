@@ -146,9 +146,9 @@ export const Pricing = () => {
   const { subscription, isLoading, startCheckout, manageSubscription } = useSubscription();
   
   const plans: { key: PlanKey; popular: boolean; description: string }[] = [
-    { key: "free", popular: false, description: "Perfect for trying out FormCraft" },
-    { key: "pro", popular: true, description: "Best for professionals & small teams" },
-    { key: "enterprise", popular: false, description: "For organizations with advanced needs" },
+    { key: "free", popular: false, description: "For side projects and trying us out" },
+    { key: "pro", popular: true, description: "For developers and small teams shipping real apps" },
+    { key: "enterprise", popular: false, description: "For agencies managing multiple client sites" },
   ];
   
   return (
@@ -156,10 +156,10 @@ export const Pricing = () => {
       <div className="container mx-auto px-4">
         <div className="max-w-3xl mx-auto text-center mb-16">
           <h2 className="text-3xl md:text-4xl font-playfair font-semibold mb-4">
-            Simple, transparent pricing
+            Pricing that maps to value, not field count
           </h2>
           <p className="text-primary/60">
-            Start for free, upgrade as you grow
+            Start free. Pay when you need real workflow infrastructure.
           </p>
         </div>
         
