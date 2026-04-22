@@ -93,7 +93,7 @@ export const Hero = () => {
               <span className="ml-3 text-xs text-primary/50 font-mono">terminal</span>
             </div>
             <pre className="p-6 text-sm font-mono bg-foreground text-background overflow-x-auto leading-relaxed">
-{`$ curl -X POST https://api.formcraft.dev/v1/submit/frm_abc123 \\
+{`$ curl -X POST https://api.ingrid.dev/v1/submit/frm_abc123 \\
     -H "Content-Type: application/json" \\
     -d '{ "email": "lead@acme.com", "plan": "enterprise" }'
 

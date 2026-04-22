@@ -19,11 +19,13 @@ interface FormEventMeta {
 
 // Generate or retrieve session ID
 const getSessionId = (): string => {
-  let sessionId = sessionStorage.getItem('formcraft_session_id');
+  let sessionId =
+    sessionStorage.getItem('ingrid_session_id') ||
+    sessionStorage.getItem('formcraft_session_id'); // legacy key
   if (!sessionId) {
     sessionId = crypto.randomUUID();
-    sessionStorage.setItem('formcraft_session_id', sessionId);
   }
+  sessionStorage.setItem('ingrid_session_id', sessionId);
   return sessionId;
 };
 

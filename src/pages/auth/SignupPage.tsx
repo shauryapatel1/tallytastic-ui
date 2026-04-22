@@ -99,9 +99,9 @@ export default function SignupPage() {
     <div className="flex items-center justify-center min-h-screen bg-muted/20 p-4">
       <Card className="w-full max-w-md shadow-xl">
         <CardHeader className="text-center">
-          <CardTitle className="text-2xl font-bold text-gray-800 dark:text-gray-100">Create your FormCraft Account</CardTitle>
+          <CardTitle className="text-2xl font-bold text-gray-800 dark:text-gray-100">Create your Ingrid Account</CardTitle>
           <CardDescription className="text-gray-600 dark:text-gray-400">
-            Join FormCraft and start building intelligent forms in minutes.
+            Join Ingrid — capture submissions, route work, and automate follow-up.
           </CardDescription>
         </CardHeader>
         <CardContent>

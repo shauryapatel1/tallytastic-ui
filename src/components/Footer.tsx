@@ -32,10 +32,10 @@ export const Footer = () => {
       <div className="container mx-auto px-4">
         <div className="grid grid-cols-2 md:grid-cols-5 gap-8">
           <div className="col-span-2">
-            <h3 className="text-xl font-semibold mb-4">FormCraft</h3>
+            <h3 className="text-xl font-semibold mb-4">Ingrid</h3>
             <p className="text-sm text-muted-foreground mb-4">
-              Create beautiful forms and surveys in minutes. Collect data, gather feedback,
-              and make better decisions.
+              The inbound engine for forms, routing, and workflow. Capture
+              submissions, route work, and automate follow-up.
             </p>
             <div className="flex space-x-4">
               <a href="#" onClick={(e) => handleLinkClick(e)} className="text-gray-400 hover:text-gray-500" aria-label="Twitter">
@@ -133,7 +133,7 @@ export const Footer = () => {
         </div>
         <div className="border-t mt-8 pt-8 flex flex-col md:flex-row justify-between">
           <p className="text-sm text-muted-foreground">
-            © {new Date().getFullYear()} FormCraft. All rights reserved.
+            © {new Date().getFullYear()} Ingrid. All rights reserved.
           </p>
           <div className="flex space-x-6 mt-4 md:mt-0">
             <a href="#" onClick={(e) => handleLinkClick(e)} className="text-sm text-muted-foreground hover:text-gray-900">

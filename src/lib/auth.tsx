@@ -150,7 +150,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
         
         toast({
           title: "Account created",
-          description: `Welcome to FormCraft, ${name}!`,
+          description: `Welcome to Ingrid, ${name}!`,
         });
       }
     } catch (error: any) {

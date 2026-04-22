@@ -9,11 +9,11 @@ import {
 const faqs = [
   {
     question: "How is this different from Tally or Typeform?",
-    answer: "Tally and Typeform optimize for the form builder. FormCraft optimizes for what happens after submit — signed webhooks, retries, spam filtering, conditional routing, and a triage inbox. If your forms feed real workflows (CRM, Slack, internal tools), FormCraft is the layer those tools assume already exists."
+    answer: "Tally and Typeform optimize for the form builder. Ingrid optimizes for what happens after submit — signed webhooks, retries, spam filtering, conditional routing, and a triage inbox. If your forms feed real workflows (CRM, Slack, internal tools), Ingrid is the layer those tools assume already exists."
   },
   {
     question: "Can I keep my existing form HTML?",
-    answer: "Yes. Point any HTML form's action to your FormCraft endpoint, or POST JSON from your own UI. There's no SDK lock-in and no required builder. Use ours when it helps; ignore it when it doesn't."
+    answer: "Yes. Point any HTML form's action to your Ingrid endpoint, or POST JSON from your own UI. There's no SDK lock-in and no required builder. Use ours when it helps; ignore it when it doesn't."
   },
   {
     question: "How do webhook retries work?",

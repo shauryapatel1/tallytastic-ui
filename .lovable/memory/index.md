@@ -1,21 +1,21 @@
 # Memory: index.md
+Updated: just now
 
 # Project Memory
 
 ## Core
-- FormCraft (NEVER 'tallytastic'). Positioning: **"Reliable form backend and routing for modern websites."** NEVER "Typeform/Tally alternative" or "AI form builder."
-- ICPs in priority order: agencies → indie devs / SaaS founders → technical SMB teams.
+- Product is **Ingrid** (NEVER "FormCraft" or "Tallytastic"). Positioning: "Capture submissions, route work, and automate follow-up." Descriptor: "The inbound engine for forms, routing, and workflow."
+- Brand strings live in `src/config/brand.ts` — use `BRAND.name`/etc. for new UI copy. Internal identifiers (DB tables, enums, edge function names, embed postMessage `formcraft-resize`) intentionally NOT renamed for backwards compatibility — see `docs/REBRAND_NOTICE.md`.
 - Stack: React, Vite, TS, Tailwind, shadcn/ui, Supabase (DB/Auth/Edge), Stripe, PostHog.
 - Builder UX: 3-panel layout, simple WYSIWYG preview that perfectly matches public rendering.
 - Modes: Classic (standard) and Conversational (keyboard-first, 1-by-1). Identical submission logic.
 - Security: Submissions via `submit-form` Edge Function. Rate limited, validated against `published_version_id`.
 - Analytics: PostHog for app events, `form_events` for journeys. Respect DNT, strip PII.
-- Billing: Stripe webhook Edge Functions manage quotas. Plans: Free / Pro $19 / Agency $79 (internal key `enterprise`).
+- Billing: Stripe webhook Edge Functions manage quotas. Enforced on submission, show upgrade paths.
 - Workflow: Linear 6-step creation: Create → Build → Preview → Publish → Share → Analyze.
-- Workspaces: forms/webhooks/routing/inbox scoped to workspaces via `is_workspace_member()` / `has_workspace_role()` security-definer fns.
 
 ## Memories
-- [Dev/Agency Positioning](mem://strategy/dev-agency-positioning) — Strategic positioning, ICP order, pricing, what to never build.
+- [Rebrand to Ingrid](mem://strategy/ingrid-rebrand) — Brand changeover from FormCraft, what was renamed vs. preserved, and risky areas.
 - [Preview Constraint](mem://constraints/preview-must-match-public) — Preview must render exactly identical to public form with device toggles.
 - [Conversational UX](mem://features/conversational-ux) — Keyboard navigation rules, transitions, and inline validation.
 - [Builder UX](mem://features/builder-ux) — Typeform-style 3 panels, 14 field types, and drag-and-drop.
