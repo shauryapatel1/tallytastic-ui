@@ -51,7 +51,7 @@ export const getFormById = async (id: string): Promise<FormDefinition> => {
         "id, title, description, user_id, created_at, updated_at, status, version, custom_success_message, redirect_url, definition_sections, submit_button_text"
       )
       .eq("id", id)
-      .single<FormRow>();
+      .single();
 
     if (error) {
       console.error(`Error fetching form ${id} from Supabase:`, error);
@@ -276,8 +276,7 @@ export const WorkspaceUserFormSummaries = async (): Promise<FormSummary[]> => {
       .from('forms')
       .select('id, title, created_at, updated_at, status')
       .eq('user_id', user.id)
-      .order('updated_at', { ascending: false })
-      .returns<Partial<FormRow>[]>();
+      .order('updated_at', { ascending: false });
 
     if (queryError) {
       console.error('[formService] Error fetching form summaries:', queryError);
@@ -432,7 +431,7 @@ export const duplicateFormAPI = async (formIdToDuplicate: string, newTitle?: str
       .from('forms')
       .insert(insertPayload)
       .select('id, title, created_at, updated_at, status')
-      .single<Partial<FormRow>>();
+      .single();
 
     if (insertError || !newFormRow) {
       console.error('[formService] Error inserting duplicated form:', insertError);
@@ -757,8 +756,7 @@ export const getFormResponsesByFormId = async (formId: string): Promise<FormResp
       .from('form_responses')
       .select('id, form_id, submitted_at, data') // Removed created_at as it's not used in FormResponse
       .eq('form_id', formId)
-      .order('submitted_at', { ascending: false })
-      .returns<FormResponseRow[]>(); // Ensures responseRows is typed as FormResponseRow[]
+      .order('submitted_at', { ascending: false });
 
     if (error) {
       console.error(`[formService] Error fetching responses for form ${formId} from Supabase:`, error);
@@ -842,8 +840,8 @@ export const deleteUserAccount = async (): Promise<{ error?: Error | null }> => 
     console.log("[formService] Invoking 'delete-user-account' Edge Function.");
     // Type parameters for invoke: <FunctionName extends string, FunctionArgs, FunctionReturnData>
     // We expect the Edge Function to return a JSON object, possibly with an 'error' field if it fails.
-    const { data: functionResponseData, error: functionInvokeError } = await supabase.functions.invoke<{ message?: string; error?: string } | null>(
-      'delete-user-account', 
+    const { data: functionResponseData, error: functionInvokeError } = await supabase.functions.invoke(
+      'delete-user-account',
       {} // No body needed as the Edge Function derives user ID from its auth context
     );
 
