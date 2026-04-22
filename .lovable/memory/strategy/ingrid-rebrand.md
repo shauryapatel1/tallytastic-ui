@@ -37,3 +37,6 @@ import { BRAND } from "@/config/brand";
 Never hardcode "Ingrid" in new files — always reference the constant so future renames are one-line changes.
 
 See `docs/REBRAND_NOTICE.md` for the full audit and migration notes.
+
+## Design system + UX direction
+The full brand foundation, color tokens, type scale, IA, and screen-by-screen UX brief is in **`docs/design/INGRID_BRAND_AND_UX_BRIEF.md`**. The phased build plan (Phase 1 design tokens → Phase 4 marketing polish) is in **`.lovable/plan.md`**. Read those before starting any visual / IA work — they define palette (Indigo `#5B6CFF` accent on Cloud/Mist neutrals + Midnight dark), top nav order (Overview · Forms · Submissions · Routing · Integrations · …), and the rule that the **Submissions Inbox** is the emotional center of the app.
