@@ -21,8 +21,8 @@ export const CTA = () => {
               Ready to transform your form experience?
             </h2>
             <p className="text-white/80 text-lg mb-8 max-w-2xl mx-auto">
-              Join thousands of professionals who create beautiful, intelligent forms with FormCraft. 
-              Start for free, no credit card required.
+              Join teams using Ingrid to capture submissions, route work, and
+              automate follow-up. Start for free, no credit card required.
             </p>
             
             <div className="flex flex-col sm:flex-row gap-4 justify-center">

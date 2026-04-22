@@ -56,7 +56,7 @@ const Auth = () => {
         await login(email, password);
         toast({
           title: "Sign in successful",
-          description: "Welcome back to FormCraft!",
+          description: "Welcome back to Ingrid!",
         });
       } else {
         await signup(email, password, name);

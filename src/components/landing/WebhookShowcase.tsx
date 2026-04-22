@@ -54,7 +54,7 @@ export const WebhookShowcase = () => {
               </div>
               <div className="rounded-xl border-2 border-primary bg-primary text-primary-foreground p-5 w-full text-center">
                 <Shield className="h-5 w-5 mx-auto mb-2" />
-                <div className="text-sm font-semibold">FormCraft</div>
+                <div className="text-sm font-semibold">Ingrid</div>
                 <div className="text-xs opacity-80 mt-1">spam · validate · route · retry</div>
               </div>
               <div className="hidden md:flex absolute -right-6 top-1/2 -translate-y-1/2 text-primary/40">

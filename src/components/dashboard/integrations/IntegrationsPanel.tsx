@@ -38,7 +38,7 @@ export const IntegrationsPanel = () => {
       enabled: false,
       category: "marketing",
       setupRequired: true,
-      setupUrl: "https://zapier.com/apps/formcraft/integrations"
+      setupUrl: "https://zapier.com/apps/ingrid/integrations"
     },
     {
       id: "mailchimp",

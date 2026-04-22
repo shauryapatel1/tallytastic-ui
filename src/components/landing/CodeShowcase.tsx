@@ -4,13 +4,13 @@ import { Check, Copy } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
 const snippets = {
-  curl: `curl -X POST https://api.formcraft.dev/v1/submit/frm_abc123 \\
+  curl: `curl -X POST https://api.ingrid.dev/v1/submit/frm_abc123 \\
   -H "Content-Type: application/json" \\
   -d '{ "email": "lead@acme.com", "message": "Interested in pricing" }'`,
   nextjs: `// app/api/contact/route.ts
 export async function POST(req: Request) {
   const data = await req.json();
-  await fetch("https://api.formcraft.dev/v1/submit/frm_abc123", {
+  await fetch("https://api.ingrid.dev/v1/submit/frm_abc123", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify(data),
@@ -23,7 +23,7 @@ export function ContactForm() {
   const [sent, setSent] = useState(false);
   return (
     <form
-      action="https://api.formcraft.dev/v1/submit/frm_abc123"
+      action="https://api.ingrid.dev/v1/submit/frm_abc123"
       method="POST"
       onSubmit={() => setSent(true)}
     >
@@ -34,7 +34,7 @@ export function ContactForm() {
   );
 }`,
   html: `<form
-  action="https://api.formcraft.dev/v1/submit/frm_abc123"
+  action="https://api.ingrid.dev/v1/submit/frm_abc123"
   method="POST"
 >
   <input name="email" type="email" required />

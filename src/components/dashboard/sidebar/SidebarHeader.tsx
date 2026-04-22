@@ -21,7 +21,7 @@ export function SidebarHeader({ isCollapsed, setIsCollapsed }: SidebarHeaderProp
             exit={{ opacity: 0 }}
             className="flex items-center"
           >
-            <span className="text-xl font-semibold bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text text-transparent">FormCraft</span>
+            <span className="text-xl font-semibold bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text text-transparent">Ingrid</span>
           </motion.div>
         )}
       </AnimatePresence>

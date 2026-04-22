@@ -77,7 +77,7 @@ export const Navbar = () => {
             href="/"
             className="text-xl font-playfair font-semibold tracking-tight"
           >
-            FormCraft
+            Ingrid
           </a>
           <div className="hidden md:flex items-center space-x-8">
             <a

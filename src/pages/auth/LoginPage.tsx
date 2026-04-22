@@ -69,7 +69,7 @@ export default function LoginPage() {
     <div className="flex items-center justify-center min-h-screen bg-muted/20 p-4">
       <Card className="w-full max-w-md shadow-xl">
         <CardHeader className="text-center">
-          <CardTitle className="text-2xl font-bold text-gray-800 dark:text-gray-100">Welcome Back to FormCraft</CardTitle>
+          <CardTitle className="text-2xl font-bold text-gray-800 dark:text-gray-100">Welcome Back to Ingrid</CardTitle>
           <CardDescription className="text-gray-600 dark:text-gray-400">
             Log in to manage your forms and view responses.
           </CardDescription>
