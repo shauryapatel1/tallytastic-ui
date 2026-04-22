@@ -1,4 +1,4 @@
-import { supabase } from "@/integrations/supabase/client";
+import { supabaseLegacy as supabase } from "@/integrations/supabase/legacy-client";
 import { Database } from "@/integrations/supabase/types";
 import { 
   FormDefinition, 

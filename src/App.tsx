@@ -6,24 +6,35 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route, Navigate, useParams } from "react-router-dom";
 import { AuthProvider } from "@/lib/auth";
 import { AnimatePresence } from "framer-motion";
-import Index from "./pages/Index";
-import Dashboard from "./pages/dashboard/Index";
-import Auth from "./pages/Auth";
-import NotFound from "./pages/NotFound";
-import FormWorkflowLayout from "./pages/app/forms/FormWorkflowLayout";
-import CreateStep from "./pages/app/forms/steps/CreateStep";
-import BuildStep from "./pages/app/forms/steps/BuildStep";
-import PreviewStep from "./pages/app/forms/steps/PreviewStep";
-import PublishStep from "./pages/app/forms/steps/PublishStep";
-import ShareStep from "./pages/app/forms/steps/ShareStep";
-import AnalyzeStep from "./pages/app/forms/steps/AnalyzeStep";
-import NewFormPage from "./pages/app/forms/NewFormPage";
-import PublicForm from "./pages/public/PublicForm";
-import Integrations from "./pages/dashboard/Integrations";
-import Analytics from "./pages/dashboard/Analytics";
-import UserProfile from "./pages/dashboard/UserProfile";
-import SettingsPage from "./pages/dashboard/SettingsPage";
+import { lazy, Suspense } from "react";
 import { ProtectedRoute } from "./components/ProtectedRoute";
+
+// Eager: landing page (first paint) only
+import Index from "./pages/Index";
+
+// Lazy-loaded routes — split into their own chunks
+const Dashboard = lazy(() => import("./pages/dashboard/Index"));
+const Auth = lazy(() => import("./pages/Auth"));
+const NotFound = lazy(() => import("./pages/NotFound"));
+const FormWorkflowLayout = lazy(() => import("./pages/app/forms/FormWorkflowLayout"));
+const CreateStep = lazy(() => import("./pages/app/forms/steps/CreateStep"));
+const BuildStep = lazy(() => import("./pages/app/forms/steps/BuildStep"));
+const PreviewStep = lazy(() => import("./pages/app/forms/steps/PreviewStep"));
+const PublishStep = lazy(() => import("./pages/app/forms/steps/PublishStep"));
+const ShareStep = lazy(() => import("./pages/app/forms/steps/ShareStep"));
+const AnalyzeStep = lazy(() => import("./pages/app/forms/steps/AnalyzeStep"));
+const NewFormPage = lazy(() => import("./pages/app/forms/NewFormPage"));
+const PublicForm = lazy(() => import("./pages/public/PublicForm"));
+const Integrations = lazy(() => import("./pages/dashboard/Integrations"));
+const Analytics = lazy(() => import("./pages/dashboard/Analytics"));
+const UserProfile = lazy(() => import("./pages/dashboard/UserProfile"));
+const SettingsPage = lazy(() => import("./pages/dashboard/SettingsPage"));
+
+const RouteFallback = () => (
+  <div className="flex items-center justify-center min-h-screen bg-background">
+    <div className="h-8 w-8 rounded-full border-2 border-primary border-t-transparent animate-spin" />
+  </div>
+);
 
 // Redirect component for old dashboard form routes
 function RedirectToWorkflow({ step }: { step: string }) {
@@ -49,6 +60,7 @@ const App = () => (
           <Toaster />
           <Sonner />
           <AnimatePresence mode="wait">
+            <Suspense fallback={<RouteFallback />}>
             <Routes>
               {/* Public routes */}
               <Route path="/" element={<Index />} />
@@ -156,6 +168,7 @@ const App = () => (
               {/* 404 catch-all */}
               <Route path="*" element={<NotFound />} />
             </Routes>
+            </Suspense>
           </AnimatePresence>
         </TooltipProvider>
       </AuthProvider>
