@@ -1,69 +1,127 @@
+# Ingrid — Phased Implementation Plan
 
-# FormCraft → Developer/Agency-First Form Backend & Workflow Platform
-
-## Strategic Pivot
-Reposition from "AI form builder" to **"Reliable form backend and routing for modern websites."** Target agencies, indie devs, and technical SMBs. Compete with Formspark/Basin/Getform on infrastructure, not Tally/Typeform on builder UX.
-
----
-
-## Phase 0 — Reposition (this PR)
-
-### 1. Landing page rewrite
-- **New `Hero.tsx`**: "Reliable form backend and routing for modern websites" + sub: "Capture submissions, block spam, trigger workflows, and manage responses — without building backend plumbing."
-- **New `DeveloperFeatures.tsx`**: webhook delivery, signed payloads, retries, spam protection, framework SDKs (Next.js / React / Astro / HTML).
-- **New `UseCases.tsx`**: 3 cards — Agencies, Indie devs, SaaS teams.
-- **New `CodeShowcase.tsx`**: tabbed code block showing curl + Next.js + React + HTML embed.
-- **New `WebhookShowcase.tsx`**: visual of submission → webhook → Slack/Sheets/CRM.
-- Remove/demote: `InteractiveDemo`, `TemplateShowcase`, conversational marketing.
-- Keep: `Pricing` (rewrite copy), `FAQ` (rewrite for dev/agency objections), `Footer`, `Navbar`.
-
-### 2. Pricing rewrite (`Pricing.tsx`)
-Replace plan copy with operational-value framing:
-- **Free** — 1 workspace, 2 forms, 100 submissions/mo, webhooks, basic spam.
-- **Pro ($19/mo)** — 5K submissions, unlimited forms, inbox, routing rules, file uploads.
-- **Agency ($79/mo)** — multi-workspace, client branding, team members, priority support, 25K submissions.
-
-### 3. Phase 0 architecture scaffolding (DB + types only, no UI)
-Create the data model now so Phase 1 can move fast. Tables:
-- `workspaces`, `workspace_members` (roles)
-- `webhook_endpoints` (form_id, url, secret, is_active)
-- `webhook_deliveries` (endpoint_id, submission_id, status, attempt, response_code, payload, next_retry_at)
-- `routing_rules` (form_id, conditions, actions)
-- `submission_tags`, `submission_status` (new, in_progress, done, archived) + `submission_assignments`
-- `api_tokens` (workspace-scoped, for direct API submission)
-
-All with RLS scoped to workspace membership via `has_workspace_role()` security-definer function.
-
-### 4. Analytics instrumentation
-PostHog events: `signup_source`, `use_case_selected`, `first_form_created`, `first_submission_received`, `first_webhook_configured`, `time_to_activation`.
+> Reference: `docs/design/INGRID_BRAND_AND_UX_BRIEF.md`
+> Phase 0 (positioning + rebrand strings) is **shipped**. This plan covers Phase 1 → Phase 4.
 
 ---
 
-## What I'm NOT building in this PR (Phase 1+)
-- Webhook delivery edge function (Phase 1, ~1 week)
-- Submission inbox UI (Phase 1)
-- Framework SDK docs pages (Phase 1)
-- Slack/Sheets integrations (Phase 2)
-- AI summaries (Phase 2)
-- Agency white-label/custom domains (Phase 3)
+## Phase 1 — Design system foundation (Week 1)
 
-This PR is **positioning + data model foundation only** so the next prompts can ship features fast against a stable schema.
+**Goal:** Replace the current ad-hoc palette with the Ingrid token system so every new screen is on-brand by default.
+
+**Scope**
+- Rewrite `src/index.css` token block:
+  - Light theme: Cloud `#F7F9FC` bg, Midnight `#0B1020` fg, Indigo `#5B6CFF` accent, Mist `#E7ECF3` border, semantic Success/Warning/Danger/Info (+ soft variants).
+  - Add `.dark` block: Midnight bg, Slate elevated, Graphite panel, `#F3F6FB` text, `#A8B3C7` muted, `#253049` border.
+  - All values stored as HSL (per project rule).
+- Extend `tailwind.config.ts`:
+  - Add `success`, `warning`, `danger`, `info` semantic color families with `DEFAULT` + `soft` + `foreground`.
+  - Add radius tokens (input/button 10, card 12, modal 16).
+  - Add shadow tokens (`shadow-card`, `shadow-dropdown`, `shadow-modal`).
+  - Load Inter (already used) + JetBrains Mono via index.html or font import.
+- Strip the loud `indigo`/`purple` 50–950 palettes — replace usage with semantic `primary`/`accent`.
+- Add `ThemeProvider` (next-themes or local) for light/dark toggle in app shell only (marketing stays light).
+
+**Deliverables**
+- New token sheet in `index.css` + `tailwind.config.ts`
+- `src/components/ui/theme-toggle.tsx`
+- Visual regression: every page still renders (using semantic tokens means low risk).
+
+**Done when:** the dashboard renders with calm Indigo accent on Cloud/Mist neutrals, dark mode works in the app shell, and no component uses raw color hex/Tailwind color classes.
 
 ---
 
-## Files to change
-- `src/components/Hero.tsx` — full rewrite
-- `src/pages/Index.tsx` — reorder, swap components
-- `src/components/Pricing.tsx` — copy + plan rewrite
-- `src/components/FAQ.tsx` — dev/agency objections
-- `src/components/Navbar.tsx` — nav links: Product, Pricing, Docs, Agencies
-- `index.html` — SEO title/meta
-- **NEW**: `src/components/landing/CodeShowcase.tsx`
-- **NEW**: `src/components/landing/WebhookShowcase.tsx`
-- **NEW**: `src/components/landing/DeveloperFeatures.tsx`
-- **NEW**: `src/components/landing/UseCases.tsx`
-- **NEW** migration: workspaces, webhook_endpoints, webhook_deliveries, routing_rules, submission tags/status, api_tokens + RLS
+## Phase 2 — App shell + navigation IA (Week 2)
 
-## Memory updates
-- Add core rule: positioning is "form backend + routing for modern websites" — never "Typeform alternative."
-- New memory file: `mem://strategy/dev-agency-positioning`.
+**Goal:** Bring the dashboard IA in line with the brief.
+
+**Scope**
+- Replace the legacy custom `Sidebar` with shadcn `Sidebar` (collapsible icon variant) using `SidebarProvider` in `Layout.tsx`.
+- New nav order: Overview · Forms · Submissions · Routing · Integrations · Templates · Analytics · Billing · Settings.
+- Add `WorkspaceSwitcher` placeholder in sidebar header (data model already has `workspaces`).
+- Add breadcrumb component for app pages.
+- Build a shared `PageShell` (header / body / right-rail slot) used by every dashboard page — eliminates per-page padding drift.
+- Add a global top bar with: workspace switcher, search (cmd-k stub), theme toggle, user menu.
+
+**Deliverables**
+- `src/components/app/AppSidebar.tsx`
+- `src/components/app/PageShell.tsx`, `Breadcrumbs.tsx`
+- Updated `Layout.tsx` using `SidebarProvider` + always-visible `SidebarTrigger`.
+
+**Done when:** every existing dashboard page renders inside the new shell with consistent spacing, the sidebar collapses to icons, and the new IA order is live.
+
+---
+
+## Phase 3 — Operational surfaces (Weeks 3–5)
+
+Build the screens that actually express the rebrand. **Inbox first** — per the brief, it is the emotional center.
+
+### 3a. Submissions inbox (priority)
+- Three-column layout (list · detail · actions rail) with responsive collapse.
+- Status chips: New / Reviewed / Routed / Needs follow-up / Closed / Spam (driven by existing `submission_status` enum).
+- Detail: field responses, metadata, source info, attachments, event timeline.
+- Right rail actions: assign, tag, set status, resend webhook, AI summary, notes.
+- Backend: surface `submission_metadata` table; wire status update + tagging to `useMutation`s.
+- Empty state per brief microcopy.
+
+### 3b. Overview dashboard rebuild
+- KPI row: submissions today/week/month, failed deliveries, spam blocked, active forms.
+- Activity feed + recent submissions.
+- Webhook health card driven by `webhook_deliveries.status` aggregations.
+
+### 3c. Forms list refresh
+- Switch to operational table view as default (current grid stays as toggle).
+- Columns: name, status, submissions, last activity, destinations, spam.
+- Reuse new status chips + action menu component.
+
+### 3d. Routing rules screen (read + simple write)
+- Rules list driven by `routing_rules` table.
+- "When/If/Then" row component.
+- Execution state badges (active, last run, success rate). Failures + retries link to webhook deliveries.
+- Defer node-canvas builder.
+
+### 3e. Integrations
+- Card grid driven by real connection state (start with Webhooks + Email; Slack/Sheets/HubSpot stubs marked "Coming soon").
+- Each card: name, status dot, last sync, linked forms, error state.
+
+**Done when:** all five surfaces use the new shell, share status visual language, and read from the corresponding tables (or clearly marked stubs).
+
+---
+
+## Phase 4 — Marketing site polish + docs (Week 6)
+
+**Goal:** Site visually matches product. Light theme only.
+
+**Scope**
+- Refactor `Hero` to lead with operational proof — replace decorative gradients with calm neutral background + subtle routing-line motif (SVG).
+- Reorder sections per brief: Hero → Problem → Solution → Use cases → Product screenshots → Dev proof → Pricing → FAQ.
+- Replace any remaining illustration that reads as "playful no-code."
+- Pricing page in operational-value framing (already partially done in Phase 0 — extend with Agency tier).
+- Stand up a minimal `/docs` route (MDX or static markdown) with sidebar nav, mono code blocks, and dark-mode toggle.
+- Add structured metadata + OG image referencing the new motif.
+
+**Done when:** marketing site visually reads as the same product as the redesigned app shell.
+
+---
+
+## Cross-cutting workstreams
+
+- **Component library:** before each phase, build/upgrade the reusable primitives the phase needs (status chip, stat card, event-log row, empty state, detail panel, timeline, integration card, rule row).
+- **Microcopy pass:** sweep replace marketing-style copy ("Boom!", emojis in headers) for the brief's tone in every new component.
+- **Motion budget:** remove existing `framer-motion` page transitions on app routes (they conflict with "calm operational"); keep only drawer slide + status pulse.
+- **Accessibility:** every status chip has text + color + icon; tables are keyboard navigable; dark-mode contrast meets WCAG AA.
+
+---
+
+## Out of scope for now
+
+- Full automation canvas (deferred — keep "When/If/Then" rows).
+- Theme presets / heavy charting / bespoke illustration system.
+- Native mobile app shell.
+- Multi-language.
+
+---
+
+## Tracking
+
+Each phase maps to a Lovable task list created when work begins. Phase 1 unblocks every later phase, so it ships first.
