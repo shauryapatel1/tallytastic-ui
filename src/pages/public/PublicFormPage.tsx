@@ -313,6 +313,12 @@ export function PublicFormPage() {
       const sendHeight = () => {
         const height = document.documentElement.scrollHeight;
         window.parent.postMessage({
+          type: 'ingrid-resize',
+          height: height
+        }, '*');
+        // Legacy event type — kept for backwards-compat with embeds
+        // installed before the rebrand.
+        window.parent.postMessage({
           type: 'formcraft-resize',
           height: height
         }, '*');
@@ -397,7 +403,7 @@ export function PublicFormPage() {
       
       <footer className="mt-12 text-center">
         <p className="text-xs text-muted-foreground">
-          Powered by FormCraft
+          Powered by Ingrid
         </p>
       </footer>
     </div>

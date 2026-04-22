@@ -11,19 +11,19 @@ import type {
   FieldOption,
 } from "@/types/forms";
 import type {
-  Database,
   FormDefinitionSectionsSupabase,
   FormResponseDataSupabase,
   Json,
 } from "@/types/supabase"; // Added Supabase types
 import { trackFormCreated } from "@/lib/posthogService";
 
-// Define concrete types for Supabase table rows
-type FormRow = Database["public"]["Tables"]["forms"]["Row"];
-type FormResponseRow = Database["public"]["Tables"]["form_responses"]["Row"];
-type FormInsertPayload = Database["public"]["Tables"]["forms"]["Insert"];
-type FormUpdatePayload = Database["public"]["Tables"]["forms"]["Update"];
-type FormResponseInsertPayload = Database["public"]["Tables"]["form_responses"]["Insert"];
+// Loose row types — `forms`/`form_responses` aren't in the generated
+// `Database` type yet, so we rely on the any-typed `supabaseLegacy` client.
+type FormRow = any;
+type FormResponseRow = any;
+type FormInsertPayload = any;
+type FormUpdatePayload = any;
+type FormResponseInsertPayload = any;
 
 // Helper type guard for definition_sections - returns boolean
 function isValidFormSectionDefinitionArrayStructure(value: Json | null | undefined): boolean {

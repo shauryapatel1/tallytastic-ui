@@ -1,5 +1,4 @@
 import { supabaseLegacy as supabase } from "@/integrations/supabase/legacy-client";
-import { Database } from "@/integrations/supabase/types";
 import { 
   FormDefinition, 
   FormSectionDefinition, 
@@ -8,12 +7,14 @@ import {
   validateFormDefinition 
 } from "@/lib/form/types";
 
-// Supabase table types
-type FormRow = Database['public']['Tables']['forms']['Row'];
-type FormInsert = Database['public']['Tables']['forms']['Insert'];
-type FormUpdate = Database['public']['Tables']['forms']['Update'];
-type FormEventRow = Database['public']['Tables']['form_events']['Row'];
-type FormEventInsert = Database['public']['Tables']['form_events']['Insert'];
+// Supabase table types — `forms` and `form_events` aren't in the
+// auto-generated `Database` type yet, so we use loose row types and
+// rely on the `supabaseLegacy` (any-typed) client at runtime.
+type FormRow = any;
+type FormInsert = any;
+type FormUpdate = any;
+type FormEventRow = any;
+type FormEventInsert = any;
 
 // Analytics interfaces
 export interface FormAnalyticsSummary {

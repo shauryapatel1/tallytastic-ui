@@ -25,7 +25,7 @@ export default function ShareStep() {
   
   // Enhanced embed code with auto-resize script
   const embedCode = `<iframe 
-  id="formcraft-embed-${formData.id}" 
+  id="ingrid-embed-${formData.id}" 
   src="${formUrl}?embedded=true" 
   width="100%" 
   height="600" 
@@ -36,8 +36,8 @@ export default function ShareStep() {
   // Auto-resize script
   window.addEventListener('message', function(e) {
     if (e.origin !== '${window.location.origin}') return;
-    if (e.data.type === 'formcraft-resize') {
-      const iframe = document.getElementById('formcraft-embed-${formData.id}');
+    if (e.data.type === 'ingrid-resize' || e.data.type === 'formcraft-resize') {
+      const iframe = document.getElementById('ingrid-embed-${formData.id}');
       if (iframe && e.data.height) {
         iframe.style.height = e.data.height + 'px';
       }
