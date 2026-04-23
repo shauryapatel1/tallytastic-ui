@@ -1,7 +1,28 @@
 # Ingrid — Phased Implementation Plan
 
 > Reference: `docs/design/INGRID_BRAND_AND_UX_BRIEF.md`
-> Phase 0 (positioning + rebrand strings) is **shipped**. This plan covers Phase 1 → Phase 4.
+> Phase 0 (positioning + rebrand strings) is **defined; rollout in progress** — public surfaces renamed, but a final sweep for stray FormCraft/Tallytastic copy + asset references is still required before Phase 0 can be marked shipped.
+
+## CTO-approved execution rules (apply to every phase)
+
+1. **No raw colors / legacy patterns on new Ingrid surfaces.** Semantic tokens only. No hex literals, no `bg-indigo-500`, no `text-purple-700`. Token definitions in `index.css` are the single exception.
+2. **No hybrid screens.** A page is either fully migrated to the new shell + tokens, or it is left untouched. Never half-migrate.
+3. **Inbox > dashboard polish.** When trade-offs arise, Submissions Inbox usability wins.
+4. **Status taxonomy is global.** The same status language must be used across submissions, routing, webhooks, and integrations. Define once, reuse everywhere.
+5. **Planned ≠ live.** Integrations or features that are not implemented must be visibly labeled "Planned" / "Coming soon." Never imply live support.
+6. **Legacy components must be re-tokenized before reuse.** A component built before Phase 1 cannot land on a new Ingrid surface unless it has been refactored to semantic tokens and reviewed for brand fit.
+
+## Definition of "Ingrid UI done" (per page)
+
+A page is Ingrid-complete when **all** of the following are true:
+- Uses semantic design tokens only (no raw colors, no off-scale spacing).
+- Spacing follows the 4-based token scale.
+- Renders inside the shared `PageShell` + sidebar (for app pages).
+- Empty, loading, and error states are explicitly designed.
+- Status language matches the global product taxonomy.
+- Dark mode works (app pages only).
+- Legacy branding/copy (FormCraft, Tallytastic, "Boom!", emoji-headers) is removed.
+- Passes WCAG AA contrast review.
 
 ---
 
@@ -27,7 +48,11 @@
 - `src/components/ui/theme-toggle.tsx`
 - Visual regression: every page still renders (using semantic tokens means low risk).
 
-**Done when:** the dashboard renders with calm Indigo accent on Cloud/Mist neutrals, dark mode works in the app shell, and no component uses raw color hex/Tailwind color classes.
+**Success metrics**
+- 0 raw hex colors in app code outside the token definitions.
+- 0 direct Tailwind color utilities (`bg-indigo-500`, `text-purple-700`, etc.) in product surfaces — only semantic aliases.
+- Dark mode functional across the app shell.
+- ≥ 90% shared-token usage on redesigned pages (sampled audit).
 
 ---
 
