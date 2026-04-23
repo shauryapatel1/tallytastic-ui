@@ -2,32 +2,157 @@
 @tailwind components;
 @tailwind utilities;
 
+/*
+ * Ingrid Design Tokens (Phase 1)
+ * All values are HSL (per project rule).
+ *
+ * Brand palette → HSL conversions:
+ *   Cloud      #F7F9FC → 218 38% 98%
+ *   Mist       #E7ECF3 → 215 27% 93%
+ *   Steel      #8A94A6 → 218 12% 60%
+ *   Graphite   #2C3648 → 219 23% 23%
+ *   Slate      #1B2435 → 218 32% 15%
+ *   Midnight   #0B1020 → 226 50% 9%
+ *   Indigo     #5B6CFF → 233 100% 68%
+ *   Indigo Hv  #4C5DF2 → 232 86% 62%
+ *   SoftIndigo #E8EBFF → 232 100% 95%
+ *   Success    #16A34A → 142 76% 36%
+ *   SuccessSft #E8F8EE → 140 60% 94%
+ *   Warning    #F59E0B → 38 92% 50%
+ *   WarningSft #FFF4DB → 42 100% 93%
+ *   Danger     #DC2626 → 0 73% 51%
+ *   DangerSft  #FDECEC → 0 81% 96%
+ *   Info       #2563EB → 221 83% 53%
+ *   InfoSft    #EAF3FF → 213 100% 95%
+ */
+
 @layer base {
   :root {
-    --background: 210 40% 98%;
-    --foreground: 222 47% 11%;
-    
+    /* Surfaces */
+    --background: 218 38% 98%;            /* Cloud */
+    --foreground: 226 50% 9%;             /* Midnight */
+
     --card: 0 0% 100%;
-    --card-foreground: 222 47% 11%;
-    
-    --border: 214 32% 91%;
-    --input: 214 32% 91%;
-    
-    --primary: 222 47% 11%;
-    --primary-foreground: 210 40% 98%;
-    
-    --secondary: 210 40% 96%;
-    --secondary-foreground: 222 47% 11%;
-    
-    --accent: 210 40% 90%;
-    --accent-foreground: 222 47% 11%;
-    
-    --destructive: 0 84% 60%;
-    --destructive-foreground: 210 40% 98%;
-    
-    --ring: 222 47% 11%;
-    
-    --radius: 0.75rem;
+    --card-foreground: 226 50% 9%;
+
+    --popover: 0 0% 100%;
+    --popover-foreground: 226 50% 9%;
+
+    --muted: 215 27% 93%;                 /* Mist */
+    --muted-foreground: 218 12% 40%;
+
+    --border: 215 27% 93%;                /* Mist */
+    --border-strong: 218 18% 86%;
+    --input: 215 27% 93%;
+
+    /* Brand */
+    --primary: 233 100% 68%;              /* Indigo */
+    --primary-foreground: 0 0% 100%;
+    --primary-hover: 232 86% 62%;
+    --primary-soft: 232 100% 95%;
+
+    --secondary: 215 27% 93%;
+    --secondary-foreground: 219 23% 23%;
+
+    --accent: 232 100% 95%;               /* Soft Indigo */
+    --accent-foreground: 233 100% 50%;
+
+    /* Semantic */
+    --success: 142 76% 36%;
+    --success-foreground: 0 0% 100%;
+    --success-soft: 140 60% 94%;
+
+    --warning: 38 92% 50%;
+    --warning-foreground: 226 50% 9%;
+    --warning-soft: 42 100% 93%;
+
+    --danger: 0 73% 51%;
+    --danger-foreground: 0 0% 100%;
+    --danger-soft: 0 81% 96%;
+
+    --info: 221 83% 53%;
+    --info-foreground: 0 0% 100%;
+    --info-soft: 213 100% 95%;
+
+    /* Legacy alias kept for shadcn defaults */
+    --destructive: 0 73% 51%;
+    --destructive-foreground: 0 0% 100%;
+
+    --ring: 233 100% 68%;
+
+    /* Radii (per brief: input/button 10, card 12, modal 16) */
+    --radius: 0.625rem;          /* 10px – default for inputs/buttons */
+    --radius-card: 0.75rem;      /* 12px */
+    --radius-modal: 1rem;        /* 16px */
+
+    /* Sidebar (shadcn) */
+    --sidebar-background: 0 0% 100%;
+    --sidebar-foreground: 226 50% 9%;
+    --sidebar-primary: 233 100% 68%;
+    --sidebar-primary-foreground: 0 0% 100%;
+    --sidebar-accent: 232 100% 95%;
+    --sidebar-accent-foreground: 233 100% 50%;
+    --sidebar-border: 215 27% 93%;
+    --sidebar-ring: 233 100% 68%;
+  }
+
+  .dark {
+    --background: 226 50% 9%;             /* Midnight */
+    --foreground: 213 30% 96%;
+
+    --card: 222 35% 13%;                  /* elevated #131A2B */
+    --card-foreground: 213 30% 96%;
+
+    --popover: 220 30% 15%;               /* panel #182133 */
+    --popover-foreground: 213 30% 96%;
+
+    --muted: 220 30% 15%;
+    --muted-foreground: 218 22% 72%;      /* #A8B3C7 */
+
+    --border: 220 30% 22%;                /* #253049 */
+    --border-strong: 220 25% 30%;
+    --input: 220 30% 22%;
+
+    --primary: 233 100% 68%;
+    --primary-foreground: 226 50% 9%;
+    --primary-hover: 232 86% 62%;
+    --primary-soft: 233 60% 22%;
+
+    --secondary: 220 30% 18%;
+    --secondary-foreground: 213 30% 96%;
+
+    --accent: 233 60% 22%;
+    --accent-foreground: 232 100% 88%;
+
+    --success: 142 60% 45%;
+    --success-foreground: 226 50% 9%;
+    --success-soft: 142 40% 18%;
+
+    --warning: 38 92% 55%;
+    --warning-foreground: 226 50% 9%;
+    --warning-soft: 38 50% 20%;
+
+    --danger: 0 75% 60%;
+    --danger-foreground: 226 50% 9%;
+    --danger-soft: 0 50% 22%;
+
+    --info: 221 83% 60%;
+    --info-foreground: 226 50% 9%;
+    --info-soft: 221 50% 22%;
+
+    --destructive: 0 75% 60%;
+    --destructive-foreground: 226 50% 9%;
+
+    --ring: 233 100% 68%;
+
+    --sidebar-background: 222 35% 13%;
+    --sidebar-foreground: 213 30% 96%;
+    --sidebar-primary: 233 100% 68%;
+    --sidebar-primary-foreground: 226 50% 9%;
+    --sidebar-accent: 233 60% 22%;
+    --sidebar-accent-foreground: 232 100% 88%;
+    --sidebar-border: 220 30% 22%;
+    --sidebar-ring: 233 100% 68%;
   }
 }
 
@@ -45,6 +170,10 @@
   
   .font-inter {
     font-family: 'Inter', sans-serif;
+  }
+
+  .font-mono {
+    font-family: 'JetBrains Mono', ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
   }
 }
 

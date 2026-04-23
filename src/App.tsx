@@ -8,6 +8,7 @@ import { AuthProvider } from "@/lib/auth";
 import { AnimatePresence } from "framer-motion";
 import { lazy, Suspense } from "react";
 import { ProtectedRoute } from "./components/ProtectedRoute";
+import { ThemeProvider } from "./components/app/ThemeProvider";
 
 // Eager: landing page (first paint) only
 import Index from "./pages/Index";
@@ -55,9 +56,10 @@ const queryClient = new QueryClient({
 const App = () => (
   <BrowserRouter>
     <QueryClientProvider client={queryClient}>
-      <AuthProvider>
-        <TooltipProvider>
-          <Toaster />
+      <ThemeProvider>
+        <AuthProvider>
+          <TooltipProvider>
+            <Toaster />
           <Sonner />
           <AnimatePresence mode="wait">
             <Suspense fallback={<RouteFallback />}>
@@ -169,9 +171,10 @@ const App = () => (
               <Route path="*" element={<NotFound />} />
             </Routes>
             </Suspense>
-          </AnimatePresence>
-        </TooltipProvider>
-      </AuthProvider>
+            </AnimatePresence>
+          </TooltipProvider>
+        </AuthProvider>
+      </ThemeProvider>
     </QueryClientProvider>
   </BrowserRouter>
 );
