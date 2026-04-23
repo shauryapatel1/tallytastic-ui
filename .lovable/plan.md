@@ -156,7 +156,10 @@ Build the screens that express the rebrand. Inbox is the emotional center, but i
 - Stand up a minimal `/docs` route (MDX or static markdown) with sidebar nav, mono code blocks, and dark-mode toggle.
 - Add structured metadata + OG image referencing the new motif.
 
-**Done when:** marketing site visually reads as the same product as the redesigned app shell.
+**Success metrics**
+- Homepage messaging reflects Ingrid positioning end-to-end (no leftover "AI form builder" / "Typeform alternative" framing).
+- Side-by-side visual review of marketing vs. app shell passes design sign-off.
+- `/docs` route exists and supports a first-time setup journey.
 
 ---
 
@@ -181,3 +184,14 @@ Build the screens that express the rebrand. Inbox is the emotional center, but i
 ## Tracking
 
 Each phase maps to a Lovable task list created when work begins. Phase 1 unblocks every later phase, so it ships first.
+
+## CTO-approved task order (near-term queue)
+
+1. Implement design tokens (Phase 1).
+2. Build new app sidebar + `PageShell` + shared primitives (Phase 2).
+3. Add submission status transitions + inbox backend readiness (Phase 3A).
+4. Launch Submissions Inbox UI (Phase 3B).
+5. Rebuild Overview / Forms / Routing / Integrations (Phase 3C).
+6. Marketing polish + docs (Phase 4).
+
+Rationale: the inbox depends on shell + tokens + status model; KPIs are less strategically important than inbox usability and intentionally land after it.
