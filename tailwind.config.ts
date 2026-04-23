@@ -16,6 +16,7 @@ export default {
     extend: {
       colors: {
         border: "hsl(var(--border))",
+        "border-strong": "hsl(var(--border-strong))",
         input: "hsl(var(--input))",
         ring: "hsl(var(--ring))",
         background: "hsl(var(--background))",
@@ -23,6 +24,8 @@ export default {
         primary: {
           DEFAULT: "hsl(var(--primary))",
           foreground: "hsl(var(--primary-foreground))",
+          hover: "hsl(var(--primary-hover))",
+          soft: "hsl(var(--primary-soft))",
         },
         secondary: {
           DEFAULT: "hsl(var(--secondary))",
@@ -36,37 +39,59 @@ export default {
           DEFAULT: "hsl(var(--accent))",
           foreground: "hsl(var(--accent-foreground))",
         },
-        indigo: {
-          '50': '#f0f1ff',
-          '100': '#e1e5ff',
-          '200': '#c9ceff',
-          '300': '#a8abff',
-          '400': '#8680fe',
-          '500': '#6b60fa',
-          '600': '#6354f0',
-          '700': '#5140db',
-          '800': '#4334b0',
-          '900': '#392e8c',
-          '950': '#231a59',
+        muted: {
+          DEFAULT: "hsl(var(--muted))",
+          foreground: "hsl(var(--muted-foreground))",
         },
-        purple: {
-          '50': '#fbf3ff',
-          '100': '#f8e6ff',
-          '200': '#f2d0ff',
-          '300': '#e9abff',
-          '400': '#dc76ff',
-          '500': '#cc40ff',
-          '600': '#be23ff',
-          '700': '#a812ef',
-          '800': '#8b14c2',
-          '900': '#73169c',
-          '950': '#4d0070',
+        card: {
+          DEFAULT: "hsl(var(--card))",
+          foreground: "hsl(var(--card-foreground))",
+        },
+        popover: {
+          DEFAULT: "hsl(var(--popover))",
+          foreground: "hsl(var(--popover-foreground))",
+        },
+        success: {
+          DEFAULT: "hsl(var(--success))",
+          foreground: "hsl(var(--success-foreground))",
+          soft: "hsl(var(--success-soft))",
+        },
+        warning: {
+          DEFAULT: "hsl(var(--warning))",
+          foreground: "hsl(var(--warning-foreground))",
+          soft: "hsl(var(--warning-soft))",
+        },
+        danger: {
+          DEFAULT: "hsl(var(--danger))",
+          foreground: "hsl(var(--danger-foreground))",
+          soft: "hsl(var(--danger-soft))",
+        },
+        info: {
+          DEFAULT: "hsl(var(--info))",
+          foreground: "hsl(var(--info-foreground))",
+          soft: "hsl(var(--info-soft))",
+        },
+        sidebar: {
+          DEFAULT: "hsl(var(--sidebar-background))",
+          foreground: "hsl(var(--sidebar-foreground))",
+          primary: "hsl(var(--sidebar-primary))",
+          "primary-foreground": "hsl(var(--sidebar-primary-foreground))",
+          accent: "hsl(var(--sidebar-accent))",
+          "accent-foreground": "hsl(var(--sidebar-accent-foreground))",
+          border: "hsl(var(--sidebar-border))",
+          ring: "hsl(var(--sidebar-ring))",
         },
       },
       borderRadius: {
         lg: "var(--radius)",
         md: "calc(var(--radius) - 2px)",
         sm: "calc(var(--radius) - 4px)",
+        card: "var(--radius-card)",
+        modal: "var(--radius-modal)",
+      },
+      fontFamily: {
+        sans: ["Inter", "ui-sans-serif", "system-ui", "sans-serif"],
+        mono: ["JetBrains Mono", "ui-monospace", "SFMono-Regular", "Menlo", "monospace"],
       },
       keyframes: {
         "accordion-down": {
@@ -90,17 +115,23 @@ export default {
           '0%': { transform: 'translateY(10px)', opacity: '0' },
           '100%': { transform: 'translateY(0)', opacity: '1' }
         },
+        "status-pulse": {
+          '0%, 100%': { opacity: '1' },
+          '50%': { opacity: '0.5' },
+        },
       },
       animation: {
         "accordion-down": "accordion-down 0.2s ease-out",
         "accordion-up": "accordion-up 0.2s ease-out",
         shimmer: "shimmer 2s infinite",
         fadeIn: "fadeIn 0.5s ease-out forwards",
-        slideUp: "slideUp 0.5s ease-out forwards"
+        slideUp: "slideUp 0.5s ease-out forwards",
+        "status-pulse": "status-pulse 2s ease-in-out infinite",
       },
       boxShadow: {
-        'glow-indigo': '0 0 20px rgba(99, 102, 241, 0.3)',
-        'glass': '0 0 15px rgba(255, 255, 255, 0.1)',
+        card: '0 1px 2px 0 hsl(var(--foreground) / 0.04), 0 1px 3px 0 hsl(var(--foreground) / 0.06)',
+        dropdown: '0 4px 12px -2px hsl(var(--foreground) / 0.08), 0 2px 4px -1px hsl(var(--foreground) / 0.04)',
+        modal: '0 24px 48px -12px hsl(var(--foreground) / 0.18)',
       },
     },
   },
