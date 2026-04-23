@@ -67,49 +67,80 @@ A page is Ingrid-complete when **all** of the following are true:
 - Add breadcrumb component for app pages.
 - Build a shared `PageShell` (header / body / right-rail slot) used by every dashboard page — eliminates per-page padding drift.
 - Add a global top bar with: workspace switcher, search (cmd-k stub), theme toggle, user menu.
+- **Build shared primitives required by Phase 3 before exiting Phase 2:** status chip, stat card, table shell, detail panel, empty state, event-log row, integration card, rule row.
 
 **Deliverables**
 - `src/components/app/AppSidebar.tsx`
 - `src/components/app/PageShell.tsx`, `Breadcrumbs.tsx`
 - Updated `Layout.tsx` using `SidebarProvider` + always-visible `SidebarTrigger`.
+- `src/components/app/primitives/` — StatusChip, StatCard, TableShell, DetailPanel, EmptyState, EventLogRow, IntegrationCard, RuleRow.
 
-**Done when:** every existing dashboard page renders inside the new shell with consistent spacing, the sidebar collapses to icons, and the new IA order is live.
+**Success metrics**
+- 100% of authenticated app routes render inside `PageShell`.
+- 0 per-page custom nav layouts remaining.
+- All 8 shared primitives implemented, documented, and consumed by at least one screen.
 
 ---
 
-## Phase 3 — Operational surfaces (Weeks 3–5)
+## Phase 3 — Operational surfaces (Weeks 3–6)
 
-Build the screens that actually express the rebrand. **Inbox first** — per the brief, it is the emotional center.
+Build the screens that express the rebrand. Inbox is the emotional center, but it depends on backend readiness — so 3A is a **data/model audit**, not a UI build.
 
-### 3a. Submissions inbox (priority)
+### 3A. Inbox backend readiness (audit + fill gaps)
+
+**Goal:** Confirm the data model can support persistent inbox behavior before any UI is built.
+
+**Audit checklist** (must produce a written gap report before exiting 3A):
+- [ ] Persistent submission status transitions (`submission_metadata.status` writes from UI, RLS-correct).
+- [ ] Tags on submissions (read + write + filter).
+- [ ] Assignment to a workspace member.
+- [ ] Notes (free-text).
+- [ ] Timeline events (where do they come from? `form_events`? a new `submission_events` table?).
+- [ ] Resend-webhook action (does an edge function exist? Can `webhook_deliveries` rows be re-enqueued safely?).
+- [ ] Attachment metadata exposure (size, mime, signed-URL access).
+
+**Done when:** every checkbox above is either ✅ supported or has a written follow-up migration/edge-function task scheduled. Frontend will not start before this gate closes.
+
+### 3B. Submissions inbox UI (priority strategic surface)
 - Three-column layout (list · detail · actions rail) with responsive collapse.
-- Status chips: New / Reviewed / Routed / Needs follow-up / Closed / Spam (driven by existing `submission_status` enum).
+- Status chips driven by the global taxonomy from Phase 2.
 - Detail: field responses, metadata, source info, attachments, event timeline.
 - Right rail actions: assign, tag, set status, resend webhook, AI summary, notes.
-- Backend: surface `submission_metadata` table; wire status update + tagging to `useMutation`s.
 - Empty state per brief microcopy.
 
-### 3b. Overview dashboard rebuild
+**Success metrics**
+- Submissions inbox reachable from every form.
+- Status updates persist and survive reload.
+- Webhook delivery health visible inline in the detail view.
+- A first-time user can go submission → inspect → mark status → resend webhook without confusion (validated in a 3-user usability pass).
+
+### 3C. Overview / Forms / Routing / Integrations
+
+#### Overview dashboard rebuild
 - KPI row: submissions today/week/month, failed deliveries, spam blocked, active forms.
 - Activity feed + recent submissions.
 - Webhook health card driven by `webhook_deliveries.status` aggregations.
 
-### 3c. Forms list refresh
+#### Forms list refresh
 - Switch to operational table view as default (current grid stays as toggle).
 - Columns: name, status, submissions, last activity, destinations, spam.
 - Reuse new status chips + action menu component.
 
-### 3d. Routing rules screen (read + simple write)
+#### Routing rules screen (read + simple write)
 - Rules list driven by `routing_rules` table.
 - "When/If/Then" row component.
 - Execution state badges (active, last run, success rate). Failures + retries link to webhook deliveries.
 - Defer node-canvas builder.
 
-### 3e. Integrations
-- Card grid driven by real connection state (start with Webhooks + Email; Slack/Sheets/HubSpot stubs marked "Coming soon").
+#### Integrations
+- Card grid driven by real connection state.
+- **Live now:** Webhooks, Email.
+- **Planned (clearly labeled, no fake CTA):** Slack, Google Sheets, HubSpot.
 - Each card: name, status dot, last sync, linked forms, error state.
 
-**Done when:** all five surfaces use the new shell, share status visual language, and read from the corresponding tables (or clearly marked stubs).
+**Success metrics for 3C**
+- All four surfaces use the shared shell + global status taxonomy.
+- Integration cards never imply live support for planned providers.
 
 ---
 
