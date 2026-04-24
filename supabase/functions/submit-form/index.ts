@@ -426,6 +426,10 @@ Deno.serve(async (req) => {
     }
     
     console.log(`[submit-form] Successfully saved response ${response.id} for form ${formId}`);
+
+    // Note: submission_metadata + 'received' submission_event are auto-created
+    // by the `handle_new_form_response` trigger when the form belongs to a
+    // workspace. No additional writes needed here.
     
     return new Response(
       JSON.stringify({ 
