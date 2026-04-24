@@ -9,6 +9,7 @@ import { AnimatePresence } from "framer-motion";
 import { lazy, Suspense } from "react";
 import { ProtectedRoute } from "./components/ProtectedRoute";
 import { ThemeProvider } from "./components/app/ThemeProvider";
+import { AppLayout } from "./components/app/AppLayout";
 
 // Eager: landing page (first paint) only
 import Index from "./pages/Index";
@@ -165,14 +166,14 @@ const App = () => (
 
               {/* Submissions Inbox */}
               <Route path="/app/submissions" element={
-                <ProtectedRoute>
+                <AppLayout>
                   <SubmissionsInboxPage />
-                </ProtectedRoute>
+                </AppLayout>
               } />
               <Route path="/app/submissions/:responseId" element={
-                <ProtectedRoute>
+                <AppLayout>
                   <SubmissionsInboxPage />
-                </ProtectedRoute>
+                </AppLayout>
               } />
               
               {/* Fallback route for any other dashboard path */}
