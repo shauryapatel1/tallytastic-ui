@@ -30,6 +30,9 @@ const Integrations = lazy(() => import("./pages/dashboard/Integrations"));
 const Analytics = lazy(() => import("./pages/dashboard/Analytics"));
 const UserProfile = lazy(() => import("./pages/dashboard/UserProfile"));
 const SettingsPage = lazy(() => import("./pages/dashboard/SettingsPage"));
+const SubmissionsInboxPage = lazy(
+  () => import("./pages/app/submissions/SubmissionsInboxPage"),
+);
 
 const RouteFallback = () => (
   <div className="flex items-center justify-center min-h-screen bg-background">
@@ -159,6 +162,18 @@ const App = () => (
                 <Route path="share" element={<ShareStep />} />
                 <Route path="analyze" element={<AnalyzeStep />} />
               </Route>
+
+              {/* Submissions Inbox */}
+              <Route path="/app/submissions" element={
+                <ProtectedRoute>
+                  <SubmissionsInboxPage />
+                </ProtectedRoute>
+              } />
+              <Route path="/app/submissions/:responseId" element={
+                <ProtectedRoute>
+                  <SubmissionsInboxPage />
+                </ProtectedRoute>
+              } />
               
               {/* Fallback route for any other dashboard path */}
               <Route path="/dashboard/*" element={
