@@ -64,6 +64,245 @@ export type Database = {
           },
         ]
       }
+      form_events: {
+        Row: {
+          created_at: string
+          event_type: string
+          form_id: string
+          id: string
+          meta: Json
+          session_id: string | null
+        }
+        Insert: {
+          created_at?: string
+          event_type: string
+          form_id: string
+          id?: string
+          meta?: Json
+          session_id?: string | null
+        }
+        Update: {
+          created_at?: string
+          event_type?: string
+          form_id?: string
+          id?: string
+          meta?: Json
+          session_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "form_events_form_id_fkey"
+            columns: ["form_id"]
+            isOneToOne: false
+            referencedRelation: "forms"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      form_responses: {
+        Row: {
+          created_at: string
+          data: Json
+          form_id: string
+          form_version_id: string | null
+          id: string
+          ip_address: string | null
+          metadata: Json
+          submitted_at: string
+          user_agent: string | null
+          workspace_id: string | null
+        }
+        Insert: {
+          created_at?: string
+          data?: Json
+          form_id: string
+          form_version_id?: string | null
+          id?: string
+          ip_address?: string | null
+          metadata?: Json
+          submitted_at?: string
+          user_agent?: string | null
+          workspace_id?: string | null
+        }
+        Update: {
+          created_at?: string
+          data?: Json
+          form_id?: string
+          form_version_id?: string | null
+          id?: string
+          ip_address?: string | null
+          metadata?: Json
+          submitted_at?: string
+          user_agent?: string | null
+          workspace_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "form_responses_form_id_fkey"
+            columns: ["form_id"]
+            isOneToOne: false
+            referencedRelation: "forms"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "form_responses_form_version_id_fkey"
+            columns: ["form_version_id"]
+            isOneToOne: false
+            referencedRelation: "form_versions"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "form_responses_workspace_id_fkey"
+            columns: ["workspace_id"]
+            isOneToOne: false
+            referencedRelation: "workspaces"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      form_versions: {
+        Row: {
+          created_at: string
+          definition_sections: Json
+          description: string | null
+          form_id: string
+          id: string
+          published_at: string
+          published_by: string | null
+          settings: Json
+          title: string
+          version_number: number
+        }
+        Insert: {
+          created_at?: string
+          definition_sections?: Json
+          description?: string | null
+          form_id: string
+          id?: string
+          published_at?: string
+          published_by?: string | null
+          settings?: Json
+          title: string
+          version_number: number
+        }
+        Update: {
+          created_at?: string
+          definition_sections?: Json
+          description?: string | null
+          form_id?: string
+          id?: string
+          published_at?: string
+          published_by?: string | null
+          settings?: Json
+          title?: string
+          version_number?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "form_versions_form_id_fkey"
+            columns: ["form_id"]
+            isOneToOne: false
+            referencedRelation: "forms"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      forms: {
+        Row: {
+          created_at: string
+          custom_success_message: string | null
+          definition_sections: Json
+          description: string | null
+          id: string
+          published_version_id: string | null
+          redirect_url: string | null
+          settings: Json
+          status: string
+          title: string
+          updated_at: string
+          user_id: string
+          version: number
+          workspace_id: string | null
+        }
+        Insert: {
+          created_at?: string
+          custom_success_message?: string | null
+          definition_sections?: Json
+          description?: string | null
+          id?: string
+          published_version_id?: string | null
+          redirect_url?: string | null
+          settings?: Json
+          status?: string
+          title?: string
+          updated_at?: string
+          user_id: string
+          version?: number
+          workspace_id?: string | null
+        }
+        Update: {
+          created_at?: string
+          custom_success_message?: string | null
+          definition_sections?: Json
+          description?: string | null
+          id?: string
+          published_version_id?: string | null
+          redirect_url?: string | null
+          settings?: Json
+          status?: string
+          title?: string
+          updated_at?: string
+          user_id?: string
+          version?: number
+          workspace_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "forms_published_version_fkey"
+            columns: ["published_version_id"]
+            isOneToOne: false
+            referencedRelation: "form_versions"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "forms_workspace_id_fkey"
+            columns: ["workspace_id"]
+            isOneToOne: false
+            referencedRelation: "workspaces"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      profiles: {
+        Row: {
+          avatar_url: string | null
+          created_at: string
+          display_name: string | null
+          email: string | null
+          id: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          avatar_url?: string | null
+          created_at?: string
+          display_name?: string | null
+          email?: string | null
+          id?: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          avatar_url?: string | null
+          created_at?: string
+          display_name?: string | null
+          email?: string | null
+          id?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       routing_rules: {
         Row: {
           actions: Json
@@ -114,6 +353,51 @@ export type Database = {
           },
         ]
       }
+      submission_events: {
+        Row: {
+          actor_id: string | null
+          created_at: string
+          event_type: string
+          form_response_id: string
+          id: string
+          payload: Json
+          workspace_id: string | null
+        }
+        Insert: {
+          actor_id?: string | null
+          created_at?: string
+          event_type: string
+          form_response_id: string
+          id?: string
+          payload?: Json
+          workspace_id?: string | null
+        }
+        Update: {
+          actor_id?: string | null
+          created_at?: string
+          event_type?: string
+          form_response_id?: string
+          id?: string
+          payload?: Json
+          workspace_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "submission_events_form_response_id_fkey"
+            columns: ["form_response_id"]
+            isOneToOne: false
+            referencedRelation: "form_responses"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "submission_events_workspace_id_fkey"
+            columns: ["workspace_id"]
+            isOneToOne: false
+            referencedRelation: "workspaces"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       submission_metadata: {
         Row: {
           ai_summary: string | null
@@ -153,6 +437,13 @@ export type Database = {
         }
         Relationships: [
           {
+            foreignKeyName: "submission_metadata_form_response_fkey"
+            columns: ["form_response_id"]
+            isOneToOne: true
+            referencedRelation: "form_responses"
+            referencedColumns: ["id"]
+          },
+          {
             foreignKeyName: "submission_metadata_workspace_id_fkey"
             columns: ["workspace_id"]
             isOneToOne: false
@@ -160,6 +451,81 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      subscribers: {
+        Row: {
+          created_at: string
+          email: string
+          id: string
+          product_id: string | null
+          stripe_customer_id: string | null
+          subscribed: boolean
+          subscription_end: string | null
+          subscription_tier: string | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          email: string
+          id?: string
+          product_id?: string | null
+          stripe_customer_id?: string | null
+          subscribed?: boolean
+          subscription_end?: string | null
+          subscription_tier?: string | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          email?: string
+          id?: string
+          product_id?: string | null
+          stripe_customer_id?: string | null
+          subscribed?: boolean
+          subscription_end?: string | null
+          subscription_tier?: string | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      user_quota_usage: {
+        Row: {
+          created_at: string
+          id: string
+          period_end: string
+          period_start: string
+          plan: string
+          response_limit: number
+          responses_used: number
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          period_end?: string
+          period_start?: string
+          plan?: string
+          response_limit?: number
+          responses_used?: number
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          period_end?: string
+          period_start?: string
+          plan?: string
+          response_limit?: number
+          responses_used?: number
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
       }
       webhook_deliveries: {
         Row: {
@@ -216,6 +582,13 @@ export type Database = {
             columns: ["endpoint_id"]
             isOneToOne: false
             referencedRelation: "webhook_endpoints"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "webhook_deliveries_submission_fkey"
+            columns: ["submission_id"]
+            isOneToOne: false
+            referencedRelation: "form_responses"
             referencedColumns: ["id"]
           },
         ]
