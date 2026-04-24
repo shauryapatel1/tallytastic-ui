@@ -9,6 +9,7 @@ import { AnimatePresence } from "framer-motion";
 import { lazy, Suspense } from "react";
 import { ProtectedRoute } from "./components/ProtectedRoute";
 import { ThemeProvider } from "./components/app/ThemeProvider";
+import { AppLayout } from "./components/app/AppLayout";
 
 // Eager: landing page (first paint) only
 import Index from "./pages/Index";
@@ -30,6 +31,9 @@ const Integrations = lazy(() => import("./pages/dashboard/Integrations"));
 const Analytics = lazy(() => import("./pages/dashboard/Analytics"));
 const UserProfile = lazy(() => import("./pages/dashboard/UserProfile"));
 const SettingsPage = lazy(() => import("./pages/dashboard/SettingsPage"));
+const SubmissionsInboxPage = lazy(
+  () => import("./pages/app/submissions/SubmissionsInboxPage"),
+);
 
 const RouteFallback = () => (
   <div className="flex items-center justify-center min-h-screen bg-background">
@@ -159,6 +163,18 @@ const App = () => (
                 <Route path="share" element={<ShareStep />} />
                 <Route path="analyze" element={<AnalyzeStep />} />
               </Route>
+
+              {/* Submissions Inbox */}
+              <Route path="/app/submissions" element={
+                <AppLayout>
+                  <SubmissionsInboxPage />
+                </AppLayout>
+              } />
+              <Route path="/app/submissions/:responseId" element={
+                <AppLayout>
+                  <SubmissionsInboxPage />
+                </AppLayout>
+              } />
               
               {/* Fallback route for any other dashboard path */}
               <Route path="/dashboard/*" element={
