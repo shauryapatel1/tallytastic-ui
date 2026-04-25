@@ -67,7 +67,7 @@ export const Navbar = () => {
     <nav
       className={`fixed top-0 w-full z-50 transition-all duration-300 ${
         isScrolled
-          ? "bg-white/80 backdrop-blur-md shadow-sm"
+          ? "bg-background/80 backdrop-blur-md border-b border-border"
           : "bg-transparent"
       }`}
     >
@@ -75,7 +75,7 @@ export const Navbar = () => {
         <div className="flex items-center justify-between h-16">
           <a
             href="/"
-            className="text-xl font-playfair font-semibold tracking-tight"
+            className="text-xl font-semibold tracking-tight text-foreground"
           >
             Ingrid
           </a>
@@ -83,35 +83,42 @@ export const Navbar = () => {
             <a
               href="#features"
               onClick={(e) => scrollToSection(e, 'features')}
-              className="text-sm hover:text-primary/80 transition-colors"
+              className="text-sm text-muted-foreground hover:text-foreground transition-colors"
             >
               Product
             </a>
             <a
               href="#code"
               onClick={(e) => scrollToSection(e, 'code')}
-              className="text-sm hover:text-primary/80 transition-colors"
+              className="text-sm text-muted-foreground hover:text-foreground transition-colors"
             >
               Developers
             </a>
             <a
               href="#use-cases"
               onClick={(e) => scrollToSection(e, 'use-cases')}
-              className="text-sm hover:text-primary/80 transition-colors"
+              className="text-sm text-muted-foreground hover:text-foreground transition-colors"
             >
               Agencies
             </a>
             <a
               href="#pricing"
               onClick={(e) => scrollToSection(e, 'pricing')}
-              className="text-sm hover:text-primary/80 transition-colors"
+              className="text-sm text-muted-foreground hover:text-foreground transition-colors"
             >
               Pricing
             </a>
             <a
+              href="/docs"
+              onClick={(e) => { e.preventDefault(); navigate('/docs'); }}
+              className="text-sm text-muted-foreground hover:text-foreground transition-colors"
+            >
+              Docs
+            </a>
+            <a
               href="#faq"
               onClick={(e) => scrollToSection(e, 'faq')}
-              className="text-sm hover:text-primary/80 transition-colors"
+              className="text-sm text-muted-foreground hover:text-foreground transition-colors"
             >
               FAQ
             </a>
