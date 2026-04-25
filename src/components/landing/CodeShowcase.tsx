@@ -1,4 +1,6 @@
 import { useState } from "react";
+import { Link } from "react-router-dom";
+import { ArrowRight } from "lucide-react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Check, Copy } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -57,10 +59,10 @@ export const CodeShowcase = () => {
     <section id="code" className="py-24 bg-secondary/40">
       <div className="container mx-auto px-4">
         <div className="max-w-3xl mx-auto text-center mb-12">
-          <h2 className="text-3xl md:text-4xl font-playfair font-semibold mb-4">
+          <h2 className="text-3xl md:text-4xl font-semibold tracking-tight mb-4 text-foreground">
             Drop it into any stack in 60 seconds
           </h2>
-          <p className="text-primary/60">
+          <p className="text-muted-foreground">
             One endpoint. Works with Next.js, React, Astro, plain HTML — or curl.
           </p>
         </div>
@@ -87,6 +89,15 @@ export const CodeShowcase = () => {
               </TabsContent>
             ))}
           </Tabs>
+        </div>
+
+        <div className="text-center mt-8">
+          <Link
+            to="/docs/quickstart"
+            className="inline-flex items-center gap-1 text-sm font-medium text-primary hover:gap-2 transition-all"
+          >
+            Read the quickstart <ArrowRight className="h-4 w-4" />
+          </Link>
         </div>
       </div>
     </section>

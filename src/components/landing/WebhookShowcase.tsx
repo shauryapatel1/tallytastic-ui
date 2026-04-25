@@ -1,4 +1,5 @@
 import { motion } from "framer-motion";
+import { Link } from "react-router-dom";
 import { ArrowRight, Inbox, Slack, Database, Mail, Zap, Shield } from "lucide-react";
 
 const destinations = [
@@ -13,10 +14,10 @@ export const WebhookShowcase = () => {
     <section className="py-24">
       <div className="container mx-auto px-4">
         <div className="max-w-3xl mx-auto text-center mb-12">
-          <h2 className="text-3xl md:text-4xl font-playfair font-semibold mb-4">
+          <h2 className="text-3xl md:text-4xl font-semibold tracking-tight mb-4 text-foreground">
             Every submission, routed where it belongs
           </h2>
-          <p className="text-primary/60">
+          <p className="text-muted-foreground">
             Signed webhooks with automatic retries. Conditional routing. Spam blocked before it hits your inbox.
           </p>
         </div>
@@ -84,16 +85,31 @@ export const WebhookShowcase = () => {
 
           <div className="mt-10 grid grid-cols-1 sm:grid-cols-3 gap-4 pt-8 border-t">
             {[
-              { label: "Avg delivery", value: "120ms" },
-              { label: "Retry attempts", value: "Up to 5" },
-              { label: "Signed payloads", value: "HMAC-SHA256" },
+              { label: "Avg delivery", value: "120ms", to: "/docs/webhooks#retries" },
+              { label: "Retry attempts", value: "Up to 5", to: "/docs/webhooks#retries" },
+              { label: "Signed payloads", value: "HMAC-SHA256", to: "/docs/webhooks#signing" },
             ].map((s) => (
-              <div key={s.label} className="text-center">
-                <div className="text-2xl font-semibold">{s.value}</div>
-                <div className="text-xs text-primary/60 mt-1">{s.label}</div>
-              </div>
+              <Link
+                key={s.label}
+                to={s.to}
+                className="text-center group rounded-lg p-2 -m-2 hover:bg-muted/50 transition-colors"
+              >
+                <div className="text-2xl font-semibold text-foreground">{s.value}</div>
+                <div className="text-xs text-muted-foreground mt-1 group-hover:text-foreground transition-colors">
+                  {s.label} →
+                </div>
+              </Link>
             ))}
           </div>
+        </div>
+
+        <div className="text-center mt-8">
+          <Link
+            to="/docs/routing"
+            className="inline-flex items-center gap-1 text-sm font-medium text-primary hover:gap-2 transition-all"
+          >
+            Learn about routing rules <ArrowRight className="h-4 w-4" />
+          </Link>
         </div>
       </div>
     </section>
