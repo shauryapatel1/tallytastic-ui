@@ -11,6 +11,7 @@ import { CodeShowcase } from "@/components/landing/CodeShowcase";
 import { DeveloperFeatures } from "@/components/landing/DeveloperFeatures";
 import { WebhookShowcase } from "@/components/landing/WebhookShowcase";
 import { UseCases } from "@/components/landing/UseCases";
+import { Problem } from "@/components/landing/Problem";
 
 const Index = () => {
   return (
@@ -23,8 +24,9 @@ const Index = () => {
       <Navbar />
       <Hero />
       <Trust />
-      <CodeShowcase />
+      <Problem />
       <DeveloperFeatures />
+      <CodeShowcase />
       <WebhookShowcase />
       <UseCases />
       <Pricing />

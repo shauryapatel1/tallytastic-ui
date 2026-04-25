@@ -7,10 +7,30 @@ export const Hero = () => {
   const navigate = useNavigate();
 
   return (
-    <section className="relative pt-32 pb-20 overflow-hidden">
-      {/* Subtle grid background */}
-      <div className="absolute inset-0 -z-10 hero-pattern opacity-40" />
-      <div className="absolute inset-x-0 top-0 -z-10 h-[600px] bg-gradient-to-b from-secondary/40 to-transparent" />
+    <section className="relative pt-32 pb-20 overflow-hidden bg-background">
+      {/* Calm routing-line motif — subtle SVG instead of decorative gradients */}
+      <svg
+        aria-hidden
+        className="absolute inset-x-0 top-0 -z-10 w-full h-[520px] text-border"
+        preserveAspectRatio="none"
+        viewBox="0 0 1440 520"
+        fill="none"
+      >
+        <defs>
+          <linearGradient id="ingrid-fade" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0%" stopColor="currentColor" stopOpacity="0.7" />
+            <stop offset="100%" stopColor="currentColor" stopOpacity="0" />
+          </linearGradient>
+        </defs>
+        {/* Converging routing lines — three sources into one node */}
+        <path d="M0 120 Q 480 120 720 260" stroke="url(#ingrid-fade)" strokeWidth="1" />
+        <path d="M0 260 Q 480 260 720 260" stroke="url(#ingrid-fade)" strokeWidth="1" />
+        <path d="M0 400 Q 480 400 720 260" stroke="url(#ingrid-fade)" strokeWidth="1" />
+        <path d="M720 260 Q 960 260 1440 120" stroke="url(#ingrid-fade)" strokeWidth="1" />
+        <path d="M720 260 Q 960 260 1440 260" stroke="url(#ingrid-fade)" strokeWidth="1" />
+        <path d="M720 260 Q 960 260 1440 400" stroke="url(#ingrid-fade)" strokeWidth="1" />
+        <circle cx="720" cy="260" r="3" fill="hsl(var(--primary))" />
+      </svg>
 
       <div className="container mx-auto px-4">
         <div className="max-w-4xl mx-auto text-center">
@@ -18,9 +38,9 @@ export const Hero = () => {
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.4 }}
-            className="inline-flex items-center gap-2 rounded-full border bg-card px-3 py-1 text-xs mb-6"
+            className="inline-flex items-center gap-2 rounded-full border bg-card px-3 py-1 text-xs mb-6 text-muted-foreground"
           >
-            <span className="h-1.5 w-1.5 rounded-full bg-emerald-500" />
+            <span className="h-1.5 w-1.5 rounded-full bg-success" />
             Form backend + routing for modern websites
           </motion.div>
 
@@ -28,22 +48,20 @@ export const Hero = () => {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5, delay: 0.05 }}
-            className="text-4xl md:text-6xl font-playfair font-semibold tracking-tight text-balance mb-6"
+            className="text-4xl md:text-6xl font-semibold tracking-tight text-balance mb-6 text-foreground"
           >
-            Reliable form backend for{" "}
-            <span className="italic underline decoration-primary/30 underline-offset-4">
-              modern websites
-            </span>
+            Capture submissions, route work, and{" "}
+            <span className="text-primary">automate follow-up</span>
           </motion.h1>
 
           <motion.p
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5, delay: 0.1 }}
-            className="text-lg md:text-xl text-primary/70 max-w-2xl mx-auto mb-10 text-balance"
+            className="text-lg md:text-xl text-muted-foreground max-w-2xl mx-auto mb-10 text-balance"
           >
-            Capture submissions, block spam, trigger workflows, and manage responses —
-            without building backend plumbing from scratch.
+            Ingrid is the inbound engine for forms — reliable webhooks, spam protection,
+            conditional routing, and a triage inbox for everything that comes in.
           </motion.p>
 
           <motion.div
@@ -59,10 +77,10 @@ export const Hero = () => {
             <Button
               size="lg"
               variant="outline"
-              onClick={() => document.getElementById("code")?.scrollIntoView({ behavior: "smooth" })}
+              onClick={() => navigate("/docs")}
             >
               <Terminal className="mr-2 h-4 w-4" />
-              See the code
+              View docs
             </Button>
           </motion.div>
 
@@ -70,7 +88,7 @@ export const Hero = () => {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             transition={{ duration: 0.6, delay: 0.25 }}
-            className="text-xs text-primary/50 flex flex-wrap justify-center gap-x-6 gap-y-2"
+            className="text-xs text-muted-foreground flex flex-wrap justify-center gap-x-6 gap-y-2"
           >
             <span>✓ 100 free submissions / month</span>
             <span>✓ No credit card required</span>
@@ -85,12 +103,12 @@ export const Hero = () => {
           transition={{ duration: 0.6, delay: 0.3 }}
           className="max-w-3xl mx-auto mt-16"
         >
-          <div className="rounded-xl border bg-card overflow-hidden shadow-xl">
-            <div className="flex items-center gap-2 px-4 py-2 border-b bg-muted/40">
-              <span className="h-2.5 w-2.5 rounded-full bg-destructive/60" />
-              <span className="h-2.5 w-2.5 rounded-full bg-yellow-500/60" />
-              <span className="h-2.5 w-2.5 rounded-full bg-emerald-500/60" />
-              <span className="ml-3 text-xs text-primary/50 font-mono">terminal</span>
+          <div className="rounded-xl border border-border bg-card overflow-hidden shadow-lg">
+            <div className="flex items-center gap-2 px-4 py-2 border-b border-border bg-muted/40">
+              <span className="h-2.5 w-2.5 rounded-full bg-danger/70" />
+              <span className="h-2.5 w-2.5 rounded-full bg-warning/70" />
+              <span className="h-2.5 w-2.5 rounded-full bg-success/70" />
+              <span className="ml-3 text-xs text-muted-foreground font-mono">terminal</span>
             </div>
             <pre className="p-6 text-sm font-mono bg-foreground text-background overflow-x-auto leading-relaxed">
 {`$ curl -X POST https://api.ingrid.dev/v1/submit/frm_abc123 \\
