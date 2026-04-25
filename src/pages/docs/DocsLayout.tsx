@@ -1,7 +1,7 @@
 import { Link, NavLink, Outlet, useLocation } from "react-router-dom";
 import { useEffect } from "react";
 import { ArrowLeft, Moon, Sun } from "lucide-react";
-import { useTheme } from "@/components/app/ThemeProvider";
+import { useTheme } from "next-themes";
 import { Button } from "@/components/ui/button";
 
 const sections = [
