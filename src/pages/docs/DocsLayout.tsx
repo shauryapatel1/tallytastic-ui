@@ -3,6 +3,8 @@ import { useEffect } from "react";
 import { ArrowLeft, Moon, Sun } from "lucide-react";
 import { useTheme } from "next-themes";
 import { Button } from "@/components/ui/button";
+import { DocsSearch } from "./DocsSearch";
+import { useScrollSpy } from "./useScrollSpy";
 
 const sections = [
   {
@@ -30,26 +32,38 @@ const sections = [
 
 export const DocsLayout = () => {
   const { theme, setTheme } = useTheme();
-  const { pathname } = useLocation();
+  const { pathname, hash } = useLocation();
+  const { headings, activeId } = useScrollSpy(pathname);
 
-  // Scroll to top on route change
+  // On route change, scroll to hash if present, otherwise to top
   useEffect(() => {
-    window.scrollTo(0, 0);
-  }, [pathname]);
+    if (hash) {
+      // Defer until the new page mounts so the target exists
+      const id = hash.replace(/^#/, "");
+      requestAnimationFrame(() => {
+        document.getElementById(id)?.scrollIntoView({ behavior: "smooth", block: "start" });
+      });
+    } else {
+      window.scrollTo(0, 0);
+    }
+  }, [pathname, hash]);
 
   return (
     <div className="min-h-screen bg-background text-foreground">
       {/* Top bar */}
       <header className="sticky top-0 z-40 border-b border-border bg-background/80 backdrop-blur">
-        <div className="container mx-auto px-4 h-14 flex items-center justify-between">
-          <div className="flex items-center gap-6">
+        <div className="container mx-auto px-4 h-14 flex items-center justify-between gap-4">
+          <div className="flex items-center gap-6 shrink-0">
             <Link to="/" className="flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground transition-colors">
               <ArrowLeft className="h-4 w-4" />
               <span className="font-semibold text-foreground">Ingrid</span>
               <span className="text-muted-foreground">/ Docs</span>
             </Link>
           </div>
-          <div className="flex items-center gap-2">
+          <div className="flex-1 hidden md:flex justify-end">
+            <DocsSearch />
+          </div>
+          <div className="flex items-center gap-2 shrink-0">
             <Button
               variant="ghost"
               size="icon"
@@ -62,6 +76,10 @@ export const DocsLayout = () => {
               <Button size="sm">Start free</Button>
             </Link>
           </div>
+        </div>
+        {/* Mobile search bar */}
+        <div className="md:hidden border-t border-border px-4 py-2">
+          <DocsSearch />
         </div>
       </header>
 
@@ -90,6 +108,32 @@ export const DocsLayout = () => {
                       >
                         {item.label}
                       </NavLink>
+                      {/* Scroll-spy: nest current page's headings under the active item */}
+                      {isActiveItem(pathname, item.to, item.end) && headings.length > 0 ? (
+                        <ul className="mt-1 ml-3 border-l border-border space-y-0.5">
+                          {headings.map((h) => (
+                            <li key={h.id}>
+                              <a
+                                href={`#${h.id}`}
+                                onClick={(e) => {
+                                  e.preventDefault();
+                                  history.replaceState(null, "", `#${h.id}`);
+                                  document
+                                    .getElementById(h.id)
+                                    ?.scrollIntoView({ behavior: "smooth", block: "start" });
+                                }}
+                                className={`block pl-3 pr-2 py-1 -ml-px border-l text-xs transition-colors ${
+                                  activeId === h.id
+                                    ? "border-primary text-foreground font-medium"
+                                    : "border-transparent text-muted-foreground hover:text-foreground"
+                                }`}
+                              >
+                                {h.text}
+                              </a>
+                            </li>
+                          ))}
+                        </ul>
+                      ) : null}
                     </li>
                   ))}
                 </ul>
@@ -108,3 +152,9 @@ export const DocsLayout = () => {
 };
 
 export default DocsLayout;
+
+/** Match logic equivalent to NavLink's `end` semantics. */
+function isActiveItem(pathname: string, to: string, end?: boolean) {
+  if (end) return pathname === to;
+  return pathname === to || pathname.startsWith(`${to}/`);
+}

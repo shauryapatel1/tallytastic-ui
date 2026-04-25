@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Check, Copy } from "lucide-react";
+import { Check, Copy, Link2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
 export const DocH1 = ({ children }: { children: React.ReactNode }) => (
@@ -11,14 +11,52 @@ export const DocLead = ({ children }: { children: React.ReactNode }) => (
 );
 
 export const DocH2 = ({ children, id }: { children: React.ReactNode; id?: string }) => (
-  <h2 id={id} className="text-2xl font-semibold tracking-tight text-foreground mt-12 mb-4 scroll-mt-20">
-    {children}
+  <h2
+    id={id}
+    className="group text-2xl font-semibold tracking-tight text-foreground mt-12 mb-4 scroll-mt-24 flex items-center gap-2"
+  >
+    <span>{children}</span>
+    {id ? <AnchorLink id={id} /> : null}
   </h2>
 );
 
-export const DocH3 = ({ children }: { children: React.ReactNode }) => (
-  <h3 className="text-lg font-semibold text-foreground mt-8 mb-3">{children}</h3>
+export const DocH3 = ({ children, id }: { children: React.ReactNode; id?: string }) => (
+  <h3
+    id={id}
+    className="group text-lg font-semibold text-foreground mt-8 mb-3 scroll-mt-24 flex items-center gap-2"
+  >
+    <span>{children}</span>
+    {id ? <AnchorLink id={id} /> : null}
+  </h3>
 );
+
+/**
+ * Small "#" button shown on hover next to a heading.
+ * Updates the URL hash and copies a deep link to the clipboard.
+ */
+const AnchorLink = ({ id }: { id: string }) => {
+  const [copied, setCopied] = useState(false);
+  const handleClick = () => {
+    const url = `${window.location.origin}${window.location.pathname}#${id}`;
+    // Update hash without jumping; smooth-scroll the element into view
+    history.replaceState(null, "", `#${id}`);
+    document.getElementById(id)?.scrollIntoView({ behavior: "smooth", block: "start" });
+    navigator.clipboard?.writeText(url).then(() => {
+      setCopied(true);
+      setTimeout(() => setCopied(false), 1200);
+    });
+  };
+  return (
+    <button
+      type="button"
+      onClick={handleClick}
+      aria-label={`Copy link to ${id}`}
+      className="opacity-0 group-hover:opacity-100 focus:opacity-100 text-muted-foreground hover:text-primary transition-opacity"
+    >
+      {copied ? <Check className="h-4 w-4" /> : <Link2 className="h-4 w-4" />}
+    </button>
+  );
+};
 
 export const DocP = ({ children }: { children: React.ReactNode }) => (
   <p className="text-foreground/80 leading-relaxed mb-4">{children}</p>
