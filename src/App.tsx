@@ -34,6 +34,13 @@ const SettingsPage = lazy(() => import("./pages/dashboard/SettingsPage"));
 const SubmissionsInboxPage = lazy(
   () => import("./pages/app/submissions/SubmissionsInboxPage"),
 );
+const DocsLayout = lazy(() => import("./pages/docs/DocsLayout"));
+const DocsIntroduction = lazy(() => import("./pages/docs/Introduction"));
+const DocsQuickstart = lazy(() => import("./pages/docs/Quickstart"));
+const DocsWebhooks = lazy(() => import("./pages/docs/Webhooks"));
+const DocsRouting = lazy(() => import("./pages/docs/Routing"));
+const DocsSubmissions = lazy(() => import("./pages/docs/Submissions"));
+const DocsApi = lazy(() => import("./pages/docs/ApiReference"));
 
 const RouteFallback = () => (
   <div className="flex items-center justify-center min-h-screen bg-background">
@@ -175,6 +182,16 @@ const App = () => (
                   <SubmissionsInboxPage />
                 </AppLayout>
               } />
+
+              {/* Docs */}
+              <Route path="/docs" element={<DocsLayout />}>
+                <Route index element={<DocsIntroduction />} />
+                <Route path="quickstart" element={<DocsQuickstart />} />
+                <Route path="submissions" element={<DocsSubmissions />} />
+                <Route path="webhooks" element={<DocsWebhooks />} />
+                <Route path="routing" element={<DocsRouting />} />
+                <Route path="api" element={<DocsApi />} />
+              </Route>
               
               {/* Fallback route for any other dashboard path */}
               <Route path="/dashboard/*" element={
