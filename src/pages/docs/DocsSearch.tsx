@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { Search } from "lucide-react";
+import { ChevronRight, Search } from "lucide-react";
 import {
   CommandDialog,
   CommandEmpty,
@@ -98,16 +98,29 @@ export const DocsSearch = () => {
                   value={`${entry.heading} ${entry.page} ${entry.body}`}
                   onSelect={() => handleSelect(entry.path, entry.anchor)}
                 >
-                  <div className="flex flex-col gap-0.5 min-w-0">
+                  <div className="flex flex-col gap-1 min-w-0">
                     <span className="text-sm font-medium text-foreground truncate">
                       {highlight(entry.heading, query)}
                     </span>
-                    <span className="text-xs text-foreground/60">
-                      {entry.page}
-                      {entry.anchor ? ` · #${entry.anchor}` : ""}
-                    </span>
+                    {/* Breadcrumb-style path: Group › Page › #anchor */}
+                    <nav
+                      aria-label="Doc location"
+                      className="flex items-center gap-1 text-[11px] text-muted-foreground"
+                    >
+                      <span className="truncate">{entry.group}</span>
+                      <ChevronRight className="h-3 w-3 shrink-0 opacity-60" />
+                      <span className="truncate">{entry.page}</span>
+                      {entry.anchor ? (
+                        <>
+                          <ChevronRight className="h-3 w-3 shrink-0 opacity-60" />
+                          <span className="truncate font-mono text-foreground/70">
+                            #{entry.anchor}
+                          </span>
+                        </>
+                      ) : null}
+                    </nav>
                     {query.trim() ? (
-                      <span className="text-xs text-foreground/75 line-clamp-2 mt-0.5">
+                      <span className="text-xs text-foreground/80 line-clamp-2">
                         {highlight(snippetFor(entry.body, query), query)}
                       </span>
                     ) : null}
