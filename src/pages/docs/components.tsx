@@ -7,7 +7,7 @@ export const DocH1 = ({ children }: { children: React.ReactNode }) => (
 );
 
 export const DocLead = ({ children }: { children: React.ReactNode }) => (
-  <p className="text-lg text-muted-foreground mb-10 leading-relaxed">{children}</p>
+  <p className="text-lg text-foreground/75 mb-10 leading-relaxed">{children}</p>
 );
 
 export const DocH2 = ({ children, id }: { children: React.ReactNode; id?: string }) => (
@@ -59,11 +59,11 @@ const AnchorLink = ({ id }: { id: string }) => {
 };
 
 export const DocP = ({ children }: { children: React.ReactNode }) => (
-  <p className="text-foreground/80 leading-relaxed mb-4">{children}</p>
+  <p className="text-foreground/90 leading-relaxed mb-4">{children}</p>
 );
 
 export const DocList = ({ children }: { children: React.ReactNode }) => (
-  <ul className="list-disc pl-6 space-y-2 text-foreground/80 mb-4">{children}</ul>
+  <ul className="list-disc pl-6 space-y-2 text-foreground/90 mb-4 marker:text-foreground/40">{children}</ul>
 );
 
 export const InlineCode = ({ children }: { children: React.ReactNode }) => (
@@ -87,13 +87,13 @@ export const CodeBlock = ({
   };
   return (
     <div className="my-6 rounded-xl border border-border bg-foreground overflow-hidden">
-      <div className="flex items-center justify-between px-3 py-1.5 border-b border-border/30 bg-foreground">
-        <span className="text-xs font-mono text-background/60">{language ?? "text"}</span>
+      <div className="flex items-center justify-between px-3 py-1.5 border-b border-background/10 bg-foreground">
+        <span className="text-xs font-mono uppercase tracking-wide text-background/80">{language ?? "text"}</span>
         <Button
           variant="ghost"
           size="sm"
           onClick={handleCopy}
-          className="h-7 text-background/70 hover:text-background hover:bg-background/10"
+          className="h-7 text-background/90 hover:text-background hover:bg-background/10"
         >
           {copied ? <Check className="h-3.5 w-3.5 mr-1" /> : <Copy className="h-3.5 w-3.5 mr-1" />}
           {copied ? "Copied" : "Copy"}
