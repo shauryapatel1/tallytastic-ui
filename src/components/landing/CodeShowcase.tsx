@@ -70,11 +70,23 @@ export const CodeShowcase = () => {
         <div className="max-w-3xl mx-auto rounded-xl border border-border overflow-hidden shadow-sm bg-[hsl(226_50%_9%)]">
           <Tabs value={tab} onValueChange={(v) => setTab(v as keyof typeof snippets)}>
             <div className="flex items-center justify-between border-b border-white/10 px-3 py-2 bg-[hsl(218_32%_15%)]">
-              <TabsList className="bg-transparent gap-1">
-                <TabsTrigger value="curl">curl</TabsTrigger>
-                <TabsTrigger value="nextjs">Next.js</TabsTrigger>
-                <TabsTrigger value="react">React</TabsTrigger>
-                <TabsTrigger value="html">HTML</TabsTrigger>
+              <TabsList className="bg-transparent gap-1 h-auto p-0">
+                <TabsTrigger
+                  value="curl"
+                  className="text-white/60 hover:text-white data-[state=active]:bg-white/10 data-[state=active]:text-white data-[state=active]:shadow-none"
+                >curl</TabsTrigger>
+                <TabsTrigger
+                  value="nextjs"
+                  className="text-white/60 hover:text-white data-[state=active]:bg-white/10 data-[state=active]:text-white data-[state=active]:shadow-none"
+                >Next.js</TabsTrigger>
+                <TabsTrigger
+                  value="react"
+                  className="text-white/60 hover:text-white data-[state=active]:bg-white/10 data-[state=active]:text-white data-[state=active]:shadow-none"
+                >React</TabsTrigger>
+                <TabsTrigger
+                  value="html"
+                  className="text-white/60 hover:text-white data-[state=active]:bg-white/10 data-[state=active]:text-white data-[state=active]:shadow-none"
+                >HTML</TabsTrigger>
               </TabsList>
               <Button variant="ghost" size="sm" onClick={handleCopy} className="h-8 text-white/80 hover:text-white hover:bg-white/10">
                 {copied ? <Check className="h-4 w-4 mr-1" /> : <Copy className="h-4 w-4 mr-1" />}
