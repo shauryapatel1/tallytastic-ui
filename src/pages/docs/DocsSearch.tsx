@@ -156,16 +156,18 @@ function highlight(text: string, query: string): React.ReactNode {
   const escaped = terms.map((t) => t.replace(/[.*+?^${}()|[\]\\]/g, "\\$&"));
   const re = new RegExp(`(${escaped.join("|")})`, "gi");
   const parts = text.split(re);
-  return parts.map((part, i) =>
-    re.test(part) && i % 2 === 1 ? (
-      <mark
-        key={i}
-        className="bg-primary/20 text-foreground rounded-sm px-0.5"
-      >
-        {part}
-      </mark>
-    ) : (
-      <span key={i}>{part}</span>
-    ),
-  );
+  const lowerTerms = new Set(terms.map((t) => t.toLowerCase()));
+  return parts.map((part, i) => {
+    if (part && lowerTerms.has(part.toLowerCase())) {
+      return (
+        <mark
+          key={i}
+          className="bg-primary/20 text-foreground rounded-sm px-0.5"
+        >
+          {part}
+        </mark>
+      );
+    }
+    return <span key={i}>{part}</span>;
+  });
 }
