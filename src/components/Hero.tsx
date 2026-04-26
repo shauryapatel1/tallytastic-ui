@@ -103,14 +103,14 @@ export const Hero = () => {
           transition={{ duration: 0.6, delay: 0.3 }}
           className="max-w-3xl mx-auto mt-16"
         >
-          <div className="rounded-xl border border-border bg-card overflow-hidden shadow-lg">
-            <div className="flex items-center gap-2 px-4 py-2 border-b border-border bg-muted/40">
-              <span className="h-2.5 w-2.5 rounded-full bg-danger/70" />
-              <span className="h-2.5 w-2.5 rounded-full bg-warning/70" />
-              <span className="h-2.5 w-2.5 rounded-full bg-success/70" />
-              <span className="ml-3 text-xs text-muted-foreground font-mono">terminal</span>
+          <div className="rounded-xl border border-border overflow-hidden shadow-lg bg-[hsl(226_50%_9%)]">
+            <div className="flex items-center gap-2 px-4 py-2 border-b border-white/10 bg-[hsl(218_32%_15%)]">
+              <span className="h-2.5 w-2.5 rounded-full bg-danger/80" />
+              <span className="h-2.5 w-2.5 rounded-full bg-warning/80" />
+              <span className="h-2.5 w-2.5 rounded-full bg-success/80" />
+              <span className="ml-3 text-xs text-white/60 font-mono">terminal</span>
             </div>
-            <pre className="p-6 text-sm font-mono bg-foreground text-background overflow-x-auto leading-relaxed">
+            <pre className="p-6 text-sm font-mono text-[hsl(213_30%_96%)] overflow-x-auto leading-relaxed">
 {`$ curl -X POST https://api.ingrid.dev/v1/submit/frm_abc123 \\
     -H "Content-Type: application/json" \\
     -d '{ "email": "lead@acme.com", "plan": "enterprise" }'

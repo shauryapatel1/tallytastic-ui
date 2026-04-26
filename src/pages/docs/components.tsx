@@ -86,20 +86,22 @@ export const CodeBlock = ({
     setTimeout(() => setCopied(false), 1500);
   };
   return (
-    <div className="my-6 rounded-xl border border-border bg-foreground overflow-hidden">
-      <div className="flex items-center justify-between px-3 py-1.5 border-b border-background/10 bg-foreground">
-        <span className="text-xs font-mono uppercase tracking-wide text-background/80">{language ?? "text"}</span>
+    // Always-dark code surface so contrast holds in both light and dark themes.
+    // Slate (#1B2435) header, Midnight (#0B1020) body, Cloud-ish text.
+    <div className="my-6 rounded-xl border border-border overflow-hidden bg-[hsl(226_50%_9%)]">
+      <div className="flex items-center justify-between px-3 py-1.5 border-b border-white/10 bg-[hsl(218_32%_15%)]">
+        <span className="text-xs font-mono uppercase tracking-wide text-white/70">{language ?? "text"}</span>
         <Button
           variant="ghost"
           size="sm"
           onClick={handleCopy}
-          className="h-7 text-background/90 hover:text-background hover:bg-background/10"
+          className="h-7 text-white/80 hover:text-white hover:bg-white/10"
         >
           {copied ? <Check className="h-3.5 w-3.5 mr-1" /> : <Copy className="h-3.5 w-3.5 mr-1" />}
           {copied ? "Copied" : "Copy"}
         </Button>
       </div>
-      <pre className="p-4 text-sm font-mono text-background overflow-x-auto leading-relaxed">
+      <pre className="p-4 text-sm font-mono text-[hsl(213_30%_96%)] overflow-x-auto leading-relaxed">
         <code>{children}</code>
       </pre>
     </div>
