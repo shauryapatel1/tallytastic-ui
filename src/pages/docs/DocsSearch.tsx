@@ -70,12 +70,12 @@ export const DocsSearch = () => {
       <button
         type="button"
         onClick={() => setOpen(true)}
-        className="inline-flex h-9 w-full items-center gap-2 rounded-md border border-border bg-card px-3 text-sm text-muted-foreground hover:text-foreground hover:border-border-strong transition-colors md:w-[280px]"
+        className="inline-flex h-9 w-full items-center gap-2 rounded-md border border-border bg-card px-3 text-sm text-foreground/70 hover:text-foreground hover:border-border-strong transition-colors md:w-[280px]"
         aria-label="Search docs"
       >
         <Search className="h-4 w-4" />
         <span className="flex-1 text-left">Search docs…</span>
-        <kbd className="pointer-events-none hidden md:inline-flex h-5 select-none items-center gap-1 rounded border border-border bg-muted px-1.5 font-mono text-[10px] font-medium text-muted-foreground">
+        <kbd className="pointer-events-none hidden md:inline-flex h-5 select-none items-center gap-1 rounded border border-border bg-muted px-1.5 font-mono text-[10px] font-medium text-foreground/80">
           {isMac ? "⌘" : "Ctrl"} K
         </kbd>
       </button>
@@ -98,12 +98,19 @@ export const DocsSearch = () => {
                   value={`${entry.heading} ${entry.page} ${entry.body}`}
                   onSelect={() => handleSelect(entry.path, entry.anchor)}
                 >
-                  <div className="flex flex-col">
-                    <span className="text-sm text-foreground">{entry.heading}</span>
-                    <span className="text-xs text-muted-foreground">
+                  <div className="flex flex-col gap-0.5 min-w-0">
+                    <span className="text-sm font-medium text-foreground truncate">
+                      {highlight(entry.heading, query)}
+                    </span>
+                    <span className="text-xs text-foreground/60">
                       {entry.page}
                       {entry.anchor ? ` · #${entry.anchor}` : ""}
                     </span>
+                    {query.trim() ? (
+                      <span className="text-xs text-foreground/75 line-clamp-2 mt-0.5">
+                        {highlight(snippetFor(entry.body, query), query)}
+                      </span>
+                    ) : null}
                   </div>
                 </CommandItem>
               ))}
@@ -114,3 +121,53 @@ export const DocsSearch = () => {
     </>
   );
 };
+
+/**
+ * Pick a short window of `body` around the first matching term so the user
+ * sees context, not just the first sentence.
+ */
+function snippetFor(body: string, query: string, radius = 40): string {
+  const q = query.trim().toLowerCase();
+  if (!q) return body.slice(0, 120);
+  const terms = q.split(/\s+/).filter(Boolean);
+  const lower = body.toLowerCase();
+  let idx = -1;
+  for (const t of terms) {
+    const i = lower.indexOf(t);
+    if (i !== -1 && (idx === -1 || i < idx)) idx = i;
+  }
+  if (idx === -1) return body.slice(0, 120);
+  const start = Math.max(0, idx - radius);
+  const end = Math.min(body.length, idx + radius + 40);
+  return `${start > 0 ? "…" : ""}${body.slice(start, end)}${end < body.length ? "…" : ""}`;
+}
+
+/**
+ * Wrap each occurrence of any query term in <mark> for visual emphasis.
+ * Case-insensitive, term-by-term, longest first to avoid partial overlaps.
+ */
+function highlight(text: string, query: string): React.ReactNode {
+  const q = query.trim();
+  if (!q) return text;
+  const terms = Array.from(new Set(q.split(/\s+/).filter(Boolean))).sort(
+    (a, b) => b.length - a.length,
+  );
+  if (terms.length === 0) return text;
+  const escaped = terms.map((t) => t.replace(/[.*+?^${}()|[\]\\]/g, "\\$&"));
+  const re = new RegExp(`(${escaped.join("|")})`, "gi");
+  const parts = text.split(re);
+  const lowerTerms = new Set(terms.map((t) => t.toLowerCase()));
+  return parts.map((part, i) => {
+    if (part && lowerTerms.has(part.toLowerCase())) {
+      return (
+        <mark
+          key={i}
+          className="bg-primary/20 text-foreground rounded-sm px-0.5"
+        >
+          {part}
+        </mark>
+      );
+    }
+    return <span key={i}>{part}</span>;
+  });
+}
