@@ -67,23 +67,23 @@ export const CodeShowcase = () => {
           </p>
         </div>
 
-        <div className="max-w-3xl mx-auto rounded-xl border bg-card overflow-hidden shadow-sm">
+        <div className="max-w-3xl mx-auto rounded-xl border border-border overflow-hidden shadow-sm bg-[hsl(226_50%_9%)]">
           <Tabs value={tab} onValueChange={(v) => setTab(v as keyof typeof snippets)}>
-            <div className="flex items-center justify-between border-b px-3 py-2 bg-muted/40">
+            <div className="flex items-center justify-between border-b border-white/10 px-3 py-2 bg-[hsl(218_32%_15%)]">
               <TabsList className="bg-transparent gap-1">
                 <TabsTrigger value="curl">curl</TabsTrigger>
                 <TabsTrigger value="nextjs">Next.js</TabsTrigger>
                 <TabsTrigger value="react">React</TabsTrigger>
                 <TabsTrigger value="html">HTML</TabsTrigger>
               </TabsList>
-              <Button variant="ghost" size="sm" onClick={handleCopy} className="h-8">
+              <Button variant="ghost" size="sm" onClick={handleCopy} className="h-8 text-white/80 hover:text-white hover:bg-white/10">
                 {copied ? <Check className="h-4 w-4 mr-1" /> : <Copy className="h-4 w-4 mr-1" />}
                 {copied ? "Copied" : "Copy"}
               </Button>
             </div>
             {(Object.keys(snippets) as (keyof typeof snippets)[]).map((k) => (
               <TabsContent key={k} value={k} className="m-0">
-                <pre className="p-6 text-sm overflow-x-auto bg-foreground text-background font-mono leading-relaxed">
+                <pre className="p-6 text-sm overflow-x-auto text-[hsl(213_30%_96%)] font-mono leading-relaxed">
                   <code>{snippets[k]}</code>
                 </pre>
               </TabsContent>
